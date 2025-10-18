@@ -8,12 +8,25 @@ from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 
 
 class ContributionType(str, Enum):
-    # Based on provided example; extend as needed
+    # Based on GitHub Stars UI options
+    SPEAKING = "SPEAKING"
     BLOGPOST = "BLOGPOST"
-    EVENT = "EVENT"
-    TALK = "TALK"
-    PR = "PR"
-    VIDEO = "VIDEO"
+    ARTICLE_PUBLICATION = "ARTICLE_PUBLICATION"
+    EVENT_ORGANIZATION = "EVENT_ORGANIZATION"
+    HACKATHON = "HACKATHON"
+    OPEN_SOURCE_PROJECT = "OPEN_SOURCE_PROJECT"
+    VIDEO_PODCAST = "VIDEO_PODCAST"
+    FORUM = "FORUM"
+    OTHER = "OTHER"
+
+
+class PlatformType(str, Enum):
+    # Based on GitHub Stars UI options for links
+    GITHUB = "GITHUB"
+    LINKEDIN = "LINKEDIN"
+    TWITTER = "TWITTER"
+    WEBSITE = "WEBSITE"
+    OTHER = "OTHER"
 
 
 class ContributionItem(BaseModel):
@@ -36,6 +49,71 @@ class CreateContributionsResponse(BaseModel):
     error: str | None = None
 
 
+class DeleteContributionsResponse(BaseModel):
+    success: bool = Field(description="Whether the API call was successful")
+    ids: list[str] = Field(default_factory=list)
+    error: str | None = None
+
+
 class PlaygroundAuthHeader(BaseModel):
     key: Literal["Authorization"] = "Authorization"
     value: str = Field(description="Bearer <STARS_API_TOKEN>")
+
+
+class ContributionUpdateInput(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    title: str | None = None
+    url: HttpUrl | None = None
+    description: str | None = None
+    type: ContributionType | None = None
+    date: datetime | None = None
+
+
+class UpdateContributionResponse(BaseModel):
+    success: bool = Field(description="Whether the API call was successful")
+    data: dict | None = None
+    error: str | None = None
+
+
+class DeleteContributionResponse(BaseModel):
+    success: bool = Field(description="Whether the API call was successful")
+    data: dict | None = None
+    error: str | None = None
+
+
+class LinkItem(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    link: HttpUrl
+    platform: PlatformType
+
+
+class CreateLinkResponse(BaseModel):
+    success: bool = Field(description="Whether the API call was successful")
+    data: dict | None = None
+    error: str | None = None
+
+
+class ProfileUpdateInput(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    avatar: str | None = None
+    name: str | None = None
+    bio: str | None = None
+    country: str | None = None
+    birthdate: datetime | None = None
+    reason: str | None = None
+    jobTitle: str | None = None
+    company: str | None = None
+    phoneNumber: str | None = None
+    address: str | None = None
+    state: str | None = None
+    city: str | None = None
+    zipcode: str | None = None
+
+
+class UpdateProfileResponse(BaseModel):
+    success: bool = Field(description="Whether the API call was successful")
+    data: dict | None = None
+    error: str | None = None

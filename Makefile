@@ -1,5 +1,4 @@
-
-.PHONY: install test run format lint lint-fix run-env
+.PHONY: install test run format lint lint-fix run-env venv
 
 install:
 	pip install -e .[dev]
@@ -14,6 +13,9 @@ run-env:
 	@bash -lc 'if [ -f .env ]; then set -a; source .env; set +a; else echo "[warn] .env not found; continuing with current env"; fi; \
 	 if [ -f .venv/bin/activate ]; then source .venv/bin/activate; fi; \
 	 python -m github_stars_contrib_mcp.server'
+
+venv:
+	python -m venv .venv
 
 format:
 	ruff format src

@@ -17,12 +17,35 @@ Source of truth: see `src/github_stars_contrib_mcp/tools/*` and `src/github_star
 - create_contributions
   - input: { data: ContributionInput[] }
   - output: { success: boolean, ids?: string[], error?: any }
-
-ContributionInput fields: title, url, description?, type, date (ISO)
-
+- create_link
+  - input: { link: string, platform: string }
+  - output: { success: boolean, data?: object, error?: any }
+- update_link
+  - input: { id: string, data: LinkUpdateInput }
+  - output: { success: boolean, data?: object, error?: any }
+- delete_link
+  - input: { id: string }
+  - output: { success: boolean, data?: object, error?: any }
+- update_contribution
+  - input: { id: string, data: ContributionUpdateInput }
+  - output: { success: boolean, data?: object, error?: any }
+- delete_contribution
+  - input: { id: string }
+  - output: { success: boolean, data?: object, error?: any }
 - get_user_data
   - input: none
   - output: { success: boolean, data?: object, error?: any }
+- get_user
+  - input: none
+  - output: { success: boolean, data?: object, error?: any }
+- get_stars
+  - input: { username: string }
+  - output: { success: boolean, data?: object, error?: any }
+- update_profile
+  - input: { data: ProfileUpdateInput }
+  - output: { success: boolean, data?: object, error?: any }
+
+ContributionInput fields: title, url, description?, type, date (ISO)
 
 ## Transport and invocation
 
@@ -39,6 +62,8 @@ Environment variables:
 
 ## How to run locally
 
+- Setup virtual environment: `make venv` (creates `.venv` directory)
+- Activate virtual environment: `source .venv/bin/activate`
 - Install: `pip install -e .[dev]`
 - Start server: `python -m github_stars_contrib_mcp.server`
 

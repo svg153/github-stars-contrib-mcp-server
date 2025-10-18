@@ -8,6 +8,7 @@ import structlog
 from pydantic import BaseModel, Field, HttpUrl, ValidationError
 
 from .. import shared
+from ..models import ContributionType
 from ..shared import mcp
 
 logger = structlog.get_logger(__name__)
@@ -17,7 +18,7 @@ class ContributionInput(BaseModel):
     title: str
     url: HttpUrl
     description: str | None = None
-    type: str = Field(description="Contribution type, e.g., BLOGPOST")
+    type: ContributionType = Field(description="Contribution type, one of: SPEAKING, BLOGPOST, ARTICLE_PUBLICATION, EVENT_ORGANIZATION, HACKATHON, OPEN_SOURCE_PROJECT, VIDEO_PODCAST, FORUM, OTHER")
     date: datetime
 
 

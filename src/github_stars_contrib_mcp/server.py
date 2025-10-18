@@ -1,5 +1,6 @@
 """MCP server entry point for Stars Contributions."""
 
+import asyncio
 import sys
 
 # Prevent stdout conflicts with MCP protocol during import
@@ -13,8 +14,18 @@ from .config import settings
 from .shared import mcp
 
 # Register tools
-from .tools import create_contributions  # noqa: F401
-from .tools import get_user_data  # noqa: F401
+from .tools import (
+    create_contributions,  # noqa: F401
+    create_link,  # noqa: F401
+    delete_contributions,  # noqa: F401
+    delete_link,  # noqa: F401
+    get_stars,  # noqa: F401
+    get_user,  # noqa: F401
+    get_user_data,  # noqa: F401
+    update_contributions,  # noqa: F401
+    update_link,  # noqa: F401
+    update_profile,  # noqa: F401
+)
 
 logger = structlog.get_logger(__name__)
 
@@ -25,23 +36,26 @@ async def initialize_server() -> None:
     await initialize_stars_client()
 
 
-import asyncio
-
-try:
-    loop = asyncio.get_running_loop()
-    asyncio.create_task(initialize_server())
-except RuntimeError:
-    asyncio.run(initialize_server())
-
-
 def main() -> None:
     import os
 
     logger.info("Starting Stars Contributions MCP Server", log_level=settings.log_level)
+
+    try:
+        asyncio.run(initialize_server())
+    except Exception as e:
+        logger.error("Failed to initialize server", error=str(e))
+        sys.exit(1)
+
     host = os.getenv("MCP_HOST", "127.0.0.1")
     port = int(os.getenv("MCP_PORT", "8766"))
     path = os.getenv("MCP_PATH", "/mcp")
-    mcp.run(transport="streamable-http", host=host, port=port, path=path)
+    transport = os.getenv("MCP_TRANSPORT", "stdio")
+
+    if transport == "http":
+        mcp.run(host=host, port=port, path=path)
+    else:
+        mcp.run(transport="stdio")
 
 
 if __name__ == "__main__":

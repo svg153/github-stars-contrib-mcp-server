@@ -12,8 +12,8 @@ from fastmcp import FastMCP
 
 sys.stdout = _original_stdout
 
-from .utils.stars_client import StarsClient
 from .config import settings
+from .utils.stars_client import StarsClient
 
 
 def _configure_logging() -> None:
@@ -60,11 +60,19 @@ async def initialize_stars_client() -> None:
     logger = structlog.get_logger(__name__)
     try:
         if not settings.stars_api_token:
+            if not settings.dangerously_omit_auth:
+                raise ValueError("STARS_API_TOKEN is required but not provided")
             logger.warning("No STARS_API_TOKEN provided; tools will be disabled")
             stars_client = None
             return
         stars_client = StarsClient(api_url="https://api-stars.github.com/", token=settings.stars_api_token)
-        logger.info("Stars client initialized")
+
+        # Validate token by fetching user data
+        result = await stars_client.get_user_data()
+        if not result["ok"] or result.get("data") is None:
+            raise ValueError(f"Invalid STARS_API_TOKEN: {result['error'] or 'No user data'}")
+
+        logger.info("Stars client initialized and token validated")
     except Exception as e:
         logger.error("Failed to initialize Stars client", error=str(e))
-        stars_client = None
+        raise  # Re-raise to stop server
