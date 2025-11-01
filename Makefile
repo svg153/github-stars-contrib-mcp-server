@@ -25,3 +25,11 @@ lint:
 
 lint-fix:
 	ruff check --fix src
+
+# Run all tests (unit + integration), requiring .env.local to exist and be sourced.
+.PHONY: test-all
+test-all:
+	@bash -lc 'if [ ! -f .env.local ]; then echo "[error] .env.local not found; aborting. Create it with required env (e.g., STARS_API_TOKEN)." >&2; exit 1; fi; \
+	 set -a; source .env.local; set +a; \
+	 if [ -f .venv/bin/activate ]; then source .venv/bin/activate; fi; \
+	 pytest -q'
