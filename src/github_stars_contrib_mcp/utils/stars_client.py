@@ -33,13 +33,14 @@ CREATE_CONTRIBUTION_MUTATION = (
         description
         __typename
       }
+        }
     """
     .strip()
 )
 
 UPDATE_CONTRIBUTION_MUTATION = (
     """
-    mutation($id: String!, $data: ContributionUpdateInput!) {
+        mutation($id: String!, $data: ContributionInput!) {
       updateContribution(id: $id, data: $data) {
         id type date title url description __typename
       }
@@ -68,6 +69,7 @@ CREATE_LINK_MUTATION = (
         platform
         __typename
       }
+        }
     """
     .strip()
 )
@@ -159,6 +161,7 @@ GET_STARS_QUERY = (
         }
         __typename
       }
+    }
     """
     .strip()
 )
@@ -220,8 +223,16 @@ class StarsClient:
         self.token = token
         self._headers = {
             "Content-Type": "application/json",
+            # Add browser-like headers; some endpoints may validate origin/referrer
+            "Origin": "https://stars.github.com",
+            "Referer": "https://stars.github.com/",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15",
+            "Accept": "*/*",
         }
         self._cookies = {"token": self.token}
+        # Also include Authorization as a fallback if server supports bearer tokens
+        if self.token:
+            self._headers["Authorization"] = f"Bearer {self.token}"
 
     # Contribution methods
     async def create_contributions(self, items: list[dict[str, Any]]) -> StarsAPIResult:
@@ -369,8 +380,8 @@ class StarsClient:
         Returns a dict with keys: ok (bool), data (dict | None), error (str | None).
         """
         payload = {"query": query, "variables": variables or {}}
-        async with httpx.AsyncClient(timeout=30) as client:
-            resp = await client.post(self.api_url, headers=self._headers, cookies=self._cookies, json=payload)
+        async with httpx.AsyncClient(timeout=30, headers=self._headers, cookies=self._cookies) as client:
+            resp = await client.post(self.api_url, json=payload)
             if resp.status_code >= 400:
                 return {"ok": False, "data": None, "error": f"HTTP {resp.status_code}: {resp.text}"}
             try:

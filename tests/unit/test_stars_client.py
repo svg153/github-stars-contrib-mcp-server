@@ -286,3 +286,55 @@ class TestStarsClient:
             result = await client.delete_contribution("c1")
             assert result["ok"] is False
             assert result["error"] == "GraphQL error"
+
+    @pytest.mark.asyncio
+    async def test_get_stars_success(self):
+        client = StarsClient("https://api.example.com", "token")
+
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {"data": {"publicProfile": {"username": "u"}}}
+
+        with patch("httpx.AsyncClient") as mock_client_class:
+            mock_client_instance = AsyncMock()
+            mock_client_instance.post.return_value = mock_resp
+            mock_client_class.return_value.__aenter__.return_value = mock_client_instance
+
+            result = await client.get_stars("u")
+            assert result["ok"] is True
+            assert result["data"]["publicProfile"]["username"] == "u"
+
+        
+    @pytest.mark.asyncio
+    async def test_get_user_success(self):
+        client = StarsClient("https://api.example.com", "token")
+
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {"data": {"loggedUser": {"id": "u1"}}}
+
+        with patch("httpx.AsyncClient") as mock_client_class:
+            mock_client_instance = AsyncMock()
+            mock_client_instance.post.return_value = mock_resp
+            mock_client_class.return_value.__aenter__.return_value = mock_client_instance
+
+            result = await client.get_user()
+            assert result["ok"] is True
+            assert result["data"]["loggedUser"]["id"] == "u1"
+
+    @pytest.mark.asyncio
+    async def test_update_profile_success(self):
+        client = StarsClient("https://api.example.com", "token")
+
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {"data": {"updateProfile": {"id": "p1"}}}
+
+        with patch("httpx.AsyncClient") as mock_client_class:
+            mock_client_instance = AsyncMock()
+            mock_client_instance.post.return_value = mock_resp
+            mock_client_class.return_value.__aenter__.return_value = mock_client_instance
+
+            result = await client.update_profile({"bio": "hi"})
+            assert result["ok"] is True
+            assert result["data"]["updateProfile"]["id"] == "p1"

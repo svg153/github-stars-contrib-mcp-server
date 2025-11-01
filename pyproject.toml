@@ -75,6 +75,10 @@ addopts = "-ra -q --strict-markers --cov=src --cov-report=term-missing --cov-rep
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
 asyncio_mode = "auto"
+markers = [
+    "tools: mark tests that exercise MCP tool implementations",
+    "client: mark tests that exercise the raw StarsClient",
+]
 
 [tool.mypy]
 python_version = "3.11"
