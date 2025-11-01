@@ -304,6 +304,57 @@ class TestStarsClient:
             assert result["ok"] is True
             assert result["data"]["publicProfile"]["username"] == "u"
 
+    @pytest.mark.asyncio
+    async def test_get_stars_http_error(self):
+        client = StarsClient("https://api.example.com", "token")
+
+        mock_resp = MagicMock()
+        mock_resp.status_code = 500
+        mock_resp.text = "Server Error"
+
+        with patch("httpx.AsyncClient") as mock_client_class:
+            mock_client_instance = AsyncMock()
+            mock_client_instance.post.return_value = mock_resp
+            mock_client_class.return_value.__aenter__.return_value = mock_client_instance
+
+            result = await client.get_stars("u")
+            assert result["ok"] is False
+            assert "HTTP 500" in result["error"]
+
+    @pytest.mark.asyncio
+    async def test_get_stars_invalid_json(self):
+        client = StarsClient("https://api.example.com", "token")
+
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.side_effect = json.JSONDecodeError("Invalid", "", 0)
+
+        with patch("httpx.AsyncClient") as mock_client_class:
+            mock_client_instance = AsyncMock()
+            mock_client_instance.post.return_value = mock_resp
+            mock_client_class.return_value.__aenter__.return_value = mock_client_instance
+
+            result = await client.get_stars("u")
+            assert result["ok"] is False
+            assert result["error"] == "Invalid JSON response"
+
+    @pytest.mark.asyncio
+    async def test_get_stars_graphql_error(self):
+        client = StarsClient("https://api.example.com", "token")
+
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {"errors": [{"message": "GraphQL error"}]}
+
+        with patch("httpx.AsyncClient") as mock_client_class:
+            mock_client_instance = AsyncMock()
+            mock_client_instance.post.return_value = mock_resp
+            mock_client_class.return_value.__aenter__.return_value = mock_client_instance
+
+            result = await client.get_stars("u")
+            assert result["ok"] is False
+            assert result["error"] == "GraphQL error"
+
         
     @pytest.mark.asyncio
     async def test_get_user_success(self):
@@ -323,6 +374,57 @@ class TestStarsClient:
             assert result["data"]["loggedUser"]["id"] == "u1"
 
     @pytest.mark.asyncio
+    async def test_get_user_http_error(self):
+        client = StarsClient("https://api.example.com", "token")
+
+        mock_resp = MagicMock()
+        mock_resp.status_code = 500
+        mock_resp.text = "Server Error"
+
+        with patch("httpx.AsyncClient") as mock_client_class:
+            mock_client_instance = AsyncMock()
+            mock_client_instance.post.return_value = mock_resp
+            mock_client_class.return_value.__aenter__.return_value = mock_client_instance
+
+            result = await client.get_user()
+            assert result["ok"] is False
+            assert "HTTP 500" in result["error"]
+
+    @pytest.mark.asyncio
+    async def test_get_user_invalid_json(self):
+        client = StarsClient("https://api.example.com", "token")
+
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.side_effect = json.JSONDecodeError("Invalid", "", 0)
+
+        with patch("httpx.AsyncClient") as mock_client_class:
+            mock_client_instance = AsyncMock()
+            mock_client_instance.post.return_value = mock_resp
+            mock_client_class.return_value.__aenter__.return_value = mock_client_instance
+
+            result = await client.get_user()
+            assert result["ok"] is False
+            assert result["error"] == "Invalid JSON response"
+
+    @pytest.mark.asyncio
+    async def test_get_user_graphql_error(self):
+        client = StarsClient("https://api.example.com", "token")
+
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {"errors": [{"message": "GraphQL error"}]}
+
+        with patch("httpx.AsyncClient") as mock_client_class:
+            mock_client_instance = AsyncMock()
+            mock_client_instance.post.return_value = mock_resp
+            mock_client_class.return_value.__aenter__.return_value = mock_client_instance
+
+            result = await client.get_user()
+            assert result["ok"] is False
+            assert result["error"] == "GraphQL error"
+
+    @pytest.mark.asyncio
     async def test_update_profile_success(self):
         client = StarsClient("https://api.example.com", "token")
 
@@ -338,3 +440,54 @@ class TestStarsClient:
             result = await client.update_profile({"bio": "hi"})
             assert result["ok"] is True
             assert result["data"]["updateProfile"]["id"] == "p1"
+
+    @pytest.mark.asyncio
+    async def test_update_profile_http_error(self):
+        client = StarsClient("https://api.example.com", "token")
+
+        mock_resp = MagicMock()
+        mock_resp.status_code = 400
+        mock_resp.text = "Bad Request"
+
+        with patch("httpx.AsyncClient") as mock_client_class:
+            mock_client_instance = AsyncMock()
+            mock_client_instance.post.return_value = mock_resp
+            mock_client_class.return_value.__aenter__.return_value = mock_client_instance
+
+            result = await client.update_profile({"bio": "hi"})
+            assert result["ok"] is False
+            assert "HTTP 400" in result["error"]
+
+    @pytest.mark.asyncio
+    async def test_update_profile_invalid_json(self):
+        client = StarsClient("https://api.example.com", "token")
+
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.side_effect = json.JSONDecodeError("Invalid", "", 0)
+
+        with patch("httpx.AsyncClient") as mock_client_class:
+            mock_client_instance = AsyncMock()
+            mock_client_instance.post.return_value = mock_resp
+            mock_client_class.return_value.__aenter__.return_value = mock_client_instance
+
+            result = await client.update_profile({"bio": "hi"})
+            assert result["ok"] is False
+            assert result["error"] == "Invalid JSON response"
+
+    @pytest.mark.asyncio
+    async def test_update_profile_graphql_error(self):
+        client = StarsClient("https://api.example.com", "token")
+
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {"errors": [{"message": "GraphQL error"}]}
+
+        with patch("httpx.AsyncClient") as mock_client_class:
+            mock_client_instance = AsyncMock()
+            mock_client_instance.post.return_value = mock_resp
+            mock_client_class.return_value.__aenter__.return_value = mock_client_instance
+
+            result = await client.update_profile({"bio": "hi"})
+            assert result["ok"] is False
+            assert result["error"] == "GraphQL error"

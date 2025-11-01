@@ -33,14 +33,14 @@ CREATE_CONTRIBUTION_MUTATION = (
         description
         __typename
       }
-        }
+    }
     """
     .strip()
 )
 
 UPDATE_CONTRIBUTION_MUTATION = (
     """
-        mutation($id: String!, $data: ContributionInput!) {
+    mutation($id: String!, $data: ContributionInput!) {
       updateContribution(id: $id, data: $data) {
         id type date title url description __typename
       }
