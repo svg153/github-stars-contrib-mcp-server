@@ -42,9 +42,20 @@ def main() -> None:
     logger.info("Starting Stars Contributions MCP Server", log_level=settings.log_level)
 
     try:
-        asyncio.run(initialize_server())
+        # Do not block server startup on external network calls.
+        # Attempt initialization briefly; if it times out or fails, continue so MCP can respond to initialize.
+        async def _init_with_timeout():
+            try:
+                await asyncio.wait_for(initialize_server(), timeout=2)
+            except asyncio.TimeoutError:
+                logger.warning("Stars client initialization timed out; continuing without validation")
+            except Exception:
+                # Propagate non-timeout failures to trigger a clean exit as before.
+                raise
+
+        asyncio.run(_init_with_timeout())
     except Exception as e:
-        logger.error("Failed to initialize server", error=str(e))
+        logger.error("Unexpected failure before MCP run", error=str(e))
         sys.exit(1)
 
     host = os.getenv("MCP_HOST", "127.0.0.1")

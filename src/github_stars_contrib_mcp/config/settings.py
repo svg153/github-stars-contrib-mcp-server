@@ -29,10 +29,20 @@ class Settings(BaseSettings):
     @field_validator("log_level")
     @classmethod
     def validate_log_level(cls, v: str) -> str:
+        """Normalize and validate LOG_LEVEL.
+
+        Accept standard levels and allow the common alias TRACE by mapping it to DEBUG
+        so that environments using LOG_LEVEL=TRACE don't crash.
+        """
         valid_levels = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
         normalized = v.upper()
+        # Support TRACE as an alias of DEBUG
+        if normalized == "TRACE":
+            return "DEBUG"
         if normalized not in valid_levels:
-            raise ValueError(f"Invalid log level: {v}. Must be one of {valid_levels}")
+            raise ValueError(
+                f"Invalid log level: {v}. Must be one of {valid_levels} or 'TRACE'"
+            )
         return normalized
 
 
