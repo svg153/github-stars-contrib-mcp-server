@@ -1,5 +1,4 @@
 import json as pyjson
-import types
 
 import pytest
 

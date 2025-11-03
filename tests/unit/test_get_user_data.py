@@ -1,10 +1,11 @@
 """Unit tests for get_user_data tool."""
 
-import pytest
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
-from github_stars_contrib_mcp.tools.get_user_data import get_user_data_impl
+import pytest
+
 from github_stars_contrib_mcp import shared
+from github_stars_contrib_mcp.tools.get_user_data import get_user_data_impl
 
 
 class TestGetUserData:

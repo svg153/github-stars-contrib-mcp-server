@@ -1,9 +1,8 @@
-import os
 
 from github_stars_contrib_mcp.di.container import (
     get_settings,
-    get_stars_client,
     get_stars_api,
+    get_stars_client,
 )
 
 

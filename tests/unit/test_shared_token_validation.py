@@ -1,7 +1,8 @@
 """Unit tests for shared.initialize_stars_client token validation flows."""
 
+from unittest.mock import AsyncMock, patch
+
 import pytest
-from unittest.mock import patch, AsyncMock
 
 from github_stars_contrib_mcp import shared
 from github_stars_contrib_mcp.utils.models import APIResult
@@ -19,7 +20,7 @@ async def test_initialize_stars_client_invalid_token_raises():
         mock_client.get_user_data.return_value = APIResult(ok=False, error="bad", data=None)
         mock_client_cls.return_value = mock_client
 
-        with pytest.raises(Exception):
+        with pytest.raises(ValueError):
             await shared.initialize_stars_client()
 
 

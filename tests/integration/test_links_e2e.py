@@ -2,7 +2,12 @@
 
 import pytest
 
-from .test_integration_utils import skip_if_no_mutations, get_test_client, generate_unique_url, assert_cleanup_success
+from .test_integration_utils import (
+    assert_cleanup_success,
+    generate_unique_url,
+    get_test_client,
+    skip_if_no_mutations,
+)
 
 
 @pytest.mark.asyncio

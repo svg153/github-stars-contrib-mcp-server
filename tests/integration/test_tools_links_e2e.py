@@ -6,14 +6,14 @@ import pytest
 
 from github_stars_contrib_mcp import shared
 from github_stars_contrib_mcp.tools.create_link import create_link_impl
-from github_stars_contrib_mcp.tools.update_link import update_link_impl
 from github_stars_contrib_mcp.tools.delete_link import delete_link_impl
+from github_stars_contrib_mcp.tools.update_link import update_link_impl
 
 from .test_integration_utils import (
+    generate_unique_url,
+    get_test_client,
     require_token_or_skip,
     should_skip_mutations,
-    get_test_client,
-    generate_unique_url,
 )
 
 

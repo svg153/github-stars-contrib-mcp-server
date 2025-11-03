@@ -1,7 +1,6 @@
 """Unit tests for server module."""
 
-import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
+from unittest.mock import AsyncMock, patch
 
 from github_stars_contrib_mcp import server
 
@@ -19,10 +18,10 @@ class TestServer:
             "MCP_PORT": "8766",
             "MCP_PATH": "/mcp"
         }.get(key, default)
-        
+
         with patch("github_stars_contrib_mcp.server.initialize_server", new_callable=AsyncMock):
             server.main()
-        
+
         mock_logger.info.assert_called_once_with("Starting Stars Contributions MCP Server", log_level="INFO")
         mock_mcp.run.assert_called_once_with(transport="stdio")
 

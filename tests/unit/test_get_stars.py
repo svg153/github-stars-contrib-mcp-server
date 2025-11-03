@@ -1,6 +1,7 @@
 """Unit tests for get_stars tool (DI path)."""
 
 import pytest
+
 from github_stars_contrib_mcp.tools import get_stars as tool
 
 

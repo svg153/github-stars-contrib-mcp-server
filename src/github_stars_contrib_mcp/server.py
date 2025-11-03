@@ -47,7 +47,7 @@ def main() -> None:
         async def _init_with_timeout():
             try:
                 await asyncio.wait_for(initialize_server(), timeout=2)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 logger.warning("Stars client initialization timed out; continuing without validation")
             except Exception:
                 # Propagate non-timeout failures to trigger a clean exit as before.

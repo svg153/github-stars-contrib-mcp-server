@@ -1,7 +1,7 @@
 """Unit tests for stars_client module."""
 
 import json
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -35,9 +35,9 @@ class TestStarsClient:
     @pytest.mark.asyncio
     async def test_create_contributions_success(self, mock_client_class):
         client = StarsClient("https://api.example.com", "token")
-        
+
         self._setup_mock_response(mock_client_class, json_data={"data": {"createContributions": [{"id": "1"}, {"id": "2"}]}})
-            
+
         result = await client.create_contributions([{"title": "Test"}])
         assert result.ok is True
         assert result.data["ids"] == ["1", "2"]
@@ -45,9 +45,9 @@ class TestStarsClient:
     @pytest.mark.asyncio
     async def test_create_contributions_http_error(self, mock_client_class):
         client = StarsClient("https://api.example.com", "token")
-        
+
         self._setup_mock_response(mock_client_class, status_code=400, text="Bad Request")
-            
+
         result = await client.create_contributions([{"title": "Test"}])
         assert result.ok is False
         assert result.data is None
@@ -56,9 +56,9 @@ class TestStarsClient:
     @pytest.mark.asyncio
     async def test_create_contributions_invalid_json(self, mock_client_class):
         client = StarsClient("https://api.example.com", "token")
-        
+
         self._setup_mock_response(mock_client_class, json_error=json.JSONDecodeError("Invalid", "", 0))
-            
+
         result = await client.create_contributions([{"title": "Test"}])
         assert result.ok is False
         assert result.error == "Invalid JSON response"
@@ -66,9 +66,9 @@ class TestStarsClient:
     @pytest.mark.asyncio
     async def test_create_contributions_graphql_error(self, mock_client_class):
         client = StarsClient("https://api.example.com", "token")
-        
+
         self._setup_mock_response(mock_client_class, json_data={"errors": [{"message": "GraphQL error"}]})
-            
+
         result = await client.create_contributions([{"title": "Test"}])
         assert result.ok is False
         assert result.error == "GraphQL error"
@@ -76,9 +76,9 @@ class TestStarsClient:
     @pytest.mark.asyncio
     async def test_get_user_data_success(self, mock_client_class):
         client = StarsClient("https://api.example.com", "token")
-        
+
         self._setup_mock_response(mock_client_class, json_data={"data": {"loggedUser": {"id": "u1"}}})
-            
+
         result = await client.get_user_data()
         assert result.ok is True
         assert result.data == {"loggedUser": {"id": "u1"}}
@@ -86,9 +86,9 @@ class TestStarsClient:
     @pytest.mark.asyncio
     async def test_update_contribution_success(self, mock_client_class):
         client = StarsClient("https://api.example.com", "token")
-        
+
         self._setup_mock_response(mock_client_class, json_data={"data": {"updateContribution": {"id": "c1", "title": "Updated"}}})
-            
+
         result = await client.update_contribution("c1", {"title": "Updated"})
         assert result.ok is True
         assert result.data == {"updateContribution": {"id": "c1", "title": "Updated"}}
@@ -96,9 +96,9 @@ class TestStarsClient:
     @pytest.mark.asyncio
     async def test_delete_contribution_success(self, mock_client_class):
         client = StarsClient("https://api.example.com", "token")
-        
+
         self._setup_mock_response(mock_client_class, json_data={"data": {"deleteContribution": {"id": "c1"}}})
-            
+
         result = await client.delete_contribution("c1")
         assert result.ok is True
         assert result.data == {"deleteContribution": {"id": "c1"}}
@@ -113,7 +113,7 @@ class TestStarsClient:
         assert result.ok is True
         assert result.data["publicProfile"]["username"] == "u"
 
-        
+
     @pytest.mark.asyncio
     async def test_get_user_success(self, mock_client_class):
         client = StarsClient("https://api.example.com", "token")
@@ -151,16 +151,16 @@ class TestStarsClient:
     @pytest.mark.asyncio
     async def test_method_errors(self, mock_client_class, method_name, args, expected_key, error_type, status_code, json_data, json_error, text, expected_error):
         client = StarsClient("https://api.example.com", "token")
-        
+
         if json_error == "json_error":
             json_error = json.JSONDecodeError("Invalid", "", 0)
         else:
             json_error = None
-        
+
         self._setup_mock_response(mock_client_class, status_code=status_code, json_data=json_data, json_error=json_error, text=text)
-        
+
         method = getattr(client, method_name)
         result = await method(*args)
-        
+
         assert result.ok is False
         assert expected_error in result.error

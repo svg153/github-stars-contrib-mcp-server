@@ -8,9 +8,9 @@ from github_stars_contrib_mcp import shared
 from github_stars_contrib_mcp.tools.update_profile import update_profile_impl
 
 from .test_integration_utils import (
+    get_test_client,
     require_token_or_skip,
     should_skip_mutations,
-    get_test_client,
 )
 
 
@@ -32,7 +32,7 @@ async def test_tools_profile_e2e():
         nominee = (cur.get("data") or {}).get("loggedUser", {}).get("nominee", {})
         original_bio = nominee.get("bio") if nominee else None
 
-        bio_test = f"E2E Tools Bio"
+        bio_test = "E2E Tools Bio"
         up_bio = await update_profile_impl({"bio": bio_test})
         assert up_bio["success"] is True
 

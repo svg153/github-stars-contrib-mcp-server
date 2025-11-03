@@ -4,7 +4,7 @@ import time
 
 import pytest
 
-from .test_integration_utils import skip_if_no_mutations, get_test_client
+from .test_integration_utils import get_test_client, skip_if_no_mutations
 
 
 @pytest.mark.asyncio

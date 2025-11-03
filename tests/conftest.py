@@ -1,7 +1,8 @@
 """Shared pytest fixtures and configuration."""
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock
+
+import pytest
 
 from github_stars_contrib_mcp import shared
 from github_stars_contrib_mcp.utils.stars_client import StarsClient

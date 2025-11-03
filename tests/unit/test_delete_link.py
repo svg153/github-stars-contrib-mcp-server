@@ -64,10 +64,10 @@ class TestDeleteLink:
         # Force a validation error by passing invalid data
         # Since the function expects a string ID, we'll test the validation indirectly
         from github_stars_contrib_mcp.tools.delete_link import logger
-        
+
         # Ensure logger is initialized (this covers lines 22-23)
         assert logger is not None
         assert hasattr(logger, 'info')  # Basic logger check
-        
+
         # Minimal assertion to keep the test valid and cover logger presence
         assert True

@@ -1,6 +1,7 @@
 """Unit tests for get_user tool (DI path)."""
 
 import pytest
+
 from github_stars_contrib_mcp.tools import get_user as tool
 
 
