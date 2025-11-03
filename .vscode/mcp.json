@@ -16,9 +16,12 @@
             "command": "${workspaceFolder}/.venv/bin/python",
             "args": [
                 "-m",
-                "github_stars_contrib_mcp.server"
+                "github_stars_contrib_mcp.server",
             ],
             "envFile": "${workspaceFolder}/.env.local",
+            "env": {
+                "MCP_TRANSPORT": "stdio",
+            }
         }
     }
 }

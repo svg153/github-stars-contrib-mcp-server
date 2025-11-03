@@ -16,6 +16,7 @@ Environment variables:
 - MCP_HOST: Bind host for SSE transport (default: 127.0.0.1)
 - MCP_PORT: Bind port (default: 8766)
 - MCP_PATH: Path (default: /mcp)
+- MCP_TRANSPORT: Transport selection ("stdio" | "http" | "streamable-http" | "sse"). Default: stdio.
 
 ## Tools
 
@@ -91,6 +92,27 @@ Tool contracts are defined in `src/github_stars_contrib_mcp/tools/` (source of t
 ### Enums and aliases
 
 For link platforms, see `PlatformType` in `src/github_stars_contrib_mcp/models.py`. The tools also accept a couple of legacy aliases which are normalized internally by `normalize_platform` in `src/github_stars_contrib_mcp/utils/normalization.py` (e.g., `GITHUB` → `README`, `WEBSITE` → `OTHER`). When an alias is used, a warning is logged to help migrate callers.
+
+## Testing
+
+Unit tests:
+
+```bash
+. .venv/bin/activate
+pytest -q
+```
+
+All tests, with optional live mutation e2e:
+
+```bash
+# Create `.env.local` with at least STARS_API_TOKEN; set STARS_E2E_MUTATE=1 to enable mutation tests
+make test-all
+```
+
+Notes:
+
+- If your token doesn’t expose nominee data, read/profile flows may be skipped by tests (that’s expected).
+- Ensure `LOG_LEVEL` is one of: DEBUG, INFO, WARNING, ERROR, CRITICAL.
 
 ## Features and Roadmap
 
