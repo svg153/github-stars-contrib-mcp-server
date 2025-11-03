@@ -175,7 +175,7 @@ class StarsClient:
         Returns:
             APIResult with ok, data, error.
         """
-        return APIResult(**await self._execute_graphql(UPDATE_PROFILE_MUTATION, {"data": data}))
+        return APIResult(**await self._execute_graphql(UPDATE_PROFILE_MUTATION, data))
 
     @retry(wait=wait_exponential(multiplier=0.5, min=0.5, max=8), stop=stop_after_attempt(3))
     async def _execute_graphql(self, query: str, variables: dict[str, Any] | None = None) -> dict[str, Any]:
