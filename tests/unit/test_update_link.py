@@ -17,7 +17,8 @@ class TestUpdateLink:
         data = {"link": "https://updated.com", "platform": "WEBSITE"}
         res = await tool.update_link_impl("l1", data)
         assert res["success"] is True
-        assert res["data"] == {"updateLink": {"id": "l1", "link": "https://updated.com", "platform": "WEBSITE"}}
+        # WEBSITE is aliased to OTHER in live API enum
+        assert res["data"] == {"updateLink": {"id": "l1", "link": "https://updated.com", "platform": "OTHER"}}
 
     @pytest.mark.asyncio
     async def test_update_link_invalid_url(self):
@@ -59,6 +60,24 @@ class TestUpdateLink:
         data = {"platform": "GITHUB"}
         res = await tool.update_link_impl("l1", data)
         assert res["success"] is True
+
+    @pytest.mark.asyncio
+    async def test_update_link_alias_platform(self, monkeypatch):
+        calls = {}
+
+        class FakePort:
+            async def update_link(self, link_id: str, link: str | None, platform: str | None):
+                calls["platform"] = platform
+                return {"updateLink": {"id": link_id, "platform": platform}}
+
+        monkeypatch.setattr(tool, "get_stars_api", lambda: FakePort())
+        res = await tool.update_link_impl("l1", {"platform": "GITHUB"})
+        assert res["success"] is True
+        assert calls["platform"] == "GITHUB"
+        # WEBSITE alias
+        res2 = await tool.update_link_impl("l2", {"platform": "WEBSITE"})
+        assert res2["success"] is True
+        assert calls["platform"] == "OTHER"
 
     @pytest.mark.asyncio
     async def test_update_link_logger_initialization(self):

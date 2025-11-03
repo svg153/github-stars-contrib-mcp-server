@@ -88,6 +88,10 @@ make run-env
 
 Tool contracts are defined in `src/github_stars_contrib_mcp/tools/` (source of truth).
 
+### Enums and aliases
+
+For link platforms, see `PlatformType` in `src/github_stars_contrib_mcp/models.py`. The tools also accept a couple of legacy aliases which are normalized internally by `normalize_platform` in `src/github_stars_contrib_mcp/utils/normalization.py` (e.g., `GITHUB` → `README`, `WEBSITE` → `OTHER`). When an alias is used, a warning is logged to help migrate callers.
+
 ## Features and Roadmap
 
 This project includes comprehensive improvements planned across 10 key areas:

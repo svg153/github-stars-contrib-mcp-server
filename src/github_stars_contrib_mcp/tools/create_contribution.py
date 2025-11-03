@@ -11,6 +11,7 @@ from ..application.use_cases.create_contribution import CreateContribution
 from ..di.container import get_stars_api
 from ..models import ContributionType
 from ..shared import mcp
+from ..utils.normalization import normalize_description
 
 logger = structlog.get_logger(__name__)
 
@@ -37,7 +38,7 @@ async def create_contribution_impl(data: dict) -> dict:
             date=payload.date.isoformat(),
             title=payload.title,
             url=str(payload.url),
-            description=payload.description or "",
+            description=normalize_description(payload.description),
         )
         return {"success": True, "contribution": data.get("createContribution")}
     except Exception as e:

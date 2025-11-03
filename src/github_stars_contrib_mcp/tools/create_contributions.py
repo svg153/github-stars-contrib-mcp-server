@@ -11,6 +11,7 @@ from ..application.use_cases.create_contributions import CreateContributions
 from ..di.container import get_stars_api
 from ..models import ContributionType
 from ..shared import mcp
+from ..utils.normalization import normalize_description
 
 logger = structlog.get_logger(__name__)
 
@@ -34,16 +35,17 @@ async def create_contributions_impl(data: list[dict]) -> dict:
     except ValidationError as e:
         return {"success": False, "error": e.errors()}
 
-    items = [
-        {
-            "title": i.title,
-            "url": str(i.url),
-            "description": i.description,
-            "type": i.type,
-            "date": i.date.isoformat(),
-        }
-        for i in payload.data
-    ]
+    items = []
+    for i in payload.data:
+        items.append(
+            {
+                "title": i.title,
+                "url": str(i.url),
+                "description": normalize_description(i.description),
+                "type": i.type,  # str Enum, JSON-serializable
+                "date": i.date.isoformat(),
+            }
+        )
     try:
         use_case = CreateContributions(get_stars_api())
         data = await use_case(items)

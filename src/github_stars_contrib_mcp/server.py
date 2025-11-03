@@ -10,7 +10,7 @@ import structlog
 
 sys.stdout = _original_stdout
 
-from .config import settings
+from .config.settings import settings
 from .shared import mcp
 
 # Register tools

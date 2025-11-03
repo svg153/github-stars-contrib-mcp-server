@@ -39,3 +39,18 @@ class TestCreateLink:
         res = await tool.create_link_impl("https://google.com/", "OTHER")
         assert res["success"] is False
         assert res["error"] == "API error"
+
+    @pytest.mark.asyncio
+    async def test_create_link_alias_platform(self, monkeypatch):
+        """Tests platform aliasing: GITHUB → README and WEBSITE → OTHER for platform enum."""
+        calls = {}
+
+        class FakePort:
+            async def create_link(self, link: str, platform: str):
+                calls["platform"] = platform
+                return {"createLink": {"id": "1", "link": link, "platform": platform}}
+
+        monkeypatch.setattr(tool, "get_stars_api", lambda: FakePort())
+        res = await tool.create_link_impl("https://example.com/", "GITHUB")
+        assert res["success"] is True
+        assert calls.get("platform") == "README"

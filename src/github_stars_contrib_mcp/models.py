@@ -20,12 +20,18 @@ class ContributionType(str, Enum):
     OTHER = "OTHER"
 
 
+# Migration note: The values 'GITHUB' and 'WEBSITE' have been removed from PlatformType.
+# If your code previously relied on these, review usages and update to supported platforms.
+
 class PlatformType(str, Enum):
-    # Based on GitHub Stars UI options for links
-    GITHUB = "GITHUB"
-    LINKEDIN = "LINKEDIN"
+    # Based on live GitHub Stars API enum PlatformType
     TWITTER = "TWITTER"
-    WEBSITE = "WEBSITE"
+    MEDIUM = "MEDIUM"
+    LINKEDIN = "LINKEDIN"
+    README = "README"
+    STACK_OVERFLOW = "STACK_OVERFLOW"
+    DEV_TO = "DEV_TO"
+    MASTODON = "MASTODON"
     OTHER = "OTHER"
 
 
