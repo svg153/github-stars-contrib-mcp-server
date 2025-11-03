@@ -103,8 +103,12 @@ def mcp_server() -> Iterator[str]:
     if not _wait_for_port(host, port, timeout=15.0):
         proc.kill()
         try:
-            out, err = proc.communicate(timeout=2)
-            pytest.fail(f"MCP server failed to start on {host}:{port}.\nSTDOUT:\n{out.decode()}\nSTDERR:\n{err.decode()}")
+            try:
+                out, err = proc.communicate(timeout=2)
+            except Exception as e:
+                pytest.fail(f"MCP server failed to start on {host}:{port}.\nCould not retrieve output: {e}")
+            else:
+                pytest.fail(f"MCP server failed to start on {host}:{port}.\nSTDOUT:\n{out.decode()}\nSTDERR:\n{err.decode()}")
         except Exception as e:
             pytest.fail(f"MCP server failed to start on {host}:{port}.\nCould not retrieve output: {e}")
 
