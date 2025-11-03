@@ -1,12 +1,13 @@
 """Unit tests for data models."""
 
-import pytest
 from datetime import datetime
+
+import pytest
 from pydantic import ValidationError
 
 from github_stars_contrib_mcp.models import (
-    ContributionType,
     ContributionItem,
+    ContributionType,
     CreateContributionsResponse,
     CreateContributionsResponseItem,
     PlaygroundAuthHeader,
@@ -16,7 +17,7 @@ from github_stars_contrib_mcp.models import (
 class TestContributionType:
     @pytest.mark.parametrize("contribution_type", [
         "BLOGPOST",
-        "SPEAKING", 
+        "SPEAKING",
         "ARTICLE_PUBLICATION",
         "EVENT_ORGANIZATION",
         "HACKATHON",

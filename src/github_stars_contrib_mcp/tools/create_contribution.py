@@ -7,9 +7,11 @@ from datetime import datetime
 import structlog
 from pydantic import BaseModel, Field, HttpUrl, ValidationError
 
-from .. import shared
+from ..application.use_cases.create_contribution import CreateContribution
+from ..di.container import get_stars_api
 from ..models import ContributionType
 from ..shared import mcp
+from ..utils.normalization import normalize_description
 
 logger = structlog.get_logger(__name__)
 
@@ -29,19 +31,18 @@ async def create_contribution_impl(data: dict) -> dict:
     except ValidationError as e:
         return {"success": False, "error": e.errors()}
 
-    if not shared.stars_client:
-        return {"success": False, "error": "Stars client not initialized"}
-
-    result = await shared.stars_client.create_contribution(
-        type=payload.type,
-        date=payload.date.isoformat(),
-        title=payload.title,
-        url=str(payload.url),
-        description=payload.description or ""
-    )
-    if result["ok"]:
-        return {"success": True, "contribution": result["data"]["createContribution"]}
-    return {"success": False, "error": result["error"]}
+    try:
+        use_case = CreateContribution(get_stars_api())
+        data = await use_case(
+            type=str(payload.type),
+            date=payload.date.isoformat(),
+            title=payload.title,
+            url=str(payload.url),
+            description=normalize_description(payload.description),
+        )
+        return {"success": True, "contribution": data.get("createContribution")}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 
 @mcp.tool()

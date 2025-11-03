@@ -1,7 +1,8 @@
 """Unit tests for config module."""
 
-import pytest
 from unittest.mock import patch
+
+import pytest
 from pydantic import ValidationError
 
 from github_stars_contrib_mcp.config import Settings

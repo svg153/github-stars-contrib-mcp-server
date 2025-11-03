@@ -15,10 +15,14 @@ import argparse
 import asyncio
 import json
 import sys
-from datetime import datetime
 
 from github_stars_contrib_mcp import shared
-from github_stars_contrib_mcp.tools import create_contributions, get_user_data, delete_contributions, update_profile
+from github_stars_contrib_mcp.tools import (
+    create_contributions,
+    delete_contributions,
+    get_user_data,
+    update_profile,
+)
 
 
 async def ensure_client() -> None:
@@ -40,22 +44,22 @@ async def cmd_get_user_data():
 async def cmd_list_contributions():
     await ensure_client()
     result = await get_user_data.get_user_data_impl()
-    
+
     if not result.get("success"):
         print(f"Error: {result.get('error')}", file=sys.stderr)
         sys.exit(1)
-    
+
     data = result.get("data", {})
     logged_user = data.get("loggedUser", {})
     contributions = logged_user.get("contributions", [])
-    
+
     if not contributions:
         print("No contributions found.")
         return
-    
+
     print(f"Found {len(contributions)} contributions:")
     print("-" * 80)
-    
+
     for i, contrib in enumerate(contributions, 1):
         print(f"{i}. {contrib.get('title', 'N/A')}")
         print(f"   Type: {contrib.get('type', 'N/A')}")
@@ -74,7 +78,7 @@ async def cmd_create_contributions(data: str):
     except json.JSONDecodeError as e:
         print(f"Invalid JSON: {e}", file=sys.stderr)
         sys.exit(1)
-    
+
     result = await create_contributions.create_contributions_impl(contributions_data)
     print(json.dumps(result, indent=2))
 
@@ -92,7 +96,7 @@ async def cmd_update_profile(data: str):
     except json.JSONDecodeError as e:
         print(f"Invalid JSON: {e}", file=sys.stderr)
         sys.exit(1)
-    
+
     result = await update_profile.update_profile_impl(profile_data)
     print(json.dumps(result, indent=2))
 
@@ -103,9 +107,9 @@ def main():
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
-    p1 = sub.add_parser("get-user-data", help="Get the currently logged user's data")
+    sub.add_parser("get-user-data", help="Get the currently logged user's data")
 
-    p2 = sub.add_parser("list-contributions", help="List all user contributions")
+    sub.add_parser("list-contributions", help="List all user contributions")
 
     p3 = sub.add_parser("create-contributions", help="Create contributions")
     p3.add_argument(

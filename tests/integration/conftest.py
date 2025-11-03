@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """Integration-level pytest fixtures.
 
 These fixtures wire a real StarsClient into shared.stars_client for tool impl
@@ -7,13 +5,15 @@ tests, provide gating for token presence and mutation allowance, and can boot
 the MCP server for end-to-end scenarios.
 """
 
+from __future__ import annotations
+
 import os
 import socket
 import subprocess
 import sys
 import time
+from collections.abc import Iterator
 from contextlib import closing
-from typing import Iterator
 
 import pytest
 

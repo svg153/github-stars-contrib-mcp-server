@@ -12,7 +12,7 @@ from fastmcp import FastMCP
 
 sys.stdout = _original_stdout
 
-from .config import settings
+from .config.settings import settings
 from .utils.stars_client import StarsClient
 
 

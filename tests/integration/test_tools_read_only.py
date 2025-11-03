@@ -9,10 +9,10 @@ from __future__ import annotations
 import pytest
 
 from github_stars_contrib_mcp import shared
-from github_stars_contrib_mcp.tools.get_user import get_user_impl
 from github_stars_contrib_mcp.tools.get_stars import get_stars_impl
+from github_stars_contrib_mcp.tools.get_user import get_user_impl
 
-from .test_integration_utils import require_token_or_skip, get_test_client
+from .test_integration_utils import get_test_client, require_token_or_skip
 
 
 @pytest.mark.asyncio

@@ -1,17 +1,20 @@
-"""MCP tool to fetch logged user data from GitHub Stars GraphQL API."""
+"""MCP tool to fetch logged user data from GitHub Stars GraphQL API.
+"""
 
 from __future__ import annotations
 
 import structlog
 
 from .. import shared
-from ..shared import mcp
 
 logger = structlog.get_logger(__name__)
 
 
 async def get_user_data_impl() -> dict:
-    """Implementation: call Stars API to get current logged user data."""
+    """Implementation: call Stars API client to get current logged user data.
+
+    Uses shared.stars_client to align with test fixtures.
+    """
     if not shared.stars_client:
         return {"success": False, "error": "Stars client not initialized", "data": None}
 
@@ -25,9 +28,7 @@ async def get_user_data_impl() -> dict:
     return {"success": False, "error": res.get("error"), "data": None}
 
 
-# @mcp.tool()  # Commented out: This tool requires a web session JWT token from stars.github.com,
-# which is session-specific and expires quickly. It's not practical for MCP usage.
-# Use get_stars tool instead for public user contributions.
+# Not exposed as an MCP tool: requires session-scoped auth unsuitable for MCP.
 async def get_user_data() -> dict:
     """
     Get the currently logged user's data (profile, nominee, contributions) from the Stars API.

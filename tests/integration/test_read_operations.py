@@ -4,9 +4,10 @@ import os
 
 import pytest
 
-from github_stars_contrib_mcp.tools.get_user_data import get_user_data_impl
-from github_stars_contrib_mcp.tools.get_user import get_user_impl
 from github_stars_contrib_mcp import shared
+from github_stars_contrib_mcp.tools.get_user import get_user_impl
+from github_stars_contrib_mcp.tools.get_user_data import get_user_data_impl
+
 from .test_integration_utils import get_test_client
 
 

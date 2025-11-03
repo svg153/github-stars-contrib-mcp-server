@@ -2,7 +2,7 @@
 
 import os
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 
@@ -42,7 +42,7 @@ def generate_unique_url(prefix="github-stars-mcp-e2e"):
 
 def get_current_iso_datetime():
     """Get current datetime in ISO format."""
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def assert_cleanup_success(result, resource_type, resource_id):

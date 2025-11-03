@@ -5,7 +5,8 @@ from __future__ import annotations
 import structlog
 from pydantic import BaseModel, ValidationError
 
-from .. import shared
+from ..application.use_cases.update_profile import UpdateProfile
+from ..di.container import get_stars_api
 from ..models import ProfileUpdateInput
 from ..shared import mcp
 
@@ -23,18 +24,16 @@ async def update_profile_impl(data: dict) -> dict:
     except ValidationError as e:
         return {"success": False, "error": e.errors()}
 
-    if not shared.stars_client:
-        return {"success": False, "error": "Stars client not initialized"}
-
     # Convert to dict, handling datetime
     update_data = payload.data.model_dump()
     if update_data.get("birthdate"):
         update_data["birthdate"] = update_data["birthdate"].isoformat()
-
-    result = await shared.stars_client.update_profile(update_data)
-    if result.get("ok"):
-        return {"success": True, "data": result.get("data")}
-    return {"success": False, "error": result.get("error")}
+    try:
+        use_case = UpdateProfile(get_stars_api())
+        data = await use_case(update_data)
+        return {"success": True, "data": data}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 
 @mcp.tool()

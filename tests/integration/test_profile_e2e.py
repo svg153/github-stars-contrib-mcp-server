@@ -4,7 +4,7 @@ import time
 
 import pytest
 
-from .test_integration_utils import skip_if_no_mutations, get_test_client
+from .test_integration_utils import get_test_client, skip_if_no_mutations
 
 
 @pytest.mark.asyncio
@@ -17,7 +17,10 @@ async def test_integration_update_profile_e2e():
     # Get current profile data
     user_data = await client.get_user_data()
     assert user_data.get("ok") is True
-    nominee = user_data.get("data", {}).get("loggedUser", {}).get("nominee", {})
+    logged_user = user_data.get("data", {}).get("loggedUser")
+    if not logged_user:
+        pytest.skip("Token not valid for reading user data or loggedUser is null; skipping profile update e2e test")
+    nominee = logged_user.get("nominee", {})
     original_bio = nominee.get("bio") if nominee else None
 
     # Update bio to a test value

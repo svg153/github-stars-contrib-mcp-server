@@ -1,11 +1,11 @@
 {
     "servers": {
-        "github-stars-contrib-mcp-http": {
-            "type": "http",
-            "url": "http://127.0.0.1:8766/mcp"
-        },
+        // "github-stars-contrib-mcp-http": {
+        //     "type": "http",
+        //     "url": "http://127.0.0.1:8766/mcp"
+        // },
         "github-stars-contrib-mcp-local": {
-            "cwd": "/home/svg153/REPOSITORIOS/0_PERSONAL/github-stars-contrib-mcp-server",
+            "cwd": "${workspaceFolder}/src",
             "dev": {
                 "watch": "**/*.py",
                 "reload": true,
@@ -13,12 +13,15 @@
                     "type": "debugpy"
                 }
             },
-            "command": ".venv/bin/python3",
+            "command": "${workspaceFolder}/.venv/bin/python",
             "args": [
                 "-m",
-                "github_stars_contrib_mcp.server"
+                "github_stars_contrib_mcp.server",
             ],
-            "envFile": "/home/svg153/REPOSITORIOS/0_PERSONAL/github-stars-contrib-mcp-server/.env"
+            "envFile": "${workspaceFolder}/.env.local",
+            "env": {
+                "MCP_TRANSPORT": "stdio",
+            }
         }
     }
 }

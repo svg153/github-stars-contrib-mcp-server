@@ -3,7 +3,7 @@
 # Contribution mutations
 CREATE_CONTRIBUTIONS_MUTATION = (
     """
-    mutation CreateContributions($data: [ContributionCreateInput!]!) {
+    mutation CreateContributions($data: [ContributionInput!]!) {
         createContributions(data: $data) {
             id
             __typename
@@ -15,8 +15,8 @@ CREATE_CONTRIBUTIONS_MUTATION = (
 
 CREATE_CONTRIBUTION_MUTATION = (
     """
-    mutation CreateContribution($type: ContributionType!, $date: GraphQLDateTime!, $title: String!, $url: String!, $description: String!) {
-        createContribution(data: {type: $type, date: $date, title: $title, url: $url, description: $description}) {
+    mutation CreateContribution($data: ContributionInput!) {
+        createContribution(data: $data) {
             id
             __typename
         }
@@ -27,7 +27,7 @@ CREATE_CONTRIBUTION_MUTATION = (
 
 UPDATE_CONTRIBUTION_MUTATION = (
     """
-    mutation UpdateContribution($id: ID!, $data: ContributionUpdateInput!) {
+    mutation UpdateContribution($id: String!, $data: ContributionInput!) {
         updateContribution(id: $id, data: $data) {
             id
             title
@@ -40,7 +40,7 @@ UPDATE_CONTRIBUTION_MUTATION = (
 
 DELETE_CONTRIBUTION_MUTATION = (
     """
-    mutation DeleteContribution($id: ID!) {
+    mutation DeleteContribution($id: String!) {
         deleteContribution(id: $id) {
             id
             __typename
@@ -53,7 +53,7 @@ DELETE_CONTRIBUTION_MUTATION = (
 # Link mutations
 CREATE_LINK_MUTATION = (
     """
-    mutation CreateLink($link: String!, $platform: Platform!) {
+    mutation CreateLink($link: URL!, $platform: PlatformType!) {
         createLink(data: {link: $link, platform: $platform}) {
             id
             __typename
@@ -65,9 +65,10 @@ CREATE_LINK_MUTATION = (
 
 UPDATE_LINK_MUTATION = (
     """
-    mutation UpdateLink($id: ID!, $link: String!, $platform: Platform!) {
+    mutation UpdateLink($id: String!, $link: URL!, $platform: PlatformType!) {
         updateLink(id: $id, data: {link: $link, platform: $platform}) {
             id
+            link
             __typename
         }
     }
@@ -77,7 +78,7 @@ UPDATE_LINK_MUTATION = (
 
 DELETE_LINK_MUTATION = (
     """
-    mutation DeleteLink($id: ID!) {
+    mutation DeleteLink($id: String!) {
         deleteLink(id: $id) {
             id
             __typename
@@ -203,7 +204,7 @@ USER_QUERY = (
 
 UPDATE_PROFILE_MUTATION = (
     """
-    mutation UpdateProfile($data: ProfileUpdateInput) {
+    mutation UpdateProfile($data: NomineeProfileInput!) {
         updateProfile(data: $data) {
             id
             __typename

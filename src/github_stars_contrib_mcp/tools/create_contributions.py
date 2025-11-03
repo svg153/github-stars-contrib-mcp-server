@@ -7,9 +7,11 @@ from datetime import datetime
 import structlog
 from pydantic import BaseModel, Field, HttpUrl, ValidationError
 
-from .. import shared
+from ..application.use_cases.create_contributions import CreateContributions
+from ..di.container import get_stars_api
 from ..models import ContributionType
 from ..shared import mcp
+from ..utils.normalization import normalize_description
 
 logger = structlog.get_logger(__name__)
 
@@ -33,24 +35,23 @@ async def create_contributions_impl(data: list[dict]) -> dict:
     except ValidationError as e:
         return {"success": False, "error": e.errors()}
 
-    if not shared.stars_client:
-        return {"success": False, "error": "Stars client not initialized"}
-
-    items = [
-        {
-            "title": i.title,
-            "url": str(i.url),
-            "description": i.description,
-            "type": i.type,
-            "date": i.date.isoformat(),
-        }
-        for i in payload.data
-    ]
-
-    result = await shared.stars_client.create_contributions(items)
-    if result.ok:
-        return {"success": True, "ids": result.ids}
-    return {"success": False, "error": result.error}
+    items = []
+    for i in payload.data:
+        items.append(
+            {
+                "title": i.title,
+                "url": str(i.url),
+                "description": normalize_description(i.description),
+                "type": i.type,  # str Enum, JSON-serializable
+                "date": i.date.isoformat(),
+            }
+        )
+    try:
+        use_case = CreateContributions(get_stars_api())
+        data = await use_case(items)
+        return {"success": True, "ids": (data or {}).get("ids", [])}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 
 @mcp.tool()

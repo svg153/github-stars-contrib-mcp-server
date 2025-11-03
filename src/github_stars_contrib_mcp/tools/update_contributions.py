@@ -7,7 +7,8 @@ from datetime import datetime
 import structlog
 from pydantic import BaseModel, HttpUrl, ValidationError
 
-from .. import shared
+from ..application.use_cases.update_contribution import UpdateContribution
+from ..di.container import get_stars_api
 from ..models import ContributionType
 from ..shared import mcp
 
@@ -34,20 +35,18 @@ async def update_contribution_impl(contribution_id: str, data: dict) -> dict:
     except ValidationError as e:
         return {"success": False, "error": e.errors()}
 
-    if not shared.stars_client:
-        return {"success": False, "error": "Stars client not initialized"}
-
     # Convert to dict, handling datetime
     update_data = payload.data.model_dump()
     if update_data.get("date"):
         update_data["date"] = update_data["date"].isoformat()
     if update_data.get("url"):
         update_data["url"] = str(update_data["url"])
-
-    result = await shared.stars_client.update_contribution(payload.id, update_data)
-    if result.get("ok"):
-        return {"success": True, "data": result.get("data")}
-    return {"success": False, "error": result.get("error")}
+    try:
+        use_case = UpdateContribution(get_stars_api())
+        data = await use_case(payload.id, update_data)
+        return {"success": True, "data": data}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 
 @mcp.tool()

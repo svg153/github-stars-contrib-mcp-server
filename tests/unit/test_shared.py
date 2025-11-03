@@ -1,7 +1,8 @@
 """Unit tests for shared module."""
 
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
 
 from github_stars_contrib_mcp import shared
 
@@ -42,15 +43,15 @@ class TestShared:
 
     def test_configure_logging(self):
         # Test that _configure_logging sets up logging when not configured
-        with patch("logging.getLogger") as mock_get_logger, \
-             patch("sys.stderr") as mock_stderr:
+           with patch("logging.getLogger") as mock_get_logger, \
+               patch("sys.stderr"):
             mock_root = MagicMock()
             mock_root.handlers = []
             mock_get_logger.return_value = mock_root
-            
+
             # Call the function
             shared._configure_logging()
-            
+
             # Check that handler was added
             mock_root.addHandler.assert_called()
             mock_root.setLevel.assert_called()
