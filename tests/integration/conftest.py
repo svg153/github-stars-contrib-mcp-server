@@ -101,11 +101,12 @@ def mcp_server() -> Iterator[str]:
 
     # Wait for port to be ready
     if not _wait_for_port(host, port, timeout=15.0):
+        proc.kill()
         try:
-            proc.kill()
-        finally:
             out, err = proc.communicate(timeout=2)
             pytest.fail(f"MCP server failed to start on {host}:{port}.\nSTDOUT:\n{out.decode()}\nSTDERR:\n{err.decode()}")
+        except Exception as e:
+            pytest.fail(f"MCP server failed to start on {host}:{port}.\nCould not retrieve output: {e}")
 
     server_url = f"http://{host}:{port}{path}"
     try:
