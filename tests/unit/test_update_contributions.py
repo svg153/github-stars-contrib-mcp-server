@@ -1,64 +1,62 @@
-"""Unit tests for update_contributions tool."""
+"""Unit tests for update_contributions tool (DI path)."""
 
 from datetime import datetime
-from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from github_stars_contrib_mcp.tools.update_contributions import update_contribution_impl
-from github_stars_contrib_mcp import shared
+from github_stars_contrib_mcp.tools import update_contributions as tool
 
 
 class TestUpdateContributions:
     @pytest.mark.asyncio
-    async def test_update_contribution_success(self, mock_shared_client):
-        mock_shared_client.update_contribution.return_value = {
-            "ok": True,
-            "data": {"updateContribution": {"id": "c1", "title": "Updated Title"}}
-        }
+    async def test_update_contribution_success(self, monkeypatch):
+        class FakePort:
+            async def update_contribution(self, contribution_id: str, data: dict):
+                return {"updateContribution": {"id": contribution_id, "title": data["title"]}}
+
+        monkeypatch.setattr(tool, "get_stars_api", lambda: FakePort())
 
         data = {"title": "Updated Title"}
-        res = await update_contribution_impl("c1", data)
+        res = await tool.update_contribution_impl("c1", data)
         assert res["success"] is True
         assert res["data"] == {"updateContribution": {"id": "c1", "title": "Updated Title"}}
 
     @pytest.mark.asyncio
     async def test_update_contribution_invalid_url(self):
         data = {"url": "not-a-url"}
-        res = await update_contribution_impl("c1", data)
+        res = await tool.update_contribution_impl("c1", data)
         assert res["success"] is False
         assert "url" in str(res["error"])
 
     @pytest.mark.asyncio
     async def test_update_contribution_invalid_date(self):
         data = {"date": "not-a-date"}
-        res = await update_contribution_impl("c1", data)
+        res = await tool.update_contribution_impl("c1", data)
         assert res["success"] is False
         assert "date" in str(res["error"])
 
     @pytest.mark.asyncio
-    async def test_update_contribution_no_client(self):
-        with patch.object(shared, 'stars_client', None):
-            data = {"title": "Test"}
-            res = await update_contribution_impl("c1", data)
-            assert res["success"] is False
-            assert "not initialized" in res["error"]
+    async def test_update_contribution_error_bubbles(self, monkeypatch):
+        class FailingPort:
+            async def update_contribution(self, contribution_id: str, data: dict):
+                raise RuntimeError("API error")
 
-    @pytest.mark.asyncio
-    async def test_update_contribution_client_error(self, mock_shared_client):
-        mock_shared_client.update_contribution.return_value = {"ok": False, "error": "API error", "data": None}
-
+        monkeypatch.setattr(tool, "get_stars_api", lambda: FailingPort())
         data = {"title": "Test"}
-        res = await update_contribution_impl("c1", data)
+        res = await tool.update_contribution_impl("c1", data)
         assert res["success"] is False
         assert res["error"] == "API error"
 
     @pytest.mark.asyncio
-    async def test_update_contribution_full_update(self, mock_shared_client):
-        mock_shared_client.update_contribution.return_value = {
-            "ok": True,
-            "data": {"updateContribution": {"id": "c1"}}
-        }
+        # Covered by error_bubbles above
+
+    @pytest.mark.asyncio
+    async def test_update_contribution_full_update(self, mock_shared_client, monkeypatch):
+        class FakePort2:
+            async def update_contribution(self, contribution_id: str, data: dict):
+                return {"updateContribution": {"id": contribution_id}}
+
+        monkeypatch.setattr(tool, "get_stars_api", lambda: FakePort2())
 
         data = {
             "title": "New Title",
@@ -67,7 +65,7 @@ class TestUpdateContributions:
             "type": "BLOGPOST",
             "date": datetime(2024, 1, 1, 0, 0, 0).isoformat(),
         }
-        res = await update_contribution_impl("c1", data)
+        res = await tool.update_contribution_impl("c1", data)
         assert res["success"] is True
 
     @pytest.mark.asyncio

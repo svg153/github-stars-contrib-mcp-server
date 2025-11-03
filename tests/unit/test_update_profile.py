@@ -1,59 +1,56 @@
-"""Unit tests for update_profile tool."""
-
-from unittest.mock import AsyncMock, patch
+"""Unit tests for update_profile tool (DI path)."""
 
 import pytest
 
-from github_stars_contrib_mcp.tools.update_profile import update_profile_impl
-from github_stars_contrib_mcp import shared
+from github_stars_contrib_mcp.tools import update_profile as tool
 
 
 class TestUpdateProfile:
     @pytest.mark.asyncio
-    async def test_update_profile_success(self, mock_shared_client):
-        mock_shared_client.update_profile.return_value = {
-            "ok": True,
-            "data": {"updateProfile": {"id": "user1"}}
-        }
+    async def test_update_profile_success(self, monkeypatch):
+        class FakePort:
+            async def update_profile(self, data: dict):
+                return {"updateProfile": {"id": "user1"}}
+
+        monkeypatch.setattr(tool, "get_stars_api", lambda: FakePort())
 
         data = {"name": "John Doe", "bio": "Updated bio"}
-        res = await update_profile_impl(data)
+        res = await tool.update_profile_impl(data)
         assert res["success"] is True
         assert res["data"] == {"updateProfile": {"id": "user1"}}
 
     @pytest.mark.asyncio
     async def test_update_profile_invalid_birthdate(self):
         data = {"birthdate": "invalid-date"}
-        res = await update_profile_impl(data)
+        res = await tool.update_profile_impl(data)
         assert res["success"] is False
         assert "birthdate" in str(res["error"])
 
     @pytest.mark.asyncio
-    async def test_update_profile_no_client(self):
-        with patch.object(shared, 'stars_client', None):
-            data = {"name": "John Doe"}
-            res = await update_profile_impl(data)
-            assert res["success"] is False
-            assert "not initialized" in res["error"]
+    async def test_update_profile_error_bubbles(self, monkeypatch):
+        class FailingPort:
+            async def update_profile(self, data: dict):
+                raise RuntimeError("API error")
 
-    @pytest.mark.asyncio
-    async def test_update_profile_client_error(self, mock_shared_client):
-        mock_shared_client.update_profile.return_value = {"ok": False, "error": "API error", "data": None}
-
+        monkeypatch.setattr(tool, "get_stars_api", lambda: FailingPort())
         data = {"name": "John Doe"}
-        res = await update_profile_impl(data)
+        res = await tool.update_profile_impl(data)
         assert res["success"] is False
         assert res["error"] == "API error"
 
     @pytest.mark.asyncio
-    async def test_update_profile_partial_update(self, mock_shared_client):
-        mock_shared_client.update_profile.return_value = {
-            "ok": True,
-            "data": {"updateProfile": {"id": "user1"}}
-        }
+        # Covered by error_bubbles above
+
+    @pytest.mark.asyncio
+    async def test_update_profile_partial_update(self, mock_shared_client, monkeypatch):
+        class FakePort2:
+            async def update_profile(self, data: dict):
+                return {"updateProfile": {"id": "user1"}}
+
+        monkeypatch.setattr(tool, "get_stars_api", lambda: FakePort2())
 
         data = {"jobTitle": "Engineer"}
-        res = await update_profile_impl(data)
+        res = await tool.update_profile_impl(data)
         assert res["success"] is True
 
     @pytest.mark.asyncio

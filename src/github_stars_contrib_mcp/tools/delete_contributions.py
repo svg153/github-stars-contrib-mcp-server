@@ -5,7 +5,8 @@ from __future__ import annotations
 import structlog
 from pydantic import BaseModel, ValidationError
 
-from .. import shared
+from ..application.use_cases.delete_contribution import DeleteContribution
+from ..di.container import get_stars_api
 from ..shared import mcp
 
 logger = structlog.get_logger(__name__)
@@ -22,13 +23,12 @@ async def delete_contribution_impl(contribution_id: str) -> dict:
     except ValidationError as e:
         return {"success": False, "error": e.errors()}
 
-    if not shared.stars_client:
-        return {"success": False, "error": "Stars client not initialized"}
-
-    result = await shared.stars_client.delete_contribution(payload.id)
-    if result.get("ok"):
-        return {"success": True, "data": result.get("data")}
-    return {"success": False, "error": result.get("error")}
+    try:
+        use_case = DeleteContribution(get_stars_api())
+        data = await use_case(payload.id)
+        return {"success": True, "data": data}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 
 @mcp.tool()

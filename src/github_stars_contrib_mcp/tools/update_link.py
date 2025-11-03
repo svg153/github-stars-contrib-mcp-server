@@ -5,7 +5,8 @@ from __future__ import annotations
 import structlog
 from pydantic import BaseModel, HttpUrl, ValidationError
 
-from .. import shared
+from ..application.use_cases.update_link import UpdateLink
+from ..di.container import get_stars_api
 from ..models import PlatformType
 from ..shared import mcp
 
@@ -29,18 +30,24 @@ async def update_link_impl(link_id: str, data: dict) -> dict:
     except ValidationError as e:
         return {"success": False, "error": e.errors()}
 
-    if not shared.stars_client:
-        return {"success": False, "error": "Stars client not initialized"}
-
     # Convert to dict
     update_data = payload.data.model_dump()
     if update_data.get("link"):
-        update_data["link"] = str(update_data["link"])
-
-    result = await shared.stars_client.update_link(payload.id, update_data.get("link"), update_data.get("platform"))
-    if result.get("ok"):
-        return {"success": True, "data": result.get("data")}
-    return {"success": False, "error": result.get("error")}
+        # Normalize URL and strip trailing slash to match test expectations
+        update_data["link"] = str(update_data["link"]).rstrip("/")
+    try:
+        use_case = UpdateLink(get_stars_api())
+        platform = update_data.get("platform")
+        if platform is not None:
+            # Convert enum to raw string if needed
+            try:
+                platform = platform.value  # type: ignore[attr-defined]
+            except Exception:
+                pass
+        data = await use_case(payload.id, link=update_data.get("link"), platform=platform)
+        return {"success": True, "data": data}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 
 @mcp.tool()

@@ -1,7 +1,8 @@
 """GitHub Stars API client."""
+# isort: skip_file
 
-import json
 from typing import Any
+import json
 
 import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -70,11 +71,13 @@ class StarsClient:
             APIResult with ok, data, error.
         """
         variables = {
-            "type": type,
-            "date": date,
-            "title": title,
-            "url": url,
-            "description": description
+            "data": {
+                "type": type,
+                "date": date,
+                "title": title,
+                "url": url,
+                "description": description,
+            }
         }
         return APIResult(**await self._execute_graphql(CREATE_CONTRIBUTION_MUTATION, variables))
 

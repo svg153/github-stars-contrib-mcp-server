@@ -1,25 +1,27 @@
-"""MCP tool to fetch public profile stars/contributions from GitHub Stars GraphQL API."""
+"""MCP tool to fetch public profile stars/contributions from GitHub Stars GraphQL API.
+
+Refactored to use the Clean Architecture path (DI → use case → adapter).
+"""
 
 from __future__ import annotations
 
 import structlog
 
-from .. import shared
+from ..application.use_cases.get_stars import GetStars
+from ..di.container import get_stars_api
 from ..shared import mcp
 
 logger = structlog.get_logger(__name__)
 
 
 async def get_stars_impl(username: str) -> dict:
-    """Implementation: call Stars API to get public profile stars for a user."""
-    if not shared.stars_client:
-        return {"success": False, "error": "Stars client not initialized", "data": None}
-
-    res = await shared.stars_client.get_stars(username)
-    if res.get("ok"):
-        data = res.get("data") or {}
+    """Implementation: call Stars API via use case to get public profile stars for a user."""
+    try:
+        use_case = GetStars(get_stars_api())
+        data = await use_case(username)
         return {"success": True, "data": data}
-    return {"success": False, "error": res.get("error"), "data": None}
+    except Exception as e:
+        return {"success": False, "error": str(e), "data": None}
 
 
 @mcp.tool()

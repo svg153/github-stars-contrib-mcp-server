@@ -5,7 +5,8 @@ from __future__ import annotations
 import structlog
 from pydantic import BaseModel, Field, HttpUrl, ValidationError
 
-from .. import shared
+from ..application.use_cases.create_link import CreateLink
+from ..di.container import get_stars_api
 from ..models import PlatformType
 from ..shared import mcp
 
@@ -24,13 +25,13 @@ async def create_link_impl(link: str, platform: str) -> dict:
     except ValidationError as e:
         return {"success": False, "error": e.errors()}
 
-    if not shared.stars_client:
-        return {"success": False, "error": "Stars client not initialized"}
-
-    result = await shared.stars_client.create_link(str(payload.link), payload.platform)
-    if result.get("ok"):
-        return {"success": True, "data": result.get("data")}
-    return {"success": False, "error": result.get("error")}
+    try:
+        use_case = CreateLink(get_stars_api())
+        # Ensure platform is passed as raw string value (e.g., "OTHER")
+        data = await use_case(str(payload.link), payload.platform.value)
+        return {"success": True, "data": data}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 
 @mcp.tool()

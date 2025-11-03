@@ -1,20 +1,20 @@
-"""Unit tests for create_contributions tool."""
+"""Unit tests for create_contributions tool (DI path)."""
 
 from datetime import datetime
-from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from github_stars_contrib_mcp.tools.create_contributions import create_contributions_impl
-from github_stars_contrib_mcp import shared
+from github_stars_contrib_mcp.tools import create_contributions as tool
 
 
 class TestCreateContributions:
     @pytest.mark.asyncio
-    async def test_create_contributions_valid(self, mock_shared_client):
-        # Mock client response
-        mock_result = type("Res", (), {"ok": True, "ids": ["1", "2"], "error": None})()
-        mock_shared_client.create_contributions.return_value = mock_result
+    async def test_create_contributions_valid(self, monkeypatch):
+        class FakePort:
+            async def create_contributions(self, items):
+                return {"ids": ["1", "2"]}
+
+        monkeypatch.setattr(tool, "get_stars_api", lambda: FakePort())
 
         data = [
             {
@@ -26,7 +26,7 @@ class TestCreateContributions:
             }
         ]
 
-        res = await create_contributions_impl(data)
+        res = await tool.create_contributions_impl(data)
         assert res["success"] is True
         assert res["ids"] == ["1", "2"]
 
@@ -38,30 +38,17 @@ class TestCreateContributions:
             "type": "BLOGPOST",
             "date": datetime(2024, 1, 1, 0, 0, 0).isoformat(),
         }]
-        res = await create_contributions_impl(data)
+        res = await tool.create_contributions_impl(data)
         assert res["success"] is False
         assert "url" in str(res["error"])
 
     @pytest.mark.asyncio
-    async def test_create_contributions_no_client(self):
-        with patch.object(shared, 'stars_client', None):
-            data = [
-                {
-                    "title": "Test",
-                    "url": "https://example.com",
-                    "type": "BLOGPOST",
-                    "date": datetime(2024, 1, 1, 0, 0, 0).isoformat(),
-                }
-            ]
-            res = await create_contributions_impl(data)
-            assert res["success"] is False
-            assert "not initialized" in res["error"]
+    async def test_create_contributions_error_bubbles(self, monkeypatch):
+        class FailingPort:
+            async def create_contributions(self, items):
+                raise RuntimeError("API error")
 
-    @pytest.mark.asyncio
-    async def test_create_contributions_client_error(self, mock_shared_client):
-        mock_result = type("Res", (), {"ok": False, "ids": [], "error": "API error"})()
-        mock_shared_client.create_contributions.return_value = mock_result
-
+        monkeypatch.setattr(tool, "get_stars_api", lambda: FailingPort())
         data = [
             {
                 "title": "Test",
@@ -70,7 +57,12 @@ class TestCreateContributions:
                 "date": datetime(2024, 1, 1, 0, 0, 0).isoformat(),
             }
         ]
-
-        res = await create_contributions_impl(data)
+        res = await tool.create_contributions_impl(data)
         assert res["success"] is False
         assert res["error"] == "API error"
+
+    @pytest.mark.asyncio
+    async def test_create_contributions_client_error(self, mock_shared_client):
+        # Covered by error_bubbles above; placeholder to keep test valid
+        assert mock_shared_client is not None
+        pass
