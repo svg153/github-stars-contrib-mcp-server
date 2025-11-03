@@ -6,7 +6,14 @@ from github_stars_contrib_mcp.utils.stars_client import StarsClient
 
 
 class FakeResponse:
-    def __init__(self, status_code=200, json_data=None, text="", json_error=False, gql_error=False):
+    def __init__(
+        self,
+        status_code=200,
+        json_data=None,
+        text="",
+        json_error=False,
+        gql_error=False,
+    ):
         self.status_code = status_code
         self._json_data = json_data or {}
         self.text = text
@@ -42,7 +49,10 @@ async def test_execute_graphql_http_error(monkeypatch):
     def fake_async_client(*args, **kwargs):  # noqa: ANN001
         return FakeAsyncClient(FakeResponse(status_code=500, text="oops"))
 
-    monkeypatch.setattr("github_stars_contrib_mcp.utils.stars_client.httpx.AsyncClient", fake_async_client)
+    monkeypatch.setattr(
+        "github_stars_contrib_mcp.utils.stars_client.httpx.AsyncClient",
+        fake_async_client,
+    )
     res = await sc._execute_graphql("query {}")
     assert res["ok"] is False and "HTTP 500" in res["error"]
 
@@ -54,7 +64,10 @@ async def test_execute_graphql_invalid_json(monkeypatch):
     def fake_async_client(*args, **kwargs):  # noqa: ANN001
         return FakeAsyncClient(FakeResponse(status_code=200, json_error=True))
 
-    monkeypatch.setattr("github_stars_contrib_mcp.utils.stars_client.httpx.AsyncClient", fake_async_client)
+    monkeypatch.setattr(
+        "github_stars_contrib_mcp.utils.stars_client.httpx.AsyncClient",
+        fake_async_client,
+    )
     res = await sc._execute_graphql("query {}")
     assert res["ok"] is False and res["error"] == "Invalid JSON response"
 
@@ -66,7 +79,10 @@ async def test_execute_graphql_graphql_error(monkeypatch):
     def fake_async_client(*args, **kwargs):  # noqa: ANN001
         return FakeAsyncClient(FakeResponse(status_code=200, gql_error=True))
 
-    monkeypatch.setattr("github_stars_contrib_mcp.utils.stars_client.httpx.AsyncClient", fake_async_client)
+    monkeypatch.setattr(
+        "github_stars_contrib_mcp.utils.stars_client.httpx.AsyncClient",
+        fake_async_client,
+    )
     res = await sc._execute_graphql("query {}")
     assert res["ok"] is False and "GraphQL exploded" in res["error"]
 
@@ -76,8 +92,13 @@ async def test_execute_graphql_success(monkeypatch):
     sc = StarsClient(api_url="https://api", token="t")
 
     def fake_async_client(*args, **kwargs):  # noqa: ANN001
-        return FakeAsyncClient(FakeResponse(status_code=200, json_data={"data": {"ok": True}}))
+        return FakeAsyncClient(
+            FakeResponse(status_code=200, json_data={"data": {"ok": True}})
+        )
 
-    monkeypatch.setattr("github_stars_contrib_mcp.utils.stars_client.httpx.AsyncClient", fake_async_client)
+    monkeypatch.setattr(
+        "github_stars_contrib_mcp.utils.stars_client.httpx.AsyncClient",
+        fake_async_client,
+    )
     res = await sc._execute_graphql("query {}")
     assert res["ok"] is True and res["data"] == {"ok": True}

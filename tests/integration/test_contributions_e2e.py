@@ -56,7 +56,7 @@ async def test_integration_contribution_full_e2e():
         date=now_iso,
         title="E2E Test Contribution",
         url=unique_url,
-        description="Automated test entry; safe to ignore"
+        description="Automated test entry; safe to ignore",
     )
     assert create_result.get("ok") is True
     contrib_data = create_result.get("data", {}).get("createContribution", {})
@@ -67,9 +67,11 @@ async def test_integration_contribution_full_e2e():
     # Update contribution
     update_data = {
         "title": "Updated E2E Test Contribution",
-        "description": "Updated description"
+        "description": "Updated description",
     }
-    update_result = await client.update_contribution(contribution_id=contrib_id, data=update_data)
+    update_result = await client.update_contribution(
+        contribution_id=contrib_id, data=update_data
+    )
     assert update_result.get("ok") is True
     updated_contrib_data = update_result.get("data", {}).get("updateContribution", {})
     assert updated_contrib_data.get("title") == "Updated E2E Test Contribution"

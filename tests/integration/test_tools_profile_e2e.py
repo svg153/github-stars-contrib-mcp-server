@@ -19,7 +19,9 @@ from .test_integration_utils import (
 async def test_tools_profile_e2e():
     require_token_or_skip()
     if should_skip_mutations():
-        pytest.skip("Mutation e2e disabled; set STARS_API_TOKEN and STARS_E2E_MUTATE=1 to run")
+        pytest.skip(
+            "Mutation e2e disabled; set STARS_API_TOKEN and STARS_E2E_MUTATE=1 to run"
+        )
 
     client = get_test_client()
     shared.stars_client = client
@@ -27,7 +29,9 @@ async def test_tools_profile_e2e():
         # Read current user data via client; if loggedUser is null, skip safely
         cur = await client.get_user_data()
         if not cur.get("ok") or not (cur.get("data") or {}).get("loggedUser"):
-            pytest.skip("Token not valid for reading user data or loggedUser is null; skipping tool flow test")
+            pytest.skip(
+                "Token not valid for reading user data or loggedUser is null; skipping tool flow test"
+            )
 
         nominee = (cur.get("data") or {}).get("loggedUser", {}).get("nominee", {})
         original_bio = nominee.get("bio") if nominee else None
@@ -38,7 +42,9 @@ async def test_tools_profile_e2e():
 
         # Verify and revert
         back = await client.get_user_data()
-        back_bio = (back.get("data") or {}).get("loggedUser", {}).get("nominee", {}).get("bio")
+        back_bio = (
+            (back.get("data") or {}).get("loggedUser", {}).get("nominee", {}).get("bio")
+        )
         assert back_bio == bio_test
 
         revert_data = {"bio": original_bio or ""}

@@ -12,7 +12,7 @@ class TestUpdateProfile:
             async def update_profile(self, data: dict):
                 return {"updateProfile": {"id": "user1"}}
 
-        monkeypatch.setattr(tool, "get_stars_api", lambda: FakePort())
+        monkeypatch.setattr(tool, "get_stars_api", FakePort)
 
         data = {"name": "John Doe", "bio": "Updated bio"}
         res = await tool.update_profile_impl(data)
@@ -32,14 +32,11 @@ class TestUpdateProfile:
             async def update_profile(self, data: dict):
                 raise RuntimeError("API error")
 
-        monkeypatch.setattr(tool, "get_stars_api", lambda: FailingPort())
+        monkeypatch.setattr(tool, "get_stars_api", FailingPort)
         data = {"name": "John Doe"}
         res = await tool.update_profile_impl(data)
         assert res["success"] is False
         assert res["error"] == "API error"
-
-    @pytest.mark.asyncio
-        # Covered by error_bubbles above
 
     @pytest.mark.asyncio
     async def test_update_profile_partial_update(self, mock_shared_client, monkeypatch):
@@ -47,7 +44,7 @@ class TestUpdateProfile:
             async def update_profile(self, data: dict):
                 return {"updateProfile": {"id": "user1"}}
 
-        monkeypatch.setattr(tool, "get_stars_api", lambda: FakePort2())
+        monkeypatch.setattr(tool, "get_stars_api", FakePort2)
 
         data = {"jobTitle": "Engineer"}
         res = await tool.update_profile_impl(data)
@@ -60,4 +57,4 @@ class TestUpdateProfile:
 
         # Ensure logger is initialized (this covers the logger definition)
         assert logger is not None
-        assert hasattr(logger, 'info')  # Basic logger check
+        assert hasattr(logger, "info")  # Basic logger check

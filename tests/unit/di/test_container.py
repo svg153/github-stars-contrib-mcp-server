@@ -1,4 +1,3 @@
-
 from github_stars_contrib_mcp.di.container import (
     get_settings,
     get_stars_api,

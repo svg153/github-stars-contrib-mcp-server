@@ -12,7 +12,7 @@ class TestGetStars:
             async def get_stars(self, username: str):
                 return {"publicProfile": {"username": username}}
 
-        monkeypatch.setattr(tool, "get_stars_api", lambda: FakePort())
+        monkeypatch.setattr(tool, "get_stars_api", FakePort)
         res = await tool.get_stars_impl("u")
         assert res["success"] is True
         assert res["data"]["publicProfile"]["username"] == "u"
@@ -23,7 +23,7 @@ class TestGetStars:
             async def get_stars(self, username: str):
                 raise RuntimeError("API error")
 
-        monkeypatch.setattr(tool, "get_stars_api", lambda: FailingPort())
+        monkeypatch.setattr(tool, "get_stars_api", FailingPort)
         res = await tool.get_stars_impl("u")
         assert res["success"] is False
         assert res["error"] == "API error"
@@ -34,7 +34,7 @@ class TestGetStars:
             async def get_stars(self, username: str):
                 return {"publicProfile": {"username": username}}
 
-        monkeypatch.setattr(tool, "get_stars_api", lambda: FakePort())
+        monkeypatch.setattr(tool, "get_stars_api", FakePort)
         res = await tool.get_stars_impl("")
         # GetStars use case will raise ValueError, which tool wraps as error
         assert res["success"] is False

@@ -17,6 +17,9 @@ Environment variables:
 - MCP_PORT: Bind port (default: 8766)
 - MCP_PATH: Path (default: /mcp)
 - MCP_TRANSPORT: Transport selection ("stdio" | "http" | "streamable-http" | "sse"). Default: stdio.
+- VALIDATE_URLS: Enable lightweight URL HEAD validation before mutations (default: false)
+- URL_VALIDATION_TIMEOUT_S: Timeout for URL validation requests (default: 3)
+- URL_VALIDATION_TTL_S: TTL cache in seconds for URL validation results (default: 3600)
 
 ## Tools
 
@@ -31,6 +34,7 @@ The server provides the following MCP tools:
 - **update_contributions**: Update one or more contributions
 - **update_link**: Update a link in GitHub Stars profile
 - **update_profile**: Update the user's profile information
+- **search_contributions**: Filter contributions from a user's public Stars profile (see `tools/search_contributions.py`)
 
 All tools return a standardized response format: `{ "success": boolean, "data": object | null, "error": string | null }`
 

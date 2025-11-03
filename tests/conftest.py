@@ -44,7 +44,9 @@ def mock_httpx_client_create_contributions():
     mock_resp = MagicMock()
     mock_resp.status_code = 200
     # Response for create_contributions
-    mock_resp.json.return_value = {"data": {"createContributions": [{"id": "1"}, {"id": "2"}]}}
+    mock_resp.json.return_value = {
+        "data": {"createContributions": [{"id": "1"}, {"id": "2"}]}
+    }
     mock_client.__aenter__.return_value = mock_client
     mock_client.post.return_value = mock_resp
     return mock_client

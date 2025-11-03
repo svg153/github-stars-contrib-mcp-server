@@ -22,7 +22,9 @@ from .test_integration_utils import (
 async def test_tools_links_e2e():
     require_token_or_skip()
     if should_skip_mutations():
-        pytest.skip("Mutation e2e disabled; set STARS_API_TOKEN and STARS_E2E_MUTATE=1 to run")
+        pytest.skip(
+            "Mutation e2e disabled; set STARS_API_TOKEN and STARS_E2E_MUTATE=1 to run"
+        )
 
     client = get_test_client()
     shared.stars_client = client
@@ -36,7 +38,9 @@ async def test_tools_links_e2e():
         assert link_id
 
         # Update (platform is non-null in response; pass it to ensure it remains set)
-        upd_res = await update_link_impl(link_id=link_id, data={"link": url + "/updated", "platform": "OTHER"})
+        upd_res = await update_link_impl(
+            link_id=link_id, data={"link": url + "/updated", "platform": "OTHER"}
+        )
         assert upd_res["success"] is True
 
         # Delete

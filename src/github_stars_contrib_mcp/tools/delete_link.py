@@ -18,6 +18,7 @@ class DeleteLinkArgs(BaseModel):
 
 async def delete_link_impl(link_id: str) -> dict:
     """Implementation: validates input and calls Stars API client."""
+    logger.info("Deleting link", link_id=link_id)
     try:
         payload = DeleteLinkArgs(id=link_id)
     except ValidationError as e:

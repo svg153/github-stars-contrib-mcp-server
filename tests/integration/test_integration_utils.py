@@ -19,7 +19,9 @@ def should_skip_mutations():
 def skip_if_no_mutations():
     """Skip test if mutations are not enabled."""
     if should_skip_mutations():
-        pytest.skip("Mutation e2e disabled; set STARS_API_TOKEN and STARS_E2E_MUTATE=1 to run")
+        pytest.skip(
+            "Mutation e2e disabled; set STARS_API_TOKEN and STARS_E2E_MUTATE=1 to run"
+        )
 
 
 def require_token_or_skip():
@@ -48,4 +50,6 @@ def get_current_iso_datetime():
 def assert_cleanup_success(result, resource_type, resource_id):
     """Assert that cleanup was successful, fail if not."""
     if not result.get("ok"):
-        pytest.fail(f"Failed to clean up {resource_type} {resource_id}: {result.get('error')}")
+        pytest.fail(
+            f"Failed to clean up {resource_type} {resource_id}: {result.get('error')}"
+        )

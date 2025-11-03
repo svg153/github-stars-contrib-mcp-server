@@ -4,6 +4,7 @@ Consolidated settings implementation using pydantic-settings.
 This replaces the earlier ad-hoc dataclass to support validation
 and additional fields required by the server (e.g., log_level).
 """
+
 from __future__ import annotations
 
 from pydantic import Field, field_validator
@@ -24,6 +25,18 @@ class Settings(BaseSettings):
     dangerously_omit_auth: bool = Field(
         default=False,
         description="ONLY for local dev/tests: allow running without a token",
+    )
+    validate_urls: bool = Field(
+        default=False,
+        description="When true, perform a lightweight HEAD check for URLs before calling the API (may slow calls).",
+    )
+    url_validation_timeout_s: int = Field(
+        default=3,
+        description="Timeout in seconds for URL validation requests",
+    )
+    url_validation_ttl_s: int = Field(
+        default=3600,
+        description="TTL in seconds to cache URL validation results",
     )
 
     @field_validator("log_level")

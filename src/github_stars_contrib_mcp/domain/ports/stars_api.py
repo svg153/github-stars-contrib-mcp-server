@@ -2,6 +2,7 @@
 
 Defines the abstract contract the application layer depends on.
 """
+
 from __future__ import annotations
 
 from typing import Any, Protocol, runtime_checkable
@@ -27,7 +28,9 @@ class StarsAPIPort(Protocol):
         ...
 
     # Contributions
-    async def create_contribution(self, *, type: str, date: str, title: str, url: str, description: str | None) -> dict[str, Any]:
+    async def create_contribution(
+        self, *, type: str, date: str, title: str, url: str, description: str | None
+    ) -> dict[str, Any]:
         """Create a single contribution and return the raw GraphQL data dict."""
         ...
 
@@ -35,7 +38,9 @@ class StarsAPIPort(Protocol):
         """Create multiple contributions; returns data dict, typically containing ids."""
         ...
 
-    async def update_contribution(self, contribution_id: str, data: dict[str, Any]) -> dict[str, Any]:
+    async def update_contribution(
+        self, contribution_id: str, data: dict[str, Any]
+    ) -> dict[str, Any]:
         """Update a single contribution and return data dict."""
         ...
 
@@ -44,15 +49,13 @@ class StarsAPIPort(Protocol):
         ...
 
     # Links
-    async def create_link(self, link: str, platform: str) -> dict[str, Any]:
-        ...
+    async def create_link(self, link: str, platform: str) -> dict[str, Any]: ...
 
-    async def update_link(self, link_id: str, link: str | None, platform: str | None) -> dict[str, Any]:
-        ...
+    async def update_link(
+        self, link_id: str, link: str | None, platform: str | None
+    ) -> dict[str, Any]: ...
 
-    async def delete_link(self, link_id: str) -> dict[str, Any]:
-        ...
+    async def delete_link(self, link_id: str) -> dict[str, Any]: ...
 
     # Profile
-    async def update_profile(self, data: dict[str, Any]) -> dict[str, Any]:
-        ...
+    async def update_profile(self, data: dict[str, Any]) -> dict[str, Any]: ...

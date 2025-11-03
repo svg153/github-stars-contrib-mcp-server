@@ -18,6 +18,7 @@ class DeleteContributionArgs(BaseModel):
 
 async def delete_contribution_impl(contribution_id: str) -> dict:
     """Implementation: validates input and calls Stars API client."""
+    logger.info("Deleting contribution", contribution_id=contribution_id)
     try:
         payload = DeleteContributionArgs(id=contribution_id)
     except ValidationError as e:

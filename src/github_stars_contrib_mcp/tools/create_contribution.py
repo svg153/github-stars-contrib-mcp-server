@@ -20,12 +20,15 @@ class ContributionInput(BaseModel):
     title: str
     url: HttpUrl
     description: str | None = None
-    type: ContributionType = Field(description="Contribution type, one of: SPEAKING, BLOGPOST, ARTICLE_PUBLICATION, EVENT_ORGANIZATION, HACKATHON, OPEN_SOURCE_PROJECT, VIDEO_PODCAST, FORUM, OTHER")
+    type: ContributionType = Field(
+        description="Contribution type, one of: SPEAKING, BLOGPOST, ARTICLE_PUBLICATION, EVENT_ORGANIZATION, HACKATHON, OPEN_SOURCE_PROJECT, VIDEO_PODCAST, FORUM, OTHER"
+    )
     date: datetime
 
 
 async def create_contribution_impl(data: dict) -> dict:
     """Implementation: validates input and calls Stars API client."""
+    logger.info("Creating contribution", data=data)
     try:
         payload = ContributionInput(**data)
     except ValidationError as e:
