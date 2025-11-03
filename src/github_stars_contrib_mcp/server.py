@@ -52,8 +52,9 @@ def main() -> None:
     path = os.getenv("MCP_PATH", "/mcp")
     transport = os.getenv("MCP_TRANSPORT", "stdio")
 
-    if transport == "http":
-        mcp.run(host=host, port=port, path=path)
+    # Select transport explicitly to avoid passing HTTP kwargs to stdio runner
+    if transport in {"http", "streamable-http", "sse"}:
+        mcp.run(transport=transport, host=host, port=port, path=path)
     else:
         mcp.run(transport="stdio")
 

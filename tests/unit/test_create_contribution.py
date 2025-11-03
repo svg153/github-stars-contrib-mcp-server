@@ -52,3 +52,17 @@ class TestCreateContribution:
             res = await create_contribution_impl(data)
             assert res["success"] is False
             assert "not initialized" in res["error"]
+
+    @pytest.mark.asyncio
+    async def test_create_contribution_client_error(self, mock_shared_client):
+        mock_shared_client.create_contribution.return_value = {"ok": False, "error": "API error", "data": None}
+
+        data = {
+            "title": "Test",
+            "url": "https://example.com",
+            "type": "BLOGPOST",
+            "date": datetime(2024, 1, 1, 0, 0, 0).isoformat(),
+        }
+        res = await create_contribution_impl(data)
+        assert res["success"] is False
+        assert res["error"] == "API error"

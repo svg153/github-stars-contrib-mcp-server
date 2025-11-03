@@ -22,6 +22,12 @@ def skip_if_no_mutations():
         pytest.skip("Mutation e2e disabled; set STARS_API_TOKEN and STARS_E2E_MUTATE=1 to run")
 
 
+def require_token_or_skip():
+    """Skip test if STARS_API_TOKEN is not present (used for read-only flows)."""
+    if not os.getenv("STARS_API_TOKEN"):
+        pytest.skip("STARS_API_TOKEN not set; skipping integration test")
+
+
 def get_test_client():
     """Get a StarsClient for testing."""
     api_url = os.getenv("STARS_API_URL", "https://api-stars.github.com/")

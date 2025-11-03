@@ -6,6 +6,7 @@ from .test_integration_utils import skip_if_no_mutations, get_test_client, gener
 
 
 @pytest.mark.asyncio
+@pytest.mark.client
 async def test_integration_links_e2e():
     skip_if_no_mutations()
 

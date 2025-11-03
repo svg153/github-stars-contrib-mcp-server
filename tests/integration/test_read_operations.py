@@ -11,6 +11,7 @@ from .test_integration_utils import get_test_client
 
 
 @pytest.mark.asyncio
+@pytest.mark.client
 async def test_integration_get_user_data():
     token = os.getenv("STARS_API_TOKEN")
     if not token:
@@ -31,6 +32,7 @@ async def test_integration_get_user_data():
 
 
 @pytest.mark.asyncio
+@pytest.mark.tools
 async def test_integration_get_user_data_tool_flow():
     """Test the complete get_user_data tool flow with real API."""
     token = os.getenv("STARS_API_TOKEN")
@@ -61,6 +63,7 @@ async def test_integration_get_user_data_tool_flow():
 
 
 @pytest.mark.asyncio
+@pytest.mark.client
 async def test_integration_get_user():
     token = os.getenv("STARS_API_TOKEN")
     if not token:
@@ -84,6 +87,7 @@ async def test_integration_get_user():
 
 
 @pytest.mark.asyncio
+@pytest.mark.tools
 async def test_integration_get_user_tool_flow():
     """Test the complete get_user tool flow with real API."""
     token = os.getenv("STARS_API_TOKEN")
