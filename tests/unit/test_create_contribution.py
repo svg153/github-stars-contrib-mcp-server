@@ -14,7 +14,7 @@ class TestCreateContribution:
             async def create_contribution(self, **kwargs):
                 return {"createContribution": {"id": "1", "type": "BLOGPOST"}}
 
-        monkeypatch.setattr(tool, "get_stars_api", lambda: FakePort())
+        monkeypatch.setattr(tool, "get_stars_api", FakePort)
 
         data = {
             "title": "Test",
@@ -46,7 +46,7 @@ class TestCreateContribution:
             async def create_contribution(self, **kwargs):
                 raise RuntimeError("API error")
 
-        monkeypatch.setattr(tool, "get_stars_api", lambda: FailingPort())
+        monkeypatch.setattr(tool, "get_stars_api", FailingPort)
         data = {
             "title": "Test",
             "url": "https://example.com",
@@ -61,4 +61,3 @@ class TestCreateContribution:
     async def test_create_contribution_client_error(self, mock_shared_client):
         # Covered by error_bubbles above; placeholder to keep test valid
         assert mock_shared_client is not None
-        pass

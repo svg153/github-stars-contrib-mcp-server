@@ -19,6 +19,7 @@ class UpdateProfileArgs(BaseModel):
 
 async def update_profile_impl(data: dict) -> dict:
     """Implementation: validates input and calls Stars API client."""
+    logger.info("Updating profile", data=data)
     try:
         payload = UpdateProfileArgs(data=ProfileUpdateInput(**data))
     except ValidationError as e:

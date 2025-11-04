@@ -29,7 +29,9 @@ async def test_integration_links_e2e():
 
     # Update link
     updated_url = unique_url + "-updated"
-    update_result = await client.update_link(link_id=link_id, link=updated_url, platform="OTHER")
+    update_result = await client.update_link(
+        link_id=link_id, link=updated_url, platform="OTHER"
+    )
     assert update_result.get("ok") is True
     updated_link_data = update_result.get("data", {}).get("updateLink", {})
     assert updated_link_data.get("link") == updated_url

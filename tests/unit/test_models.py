@@ -15,17 +15,20 @@ from github_stars_contrib_mcp.models import (
 
 
 class TestContributionType:
-    @pytest.mark.parametrize("contribution_type", [
-        "BLOGPOST",
-        "SPEAKING",
-        "ARTICLE_PUBLICATION",
-        "EVENT_ORGANIZATION",
-        "HACKATHON",
-        "OPEN_SOURCE_PROJECT",
-        "VIDEO_PODCAST",
-        "FORUM",
-        "OTHER"
-    ])
+    @pytest.mark.parametrize(
+        "contribution_type",
+        [
+            "BLOGPOST",
+            "SPEAKING",
+            "ARTICLE_PUBLICATION",
+            "EVENT_ORGANIZATION",
+            "HACKATHON",
+            "OPEN_SOURCE_PROJECT",
+            "VIDEO_PODCAST",
+            "FORUM",
+            "OTHER",
+        ],
+    )
     def test_valid_types(self, contribution_type):
         assert ContributionType(contribution_type) == contribution_type
 
@@ -54,11 +57,14 @@ class TestContributionItem:
         )
         assert item.description is None
 
-    @pytest.mark.parametrize("invalid_url", [
-        "not-a-url",
-        "http://[invalid]",
-        "",
-    ])
+    @pytest.mark.parametrize(
+        "invalid_url",
+        [
+            "not-a-url",
+            "http://[invalid]",
+            "",
+        ],
+    )
     def test_invalid_url(self, invalid_url):
         with pytest.raises(ValidationError):
             ContributionItem(

@@ -12,7 +12,7 @@ class TestDeleteContributions:
             async def delete_contribution(self, contribution_id: str):
                 return {"deleteContribution": {"id": contribution_id}}
 
-        monkeypatch.setattr(tool, "get_stars_api", lambda: FakePort())
+        monkeypatch.setattr(tool, "get_stars_api", FakePort)
         res = await tool.delete_contribution_impl("c1")
         assert res["success"] is True
         assert res["data"] == {"deleteContribution": {"id": "c1"}}
@@ -23,7 +23,7 @@ class TestDeleteContributions:
             async def delete_contribution(self, contribution_id: str):
                 raise RuntimeError("Invalid ID")
 
-        monkeypatch.setattr(tool, "get_stars_api", lambda: FailingPort())
+        monkeypatch.setattr(tool, "get_stars_api", FailingPort)
         res = await tool.delete_contribution_impl("invalid")
         assert res["success"] is False
         assert res["error"] == "Invalid ID"
@@ -32,13 +32,15 @@ class TestDeleteContributions:
     async def test_delete_contribution_validates_logger(self):
         # Keep logger coverage check
         from github_stars_contrib_mcp.tools.delete_contributions import logger
+
         assert logger is not None
 
     @pytest.mark.asyncio
-    async def test_delete_contribution_client_error_placeholder(self, mock_shared_client):
+    async def test_delete_contribution_client_error_placeholder(
+        self, mock_shared_client
+    ):
         # Client error path covered by error_bubbles; placeholder to keep test valid
         assert mock_shared_client is not None
-        pass
 
     @pytest.mark.asyncio
     async def test_delete_contribution_validation_error_logs(self, caplog, monkeypatch):
@@ -55,7 +57,7 @@ class TestDeleteContributions:
             async def delete_contribution(self, contribution_id: str):
                 return {"deleteContribution": {"id": contribution_id}}
 
-        monkeypatch.setattr(tool, "get_stars_api", lambda: FakePort())
+        monkeypatch.setattr(tool, "get_stars_api", FakePort)
         res = await tool.delete_contribution_impl("c1")
         assert res["success"] is True
 
@@ -68,7 +70,26 @@ class TestDeleteContributions:
 
         # Ensure logger is initialized (this covers lines 22-23)
         assert logger is not None
-        assert hasattr(logger, 'info')  # Basic logger check
+        assert hasattr(logger, "info")  # Basic logger check
 
         # Minimal assertion to keep the test valid and cover logger presence
         assert True
+
+    @pytest.mark.asyncio
+    async def test_delete_contribution_validation_error_branch(self):
+        # Passing None should fail pydantic validation for id: str
+        res = await tool.delete_contribution_impl(None)  # type: ignore[arg-type]
+        assert res["success"] is False
+        # Pydantic v2 .errors() returns a list of errors
+        assert isinstance(res["error"], list)
+
+    @pytest.mark.asyncio
+    async def test_delete_contribution_exception_branch(self, monkeypatch):
+        class BoomPort:
+            async def delete_contribution(self, contribution_id: str):
+                raise Exception("boom")
+
+        monkeypatch.setattr(tool, "get_stars_api", BoomPort)
+        res = await tool.delete_contribution_impl("c-err")
+        assert res["success"] is False
+        assert "boom" in res["error"]

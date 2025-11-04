@@ -1,4 +1,5 @@
 """Minimal DI container functions to construct services."""
+
 from __future__ import annotations
 
 from ..config.settings import Settings

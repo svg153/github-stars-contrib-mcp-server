@@ -33,7 +33,9 @@ def mutations_enabled(require_token):  # depends on token check
     """Skip test if STARS_E2E_MUTATE is not truthy (1/true/True)."""
     allow = os.getenv("STARS_E2E_MUTATE", "0") in ("1", "true", "True")
     if not allow:
-        pytest.skip("Mutation e2e disabled; set STARS_API_TOKEN and STARS_E2E_MUTATE=1 to run")
+        pytest.skip(
+            "Mutation e2e disabled; set STARS_API_TOKEN and STARS_E2E_MUTATE=1 to run"
+        )
 
 
 @pytest.fixture
@@ -97,7 +99,9 @@ def mcp_server() -> Iterator[str]:
         env["DANGEROUSLY_OMIT_AUTH"] = "true"
 
     cmd = [sys.executable, "-m", "github_stars_contrib_mcp.server"]
-    proc = subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    proc = subprocess.Popen(
+        cmd, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
 
     # Wait for port to be ready
     if not _wait_for_port(host, port, timeout=15.0):
@@ -106,11 +110,17 @@ def mcp_server() -> Iterator[str]:
             try:
                 out, err = proc.communicate(timeout=2)
             except Exception as e:
-                pytest.fail(f"MCP server failed to start on {host}:{port}.\nCould not retrieve output: {e}")
+                pytest.fail(
+                    f"MCP server failed to start on {host}:{port}.\nCould not retrieve output: {e}"
+                )
             else:
-                pytest.fail(f"MCP server failed to start on {host}:{port}.\nSTDOUT:\n{out.decode()}\nSTDERR:\n{err.decode()}")
+                pytest.fail(
+                    f"MCP server failed to start on {host}:{port}.\nSTDOUT:\n{out.decode()}\nSTDERR:\n{err.decode()}"
+                )
         except Exception as e:
-            pytest.fail(f"MCP server failed to start on {host}:{port}.\nCould not retrieve output: {e}")
+            pytest.fail(
+                f"MCP server failed to start on {host}:{port}.\nCould not retrieve output: {e}"
+            )
 
     server_url = f"http://{host}:{port}{path}"
     try:

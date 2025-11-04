@@ -25,7 +25,9 @@ from .test_integration_utils import (
 async def test_tools_contributions_e2e():
     require_token_or_skip()
     if should_skip_mutations():
-        pytest.skip("Mutation e2e disabled; set STARS_API_TOKEN and STARS_E2E_MUTATE=1 to run")
+        pytest.skip(
+            "Mutation e2e disabled; set STARS_API_TOKEN and STARS_E2E_MUTATE=1 to run"
+        )
 
     client = get_test_client()
     shared.stars_client = client
@@ -48,7 +50,9 @@ async def test_tools_contributions_e2e():
 
         # Update (API expects non-null description, etc.)
         upd_payload = {**base_payload, "title": "E2E Tools Contribution (updated)"}
-        upd_res = await update_contribution_impl(contribution_id=contrib_id, data=upd_payload)
+        upd_res = await update_contribution_impl(
+            contribution_id=contrib_id, data=upd_payload
+        )
         assert upd_res["success"] is True
 
         # Delete

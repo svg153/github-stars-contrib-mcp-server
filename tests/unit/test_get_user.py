@@ -12,7 +12,7 @@ class TestGetUser:
             async def get_user(self):
                 return {"loggedUser": {"id": "u1"}}
 
-        monkeypatch.setattr(tool, "get_stars_api", lambda: FakePort())
+        monkeypatch.setattr(tool, "get_stars_api", FakePort)
         res = await tool.get_user_impl()
         assert res["success"] is True
         assert res["data"]["loggedUser"]["id"] == "u1"
@@ -23,7 +23,7 @@ class TestGetUser:
             async def get_user(self):
                 raise RuntimeError("API error")
 
-        monkeypatch.setattr(tool, "get_stars_api", lambda: FailingPort())
+        monkeypatch.setattr(tool, "get_stars_api", FailingPort)
         res = await tool.get_user_impl()
         assert res["success"] is False
         assert res["error"] == "API error"
@@ -59,7 +59,7 @@ class TestGetUser:
                     }
                 }
 
-        monkeypatch.setattr(tool, "get_stars_api", lambda: FakePort())
+        monkeypatch.setattr(tool, "get_stars_api", FakePort)
         res = await tool.get_user_impl()
         assert res["success"] is True
         noms = res["data"]["loggedUser"]["nominations"]
@@ -72,7 +72,7 @@ class TestGetUser:
             async def get_user(self):
                 return {"loggedUser": {"id": "u1", "nominee": {"status": "PENDING"}}}
 
-        monkeypatch.setattr(tool, "get_stars_api", lambda: FakePort())
+        monkeypatch.setattr(tool, "get_stars_api", FakePort)
         res = await tool.get_user_impl()
         assert res["success"] is True
         assert res["data"]["loggedUser"]["nominee"]["status"] == "PENDING"
@@ -83,7 +83,7 @@ class TestGetUser:
             async def get_user(self):
                 return {"loggedUser": None}
 
-        monkeypatch.setattr(tool, "get_stars_api", lambda: FakePort())
+        monkeypatch.setattr(tool, "get_stars_api", FakePort)
         res = await tool.get_user_impl()
         assert res["success"] is True
         assert res["data"] is None

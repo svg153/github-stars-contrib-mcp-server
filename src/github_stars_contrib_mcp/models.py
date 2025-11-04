@@ -23,6 +23,7 @@ class ContributionType(str, Enum):
 # Migration note: The values 'GITHUB' and 'WEBSITE' have been removed from PlatformType.
 # If your code previously relied on these, review usages and update to supported platforms.
 
+
 class PlatformType(str, Enum):
     # Based on live GitHub Stars API enum PlatformType
     TWITTER = "TWITTER"

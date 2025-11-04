@@ -65,12 +65,16 @@ async def initialize_stars_client() -> None:
             logger.warning("No STARS_API_TOKEN provided; tools will be disabled")
             stars_client = None
             return
-        stars_client = StarsClient(api_url="https://api-stars.github.com/", token=settings.stars_api_token)
+        stars_client = StarsClient(
+            api_url="https://api-stars.github.com/", token=settings.stars_api_token
+        )
 
         # Validate token by fetching user data
         result = await stars_client.get_user_data()
         if not result["ok"] or result.get("data") is None:
-            raise ValueError(f"Invalid STARS_API_TOKEN: {result['error'] or 'No user data'}")
+            raise ValueError(
+                f"Invalid STARS_API_TOKEN: {result['error'] or 'No user data'}"
+            )
 
         logger.info("Stars client initialized and token validated")
     except Exception as e:

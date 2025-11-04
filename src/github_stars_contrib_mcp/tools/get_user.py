@@ -16,6 +16,7 @@ logger = structlog.get_logger(__name__)
 
 async def get_user_impl() -> dict:
     """Implementation: call Stars API via use case to get current logged user data with nominations."""
+    logger.info("Getting user data")
     try:
         use_case = GetUser(get_stars_api())
         data = await use_case()

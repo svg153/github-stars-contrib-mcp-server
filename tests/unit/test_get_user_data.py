@@ -11,7 +11,10 @@ from github_stars_contrib_mcp.tools.get_user_data import get_user_data_impl
 class TestGetUserData:
     @pytest.mark.asyncio
     async def test_get_user_data_success(self, mock_shared_client):
-        mock_shared_client.get_user_data.return_value = {"ok": True, "data": {"loggedUser": {"id": "u1"}}}
+        mock_shared_client.get_user_data.return_value = {
+            "ok": True,
+            "data": {"loggedUser": {"id": "u1"}},
+        }
 
         res = await get_user_data_impl()
         assert res["success"] is True
@@ -19,7 +22,7 @@ class TestGetUserData:
 
     @pytest.mark.asyncio
     async def test_get_user_data_not_initialized(self):
-        with patch.object(shared, 'stars_client', None):
+        with patch.object(shared, "stars_client", None):
             res = await get_user_data_impl()
             assert res["success"] is False
             assert res["data"] is None
@@ -74,7 +77,11 @@ class TestGetUserData:
 
     @pytest.mark.asyncio
     async def test_get_user_data_client_error(self, mock_shared_client):
-        mock_shared_client.get_user_data.return_value = {"ok": False, "error": "API error", "data": None}
+        mock_shared_client.get_user_data.return_value = {
+            "ok": False,
+            "error": "API error",
+            "data": None,
+        }
 
         res = await get_user_data_impl()
         assert res["success"] is False
@@ -83,7 +90,10 @@ class TestGetUserData:
 
     @pytest.mark.asyncio
     async def test_get_user_data_logged_user_null(self, mock_shared_client):
-        mock_shared_client.get_user_data.return_value = {"ok": True, "data": {"loggedUser": None}}
+        mock_shared_client.get_user_data.return_value = {
+            "ok": True,
+            "data": {"loggedUser": None},
+        }
 
         res = await get_user_data_impl()
         assert res["success"] is True

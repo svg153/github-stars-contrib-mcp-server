@@ -1,4 +1,4 @@
-.PHONY: install test run format lint lint-fix run-env venv
+.PHONY: install test run format lint lint-fix run-env venv pre-commit-install pre-commit-run
 
 install:
 	pip install -e .[dev]
@@ -21,10 +21,16 @@ format:
 	ruff format src
 
 lint:
-	ruff check src
+	ruff check --quiet .
 
 lint-fix:
-	ruff check --fix src
+	ruff check --fix .
+
+pre-commit-install:
+	pre-commit install
+
+pre-commit-run:
+	pre-commit run --all-files
 
 # Run all tests (unit + integration), requiring .env.local to exist and be sourced.
 .PHONY: test-all

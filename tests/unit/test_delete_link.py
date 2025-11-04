@@ -12,7 +12,7 @@ class TestDeleteLink:
             async def delete_link(self, link_id: str):
                 return {"deleteLink": {"id": link_id}}
 
-        monkeypatch.setattr(tool, "get_stars_api", lambda: FakePort())
+        monkeypatch.setattr(tool, "get_stars_api", FakePort)
         res = await tool.delete_link_impl("l1")
         assert res["success"] is True
         assert res["data"] == {"deleteLink": {"id": "l1"}}
@@ -23,7 +23,7 @@ class TestDeleteLink:
             async def delete_link(self, link_id: str):
                 raise RuntimeError("Invalid ID")
 
-        monkeypatch.setattr(tool, "get_stars_api", lambda: FailingPort())
+        monkeypatch.setattr(tool, "get_stars_api", FailingPort)
         res = await tool.delete_link_impl("invalid")
         assert res["success"] is False
         assert res["error"] == "Invalid ID"
@@ -31,13 +31,13 @@ class TestDeleteLink:
     @pytest.mark.asyncio
     async def test_delete_link_logger_initialized(self):
         from github_stars_contrib_mcp.tools.delete_link import logger
+
         assert logger is not None
 
     @pytest.mark.asyncio
     async def test_delete_link_client_error_placeholder(self, mock_shared_client):
         # Client error covered by error_bubbles; placeholder to keep test valid
         assert mock_shared_client is not None
-        pass
 
     @pytest.mark.asyncio
     async def test_delete_link_validation_error_logs(self, caplog, monkeypatch):
@@ -54,7 +54,7 @@ class TestDeleteLink:
             async def delete_link(self, link_id: str):
                 return {"deleteLink": {"id": link_id}}
 
-        monkeypatch.setattr(tool, "get_stars_api", lambda: FakePort())
+        monkeypatch.setattr(tool, "get_stars_api", FakePort)
         res = await tool.delete_link_impl("l1")
         assert res["success"] is True
 
@@ -67,7 +67,25 @@ class TestDeleteLink:
 
         # Ensure logger is initialized (this covers lines 22-23)
         assert logger is not None
-        assert hasattr(logger, 'info')  # Basic logger check
+        assert hasattr(logger, "info")  # Basic logger check
 
         # Minimal assertion to keep the test valid and cover logger presence
         assert True
+
+    @pytest.mark.asyncio
+    async def test_delete_link_validation_error_branch(self):
+        # Passing None should fail pydantic validation for id: str
+        res = await tool.delete_link_impl(None)  # type: ignore[arg-type]
+        assert res["success"] is False
+        assert isinstance(res["error"], list)
+
+    @pytest.mark.asyncio
+    async def test_delete_link_exception_branch(self, monkeypatch):
+        class BoomPort:
+            async def delete_link(self, link_id: str):
+                raise Exception("boom")
+
+        monkeypatch.setattr(tool, "get_stars_api", BoomPort)
+        res = await tool.delete_link_impl("l-err")
+        assert res["success"] is False
+        assert "boom" in res["error"]

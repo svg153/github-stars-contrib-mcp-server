@@ -1,4 +1,5 @@
 """GraphQL adapter implementing StarsAPIPort using the existing StarsClient."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -31,8 +32,12 @@ class StarsAPIAdapter(StarsAPIPort):
         return res.data or {}
 
     # Contributions
-    async def create_contribution(self, *, type: str, date: str, title: str, url: str, description: str | None) -> dict[str, Any]:
-        res = await self._client.create_contribution(type=type, date=date, title=title, url=url, description=description or "")
+    async def create_contribution(
+        self, *, type: str, date: str, title: str, url: str, description: str | None
+    ) -> dict[str, Any]:
+        res = await self._client.create_contribution(
+            type=type, date=date, title=title, url=url, description=description or ""
+        )
         if not res.ok:
             raise RuntimeError(res.error or "Unknown Stars API error")
         return res.data or {}
@@ -43,7 +48,9 @@ class StarsAPIAdapter(StarsAPIPort):
             raise RuntimeError(res.error or "Unknown Stars API error")
         return res.data or {}
 
-    async def update_contribution(self, contribution_id: str, data: dict[str, Any]) -> dict[str, Any]:
+    async def update_contribution(
+        self, contribution_id: str, data: dict[str, Any]
+    ) -> dict[str, Any]:
         res = await self._client.update_contribution(contribution_id, data)
         if not res.ok:
             raise RuntimeError(res.error or "Unknown Stars API error")
@@ -62,7 +69,9 @@ class StarsAPIAdapter(StarsAPIPort):
             raise RuntimeError(res.error or "Unknown Stars API error")
         return res.data or {}
 
-    async def update_link(self, link_id: str, link: str | None, platform: str | None) -> dict[str, Any]:
+    async def update_link(
+        self, link_id: str, link: str | None, platform: str | None
+    ) -> dict[str, Any]:
         res = await self._client.update_link(link_id, link or "", platform or "")
         if not res.ok:
             raise RuntimeError(res.error or "Unknown Stars API error")

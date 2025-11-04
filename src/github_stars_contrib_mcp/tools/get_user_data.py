@@ -1,5 +1,4 @@
-"""MCP tool to fetch logged user data from GitHub Stars GraphQL API.
-"""
+"""MCP tool to fetch logged user data from GitHub Stars GraphQL API."""
 
 from __future__ import annotations
 
@@ -15,6 +14,7 @@ async def get_user_data_impl() -> dict:
 
     Uses shared.stars_client to align with test fixtures.
     """
+    logger.info("Getting user data")
     if not shared.stars_client:
         return {"success": False, "error": "Stars client not initialized", "data": None}
 

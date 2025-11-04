@@ -19,7 +19,14 @@ class TestStarsClient:
         with patch("httpx.AsyncClient") as mock_class:
             yield mock_class
 
-    def _setup_mock_response(self, mock_client_class, status_code=200, json_data=None, json_error=None, text=""):
+    def _setup_mock_response(
+        self,
+        mock_client_class,
+        status_code=200,
+        json_data=None,
+        json_error=None,
+        text="",
+    ):
         mock_instance = AsyncMock()
         mock_resp = MagicMock()
         mock_resp.status_code = status_code
@@ -36,7 +43,10 @@ class TestStarsClient:
     async def test_create_contributions_success(self, mock_client_class):
         client = StarsClient("https://api.example.com", "token")
 
-        self._setup_mock_response(mock_client_class, json_data={"data": {"createContributions": [{"id": "1"}, {"id": "2"}]}})
+        self._setup_mock_response(
+            mock_client_class,
+            json_data={"data": {"createContributions": [{"id": "1"}, {"id": "2"}]}},
+        )
 
         result = await client.create_contributions([{"title": "Test"}])
         assert result.ok is True
@@ -46,7 +56,9 @@ class TestStarsClient:
     async def test_create_contributions_http_error(self, mock_client_class):
         client = StarsClient("https://api.example.com", "token")
 
-        self._setup_mock_response(mock_client_class, status_code=400, text="Bad Request")
+        self._setup_mock_response(
+            mock_client_class, status_code=400, text="Bad Request"
+        )
 
         result = await client.create_contributions([{"title": "Test"}])
         assert result.ok is False
@@ -57,7 +69,9 @@ class TestStarsClient:
     async def test_create_contributions_invalid_json(self, mock_client_class):
         client = StarsClient("https://api.example.com", "token")
 
-        self._setup_mock_response(mock_client_class, json_error=json.JSONDecodeError("Invalid", "", 0))
+        self._setup_mock_response(
+            mock_client_class, json_error=json.JSONDecodeError("Invalid", "", 0)
+        )
 
         result = await client.create_contributions([{"title": "Test"}])
         assert result.ok is False
@@ -67,7 +81,9 @@ class TestStarsClient:
     async def test_create_contributions_graphql_error(self, mock_client_class):
         client = StarsClient("https://api.example.com", "token")
 
-        self._setup_mock_response(mock_client_class, json_data={"errors": [{"message": "GraphQL error"}]})
+        self._setup_mock_response(
+            mock_client_class, json_data={"errors": [{"message": "GraphQL error"}]}
+        )
 
         result = await client.create_contributions([{"title": "Test"}])
         assert result.ok is False
@@ -77,7 +93,9 @@ class TestStarsClient:
     async def test_get_user_data_success(self, mock_client_class):
         client = StarsClient("https://api.example.com", "token")
 
-        self._setup_mock_response(mock_client_class, json_data={"data": {"loggedUser": {"id": "u1"}}})
+        self._setup_mock_response(
+            mock_client_class, json_data={"data": {"loggedUser": {"id": "u1"}}}
+        )
 
         result = await client.get_user_data()
         assert result.ok is True
@@ -87,7 +105,12 @@ class TestStarsClient:
     async def test_update_contribution_success(self, mock_client_class):
         client = StarsClient("https://api.example.com", "token")
 
-        self._setup_mock_response(mock_client_class, json_data={"data": {"updateContribution": {"id": "c1", "title": "Updated"}}})
+        self._setup_mock_response(
+            mock_client_class,
+            json_data={
+                "data": {"updateContribution": {"id": "c1", "title": "Updated"}}
+            },
+        )
 
         result = await client.update_contribution("c1", {"title": "Updated"})
         assert result.ok is True
@@ -97,7 +120,9 @@ class TestStarsClient:
     async def test_delete_contribution_success(self, mock_client_class):
         client = StarsClient("https://api.example.com", "token")
 
-        self._setup_mock_response(mock_client_class, json_data={"data": {"deleteContribution": {"id": "c1"}}})
+        self._setup_mock_response(
+            mock_client_class, json_data={"data": {"deleteContribution": {"id": "c1"}}}
+        )
 
         result = await client.delete_contribution("c1")
         assert result.ok is True
@@ -107,18 +132,21 @@ class TestStarsClient:
     async def test_get_stars_success(self, mock_client_class):
         client = StarsClient("https://api.example.com", "token")
 
-        self._setup_mock_response(mock_client_class, json_data={"data": {"publicProfile": {"username": "u"}}})
+        self._setup_mock_response(
+            mock_client_class, json_data={"data": {"publicProfile": {"username": "u"}}}
+        )
 
         result = await client.get_stars("u")
         assert result.ok is True
         assert result.data["publicProfile"]["username"] == "u"
 
-
     @pytest.mark.asyncio
     async def test_get_user_success(self, mock_client_class):
         client = StarsClient("https://api.example.com", "token")
 
-        self._setup_mock_response(mock_client_class, json_data={"data": {"loggedUser": {"id": "u1"}}})
+        self._setup_mock_response(
+            mock_client_class, json_data={"data": {"loggedUser": {"id": "u1"}}}
+        )
 
         result = await client.get_user()
         assert result.ok is True
@@ -128,28 +156,55 @@ class TestStarsClient:
     async def test_update_profile_success(self, mock_client_class):
         client = StarsClient("https://api.example.com", "token")
 
-        self._setup_mock_response(mock_client_class, json_data={"data": {"updateProfile": {"id": "p1"}}})
+        self._setup_mock_response(
+            mock_client_class, json_data={"data": {"updateProfile": {"id": "p1"}}}
+        )
 
         result = await client.update_profile({"bio": "hi"})
         assert result.ok is True
         assert result.data["updateProfile"]["id"] == "p1"
 
     # Parametrized error tests
-    @pytest.mark.parametrize("method_name, args, expected_key", [
-        ("get_user_data", (), None),
-        ("get_stars", ("u",), "publicProfile"),
-        ("get_user", (), "loggedUser"),
-        ("update_profile", ({"bio": "hi"},), "updateProfile"),
-        ("update_contribution", ("c1", {"title": "Test"}), "updateContribution"),
-        ("delete_contribution", ("c1",), "deleteContribution"),
-    ])
-    @pytest.mark.parametrize("error_type, status_code, json_data, json_error, text, expected_error", [
-        ("http", 500, None, None, "Server Error", "HTTP 500"),
-        ("invalid_json", 200, None, "json_error", "", "Invalid JSON response"),
-        ("graphql", 200, {"errors": [{"message": "GraphQL error"}]}, None, "", "GraphQL error"),
-    ])
+    @pytest.mark.parametrize(
+        "method_name, args, expected_key",
+        [
+            ("get_user_data", (), None),
+            ("get_stars", ("u",), "publicProfile"),
+            ("get_user", (), "loggedUser"),
+            ("update_profile", ({"bio": "hi"},), "updateProfile"),
+            ("update_contribution", ("c1", {"title": "Test"}), "updateContribution"),
+            ("delete_contribution", ("c1",), "deleteContribution"),
+        ],
+    )
+    @pytest.mark.parametrize(
+        "error_type, status_code, json_data, json_error, text, expected_error",
+        [
+            ("http", 500, None, None, "Server Error", "HTTP 500"),
+            ("invalid_json", 200, None, "json_error", "", "Invalid JSON response"),
+            (
+                "graphql",
+                200,
+                {"errors": [{"message": "GraphQL error"}]},
+                None,
+                "",
+                "GraphQL error",
+            ),
+        ],
+    )
     @pytest.mark.asyncio
-    async def test_method_errors(self, mock_client_class, method_name, args, expected_key, error_type, status_code, json_data, json_error, text, expected_error):
+    async def test_method_errors(
+        self,
+        mock_client_class,
+        method_name,
+        args,
+        expected_key,
+        error_type,
+        status_code,
+        json_data,
+        json_error,
+        text,
+        expected_error,
+    ):
         client = StarsClient("https://api.example.com", "token")
 
         if json_error == "json_error":
@@ -157,7 +212,13 @@ class TestStarsClient:
         else:
             json_error = None
 
-        self._setup_mock_response(mock_client_class, status_code=status_code, json_data=json_data, json_error=json_error, text=text)
+        self._setup_mock_response(
+            mock_client_class,
+            status_code=status_code,
+            json_data=json_data,
+            json_error=json_error,
+            text=text,
+        )
 
         method = getattr(client, method_name)
         result = await method(*args)

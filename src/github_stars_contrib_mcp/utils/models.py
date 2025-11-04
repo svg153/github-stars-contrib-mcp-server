@@ -7,6 +7,7 @@ from typing import Any
 @dataclass
 class APIResult:
     """Result of an API operation."""
+
     ok: bool
     data: dict[str, Any] | None = None
     error: str | None = None

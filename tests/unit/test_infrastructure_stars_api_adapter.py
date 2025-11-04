@@ -52,7 +52,9 @@ async def test_adapter_success_paths():
         "get_user": APIResult(True, {"me": {"id": "me"}}),
         "get_stars": APIResult(True, {"publicProfile": {"username": "x"}}),
         "create_contribution": APIResult(True, {"createContribution": {"id": "c1"}}),
-        "create_contributions": APIResult(True, {"createContributions": [{"id": "c1"}, {"id": "c2"}]}),
+        "create_contributions": APIResult(
+            True, {"createContributions": [{"id": "c1"}, {"id": "c2"}]}
+        ),
         "update_contribution": APIResult(True, {"updateContribution": {"id": "c1"}}),
         "delete_contribution": APIResult(True, {"deleteContribution": {"id": "c1"}}),
         "create_link": APIResult(True, {"createLink": {"id": "l1"}}),
@@ -65,9 +67,17 @@ async def test_adapter_success_paths():
     assert (await adapter.get_user_data())["user"]["id"] == "u"
     assert (await adapter.get_user())["me"]["id"] == "me"
     assert (await adapter.get_stars("who"))["publicProfile"]["username"] == "x"
-    assert (await adapter.create_contribution(type="T", date="D", title="t", url="u", description=""))["createContribution"]["id"] == "c1"
-    assert (await adapter.create_contributions([{}]))["createContributions"][0]["id"] == "c1"
-    assert (await adapter.update_contribution("c1", {}))["updateContribution"]["id"] == "c1"
+    assert (
+        await adapter.create_contribution(
+            type="T", date="D", title="t", url="u", description=""
+        )
+    )["createContribution"]["id"] == "c1"
+    assert (await adapter.create_contributions([{}]))["createContributions"][0][
+        "id"
+    ] == "c1"
+    assert (await adapter.update_contribution("c1", {}))["updateContribution"][
+        "id"
+    ] == "c1"
     assert (await adapter.delete_contribution("c1"))["deleteContribution"]["id"] == "c1"
     assert (await adapter.create_link("u", "OTHER"))["createLink"]["id"] == "l1"
     assert (await adapter.update_link("l1", "u", "OTHER"))["updateLink"]["id"] == "l1"

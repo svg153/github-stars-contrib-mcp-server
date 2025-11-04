@@ -30,7 +30,9 @@ class TestSettings:
             Settings(log_level="INVALID")
 
     def test_with_token(self):
-        settings = Settings(stars_api_token="test_token", log_level="DEBUG", dangerously_omit_auth=True)
+        settings = Settings(
+            stars_api_token="test_token", log_level="DEBUG", dangerously_omit_auth=True
+        )
         assert settings.stars_api_token == "test_token"
         assert settings.log_level == "DEBUG"
         assert settings.dangerously_omit_auth is True

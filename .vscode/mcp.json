@@ -4,24 +4,24 @@
         //     "type": "http",
         //     "url": "http://127.0.0.1:8766/mcp"
         // },
-        "github-stars-contrib-mcp-local": {
-            "cwd": "${workspaceFolder}/src",
-            "dev": {
-                "watch": "**/*.py",
-                "reload": true,
-                "debug": {
-                    "type": "debugpy"
-                }
-            },
-            "command": "${workspaceFolder}/.venv/bin/python",
-            "args": [
-                "-m",
-                "github_stars_contrib_mcp.server",
-            ],
-            "envFile": "${workspaceFolder}/.env.local",
-            "env": {
-                "MCP_TRANSPORT": "stdio",
-            }
-        }
+        // "github-stars-contrib-mcp-local": {
+        //     "cwd": "${workspaceFolder}/src",
+        //     "dev": {
+        //         "watch": "**/*.py",
+        //         "reload": true,
+        //         "debug": {
+        //             "type": "debugpy"
+        //         }
+        //     },
+        //     "command": "${workspaceFolder}/.venv/bin/python",
+        //     "args": [
+        //         "-m",
+        //         "github_stars_contrib_mcp.server",
+        //     ],
+        //     "envFile": "${workspaceFolder}/.env.local",
+        //     "env": {
+        //         "MCP_TRANSPORT": "stdio",
+        //     }
+        // }
     }
 }

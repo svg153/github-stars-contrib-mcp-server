@@ -30,8 +30,11 @@ class UpdateContributionArgs(BaseModel):
 
 async def update_contribution_impl(contribution_id: str, data: dict) -> dict:
     """Implementation: validates input and calls Stars API client."""
+    logger.info("Updating contribution", contribution_id=contribution_id, data=data)
     try:
-        payload = UpdateContributionArgs(id=contribution_id, data=UpdateContributionInput(**data))
+        payload = UpdateContributionArgs(
+            id=contribution_id, data=UpdateContributionInput(**data)
+        )
     except ValidationError as e:
         return {"success": False, "error": e.errors()}
 

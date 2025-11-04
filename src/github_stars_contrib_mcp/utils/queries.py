@@ -1,32 +1,25 @@
 """GraphQL queries and mutations for GitHub Stars API."""
 
 # Contribution mutations
-CREATE_CONTRIBUTIONS_MUTATION = (
-    """
+CREATE_CONTRIBUTIONS_MUTATION = """
     mutation CreateContributions($data: [ContributionInput!]!) {
         createContributions(data: $data) {
             id
             __typename
         }
     }
-    """
-    .strip()
-)
+    """.strip()
 
-CREATE_CONTRIBUTION_MUTATION = (
-    """
+CREATE_CONTRIBUTION_MUTATION = """
     mutation CreateContribution($data: ContributionInput!) {
         createContribution(data: $data) {
             id
             __typename
         }
     }
-    """
-    .strip()
-)
+    """.strip()
 
-UPDATE_CONTRIBUTION_MUTATION = (
-    """
+UPDATE_CONTRIBUTION_MUTATION = """
     mutation UpdateContribution($id: String!, $data: ContributionInput!) {
         updateContribution(id: $id, data: $data) {
             id
@@ -34,37 +27,28 @@ UPDATE_CONTRIBUTION_MUTATION = (
             __typename
         }
     }
-    """
-    .strip()
-)
+    """.strip()
 
-DELETE_CONTRIBUTION_MUTATION = (
-    """
+DELETE_CONTRIBUTION_MUTATION = """
     mutation DeleteContribution($id: String!) {
         deleteContribution(id: $id) {
             id
             __typename
         }
     }
-    """
-    .strip()
-)
+    """.strip()
 
 # Link mutations
-CREATE_LINK_MUTATION = (
-    """
+CREATE_LINK_MUTATION = """
     mutation CreateLink($link: URL!, $platform: PlatformType!) {
         createLink(data: {link: $link, platform: $platform}) {
             id
             __typename
         }
     }
-    """
-    .strip()
-)
+    """.strip()
 
-UPDATE_LINK_MUTATION = (
-    """
+UPDATE_LINK_MUTATION = """
     mutation UpdateLink($id: String!, $link: URL!, $platform: PlatformType!) {
         updateLink(id: $id, data: {link: $link, platform: $platform}) {
             id
@@ -72,25 +56,19 @@ UPDATE_LINK_MUTATION = (
             __typename
         }
     }
-    """
-    .strip()
-)
+    """.strip()
 
-DELETE_LINK_MUTATION = (
-    """
+DELETE_LINK_MUTATION = """
     mutation DeleteLink($id: String!) {
         deleteLink(id: $id) {
             id
             __typename
         }
     }
-    """
-    .strip()
-)
+    """.strip()
 
 # Profile queries and mutations
-USER_DATA_QUERY = (
-    """
+USER_DATA_QUERY = """
     query UserData {
         loggedUser {
             id
@@ -131,12 +109,9 @@ USER_DATA_QUERY = (
             __typename
         }
     }
-    """
-    .strip()
-)
+    """.strip()
 
-GET_STARS_QUERY = (
-    """
+GET_STARS_QUERY = """
     query GetStars($username: String!) {
         publicProfile(username: $username) {
             username
@@ -152,12 +127,9 @@ GET_STARS_QUERY = (
             __typename
         }
     }
-    """
-    .strip()
-)
+    """.strip()
 
-USER_QUERY = (
-    """
+USER_QUERY = """
     query User {
         loggedUser {
             id
@@ -198,18 +170,13 @@ USER_QUERY = (
             __typename
         }
     }
-    """
-    .strip()
-)
+    """.strip()
 
-UPDATE_PROFILE_MUTATION = (
-    """
+UPDATE_PROFILE_MUTATION = """
     mutation UpdateProfile($data: NomineeProfileInput!) {
         updateProfile(data: $data) {
             id
             __typename
         }
     }
-    """
-    .strip()
-)
+    """.strip()

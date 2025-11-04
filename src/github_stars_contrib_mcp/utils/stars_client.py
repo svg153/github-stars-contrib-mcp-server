@@ -3,9 +3,11 @@
 
 from typing import Any
 import json
+import time
 
 import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential
+import structlog
 
 from .models import APIResult
 from .queries import (
@@ -21,6 +23,9 @@ from .queries import (
     USER_DATA_QUERY,
     USER_QUERY,
 )
+
+logger = structlog.get_logger(__name__)
+
 
 class StarsClient:
     def __init__(self, api_url: str, token: str) -> None:
@@ -49,7 +54,9 @@ class StarsClient:
         Returns:
             APIResult with ok, data, error. data contains 'ids' key with list of created IDs.
         """
-        result = await self._execute_graphql(CREATE_CONTRIBUTIONS_MUTATION, {"data": items})
+        result = await self._execute_graphql(
+            CREATE_CONTRIBUTIONS_MUTATION, {"data": items}, op="createContributions"
+        )
         if not result["ok"]:
             return APIResult(False, None, result["error"])
 
@@ -57,7 +64,9 @@ class StarsClient:
         ids = [edge.get("id") for edge in edges if edge and edge.get("id")]
         return APIResult(True, {"ids": ids})
 
-    async def create_contribution(self, type: str, date: str, title: str, url: str, description: str) -> APIResult:
+    async def create_contribution(
+        self, type: str, date: str, title: str, url: str, description: str
+    ) -> APIResult:
         """Create a single contribution.
 
         Args:
@@ -79,9 +88,15 @@ class StarsClient:
                 "description": description,
             }
         }
-        return APIResult(**await self._execute_graphql(CREATE_CONTRIBUTION_MUTATION, variables))
+        return APIResult(
+            **await self._execute_graphql(
+                CREATE_CONTRIBUTION_MUTATION, variables, op="createContribution"
+            )
+        )
 
-    async def update_contribution(self, contribution_id: str, data: dict[str, Any]) -> APIResult:
+    async def update_contribution(
+        self, contribution_id: str, data: dict[str, Any]
+    ) -> APIResult:
         """Update a contribution.
 
         Args:
@@ -91,7 +106,13 @@ class StarsClient:
         Returns:
             APIResult with ok, data, error.
         """
-        return APIResult(**await self._execute_graphql(UPDATE_CONTRIBUTION_MUTATION, {"id": contribution_id, "data": data}))
+        return APIResult(
+            **await self._execute_graphql(
+                UPDATE_CONTRIBUTION_MUTATION,
+                {"id": contribution_id, "data": data},
+                op="updateContribution",
+            )
+        )
 
     async def delete_contribution(self, contribution_id: str) -> APIResult:
         """Delete a contribution.
@@ -102,7 +123,13 @@ class StarsClient:
         Returns:
             APIResult with ok, data, error.
         """
-        return APIResult(**await self._execute_graphql(DELETE_CONTRIBUTION_MUTATION, {"id": contribution_id}))
+        return APIResult(
+            **await self._execute_graphql(
+                DELETE_CONTRIBUTION_MUTATION,
+                {"id": contribution_id},
+                op="deleteContribution",
+            )
+        )
 
     # Link methods
     async def create_link(self, link: str, platform: str) -> APIResult:
@@ -115,7 +142,13 @@ class StarsClient:
         Returns:
             APIResult with ok, data, error.
         """
-        return APIResult(**await self._execute_graphql(CREATE_LINK_MUTATION, {"link": link, "platform": platform}))
+        return APIResult(
+            **await self._execute_graphql(
+                CREATE_LINK_MUTATION,
+                {"link": link, "platform": platform},
+                op="createLink",
+            )
+        )
 
     async def update_link(self, link_id: str, link: str, platform: str) -> APIResult:
         """Update a link.
@@ -128,7 +161,13 @@ class StarsClient:
         Returns:
             APIResult with ok, data, error.
         """
-        return APIResult(**await self._execute_graphql(UPDATE_LINK_MUTATION, {"id": link_id, "link": link, "platform": platform}))
+        return APIResult(
+            **await self._execute_graphql(
+                UPDATE_LINK_MUTATION,
+                {"id": link_id, "link": link, "platform": platform},
+                op="updateLink",
+            )
+        )
 
     async def delete_link(self, link_id: str) -> APIResult:
         """Delete a link.
@@ -139,7 +178,11 @@ class StarsClient:
         Returns:
             APIResult with ok, data, error.
         """
-        return APIResult(**await self._execute_graphql(DELETE_LINK_MUTATION, {"id": link_id}))
+        return APIResult(
+            **await self._execute_graphql(
+                DELETE_LINK_MUTATION, {"id": link_id}, op="deleteLink"
+            )
+        )
 
     # Profile methods
     async def get_user_data(self) -> APIResult:
@@ -148,7 +191,7 @@ class StarsClient:
         Returns:
             APIResult with ok, data, error.
         """
-        return APIResult(**await self._execute_graphql(USER_DATA_QUERY))
+        return APIResult(**await self._execute_graphql(USER_DATA_QUERY, op="userData"))
 
     async def get_stars(self, username: str) -> APIResult:
         """Fetch the public profile stars/contributions for a user from the Stars API.
@@ -159,7 +202,11 @@ class StarsClient:
         Returns:
             APIResult with ok, data, error.
         """
-        return APIResult(**await self._execute_graphql(GET_STARS_QUERY, {"username": username}))
+        return APIResult(
+            **await self._execute_graphql(
+                GET_STARS_QUERY, {"username": username}, op="getStars"
+            )
+        )
 
     async def get_user(self) -> APIResult:
         """Fetch the logged user's data including nominations from the Stars API.
@@ -167,7 +214,7 @@ class StarsClient:
         Returns:
             APIResult with ok, data, error.
         """
-        return APIResult(**await self._execute_graphql(USER_QUERY))
+        return APIResult(**await self._execute_graphql(USER_QUERY, op="getUser"))
 
     async def update_profile(self, data: dict[str, Any]) -> APIResult:
         """Update the user profile.
@@ -178,25 +225,92 @@ class StarsClient:
         Returns:
             APIResult with ok, data, error.
         """
-        return APIResult(**await self._execute_graphql(UPDATE_PROFILE_MUTATION, data))
+        return APIResult(
+            **await self._execute_graphql(
+                UPDATE_PROFILE_MUTATION, data, op="updateProfile"
+            )
+        )
 
-    @retry(wait=wait_exponential(multiplier=0.5, min=0.5, max=8), stop=stop_after_attempt(3))
-    async def _execute_graphql(self, query: str, variables: dict[str, Any] | None = None) -> dict[str, Any]:
+    @retry(
+        wait=wait_exponential(multiplier=0.5, min=0.5, max=8),
+        stop=stop_after_attempt(3),
+    )
+    async def _execute_graphql(
+        self,
+        query: str,
+        variables: dict[str, Any] | None = None,
+        *,
+        op: str | None = None,
+    ) -> dict[str, Any]:
         """Execute a GraphQL query/mutation and return the response data or error.
 
         Returns a dict with keys: ok (bool), data (dict | None), error (str | None).
         """
         payload = {"query": query, "variables": variables or {}}
-        async with httpx.AsyncClient(timeout=30, headers=self._headers, cookies=self._cookies) as client:
+        op_name = op or "unknown"
+        start = time.monotonic()
+        async with httpx.AsyncClient(
+            timeout=30, headers=self._headers, cookies=self._cookies
+        ) as client:
             resp = await client.post(self.api_url, json=payload)
+            duration_ms = int((time.monotonic() - start) * 1000)
             if resp.status_code >= 400:
-                return {"ok": False, "data": None, "error": f"HTTP {resp.status_code}: {resp.text}"}
+                logger.warning(
+                    "stars_client.request_failed",
+                    op=op_name,
+                    http_status=resp.status_code,
+                    duration_ms=duration_ms,
+                    request_size=len(json.dumps(payload.get("variables", {})))
+                    if payload.get("variables")
+                    else 0,
+                    response_size=len(resp.text) if resp.text else 0,
+                    error_kind="http_error",
+                )
+                return {
+                    "ok": False,
+                    "data": None,
+                    "error": f"HTTP {resp.status_code}: {resp.text}",
+                }
             try:
                 data = resp.json()
             except json.JSONDecodeError:
+                logger.warning(
+                    "stars_client.request_failed",
+                    op=op_name,
+                    duration_ms=duration_ms,
+                    request_size=len(json.dumps(payload.get("variables", {})))
+                    if payload.get("variables")
+                    else 0,
+                    response_size=len(resp.text) if resp.text else 0,
+                    error_kind="json_error",
+                )
                 return {"ok": False, "data": None, "error": "Invalid JSON response"}
 
             if "errors" in data and data["errors"]:
-                return {"ok": False, "data": None, "error": data["errors"][0].get("message", "Unknown error")}
+                logger.warning(
+                    "stars_client.request_failed",
+                    op=op_name,
+                    duration_ms=duration_ms,
+                    request_size=len(json.dumps(payload.get("variables", {})))
+                    if payload.get("variables")
+                    else 0,
+                    response_size=len(resp.text) if resp.text else 0,
+                    error_kind="graphql_error",
+                )
+                return {
+                    "ok": False,
+                    "data": None,
+                    "error": data["errors"][0].get("message", "Unknown error"),
+                }
 
+            logger.info(
+                "stars_client.request_ok",
+                op=op_name,
+                duration_ms=duration_ms,
+                http_status=resp.status_code,
+                request_size=len(json.dumps(payload.get("variables", {})))
+                if payload.get("variables")
+                else 0,
+                response_size=len(resp.text) if resp.text else 0,
+            )
             return {"ok": True, "data": data.get("data", {}), "error": None}

@@ -27,11 +27,16 @@ class TestShared:
         with patch("github_stars_contrib_mcp.shared.settings") as mock_settings:
             mock_settings.stars_api_token = "test_token"
             mock_client = AsyncMock()
-            mock_client.get_user_data.return_value = {"ok": True, "data": {"loggedUser": {"id": "test"}}}
+            mock_client.get_user_data.return_value = {
+                "ok": True,
+                "data": {"loggedUser": {"id": "test"}},
+            }
             mock_shared_client.return_value = mock_client
             await shared.initialize_stars_client()
             assert shared.stars_client == mock_client
-            mock_shared_client.assert_called_once_with(api_url="https://api-stars.github.com/", token="test_token")
+            mock_shared_client.assert_called_once_with(
+                api_url="https://api-stars.github.com/", token="test_token"
+            )
 
     @pytest.mark.asyncio
     async def test_initialize_stars_client_exception(self, mock_shared_client):
@@ -43,8 +48,7 @@ class TestShared:
 
     def test_configure_logging(self):
         # Test that _configure_logging sets up logging when not configured
-           with patch("logging.getLogger") as mock_get_logger, \
-               patch("sys.stderr"):
+        with patch("logging.getLogger") as mock_get_logger, patch("sys.stderr"):
             mock_root = MagicMock()
             mock_root.handlers = []
             mock_get_logger.return_value = mock_root

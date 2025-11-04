@@ -14,7 +14,7 @@ class TestCreateContributions:
             async def create_contributions(self, items):
                 return {"ids": ["1", "2"]}
 
-        monkeypatch.setattr(tool, "get_stars_api", lambda: FakePort())
+        monkeypatch.setattr(tool, "get_stars_api", FakePort)
 
         data = [
             {
@@ -32,12 +32,14 @@ class TestCreateContributions:
 
     @pytest.mark.asyncio
     async def test_create_contributions_invalid_url(self):
-        data = [{
-            "title": "Test",
-            "url": "not-a-url",
-            "type": "BLOGPOST",
-            "date": datetime(2024, 1, 1, 0, 0, 0).isoformat(),
-        }]
+        data = [
+            {
+                "title": "Test",
+                "url": "not-a-url",
+                "type": "BLOGPOST",
+                "date": datetime(2024, 1, 1, 0, 0, 0).isoformat(),
+            }
+        ]
         res = await tool.create_contributions_impl(data)
         assert res["success"] is False
         assert "url" in str(res["error"])
@@ -48,7 +50,7 @@ class TestCreateContributions:
             async def create_contributions(self, items):
                 raise RuntimeError("API error")
 
-        monkeypatch.setattr(tool, "get_stars_api", lambda: FailingPort())
+        monkeypatch.setattr(tool, "get_stars_api", FailingPort)
         data = [
             {
                 "title": "Test",
@@ -65,4 +67,3 @@ class TestCreateContributions:
     async def test_create_contributions_client_error(self, mock_shared_client):
         # Covered by error_bubbles above; placeholder to keep test valid
         assert mock_shared_client is not None
-        pass

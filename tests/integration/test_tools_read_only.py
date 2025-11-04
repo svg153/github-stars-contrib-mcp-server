@@ -36,4 +36,3 @@ async def test_tools_read_only():
             assert "contributions" in prof
     finally:
         shared.stars_client = None
-

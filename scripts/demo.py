@@ -65,7 +65,7 @@ async def cmd_list_contributions():
         print(f"   Type: {contrib.get('type', 'N/A')}")
         print(f"   Date: {contrib.get('date', 'N/A')}")
         print(f"   URL: {contrib.get('url', 'N/A')}")
-        if contrib.get('description'):
+        if contrib.get("description"):
             print(f"   Description: {contrib.get('description')}")
         print(f"   ID: {contrib.get('id', 'N/A')}")
         print()
@@ -115,21 +115,17 @@ def main():
     p3.add_argument(
         "--data",
         required=True,
-        help='JSON array of contributions, e.g., [{"title": "Test", "url": "https://example.com", "description": "Test description", "type": "BLOGPOST", "date": "2023-01-01T00:00:00Z"}]'
+        help='JSON array of contributions, e.g., [{"title": "Test", "url": "https://example.com", "description": "Test description", "type": "BLOGPOST", "date": "2023-01-01T00:00:00Z"}]',
     )
 
     p4 = sub.add_parser("delete-contribution", help="Delete a contribution by ID")
-    p4.add_argument(
-        "--id",
-        required=True,
-        help="The ID of the contribution to delete"
-    )
+    p4.add_argument("--id", required=True, help="The ID of the contribution to delete")
 
     p5 = sub.add_parser("update-profile", help="Update user profile")
     p5.add_argument(
         "--data",
         required=True,
-        help='JSON object with profile fields, e.g., {"name": "John Doe", "bio": "Updated bio"}'
+        help='JSON object with profile fields, e.g., {"name": "John Doe", "bio": "Updated bio"}',
     )
 
     args = parser.parse_args()

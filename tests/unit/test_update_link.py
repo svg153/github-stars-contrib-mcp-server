@@ -9,16 +9,26 @@ class TestUpdateLink:
     @pytest.mark.asyncio
     async def test_update_link_success(self, monkeypatch):
         class FakePort:
-            async def update_link(self, link_id: str, link: str | None, platform: str | None):
-                return {"updateLink": {"id": link_id, "link": link, "platform": platform}}
+            async def update_link(
+                self, link_id: str, link: str | None, platform: str | None
+            ):
+                return {
+                    "updateLink": {"id": link_id, "link": link, "platform": platform}
+                }
 
-        monkeypatch.setattr(tool, "get_stars_api", lambda: FakePort())
+        monkeypatch.setattr(tool, "get_stars_api", FakePort)
 
         data = {"link": "https://updated.com", "platform": "WEBSITE"}
         res = await tool.update_link_impl("l1", data)
         assert res["success"] is True
         # WEBSITE is aliased to OTHER in live API enum
-        assert res["data"] == {"updateLink": {"id": "l1", "link": "https://updated.com", "platform": "OTHER"}}
+        assert res["data"] == {
+            "updateLink": {
+                "id": "l1",
+                "link": "https://updated.com",
+                "platform": "OTHER",
+            }
+        }
 
     @pytest.mark.asyncio
     async def test_update_link_invalid_url(self):
@@ -37,25 +47,26 @@ class TestUpdateLink:
     @pytest.mark.asyncio
     async def test_update_link_error_bubbles(self, monkeypatch):
         class FailingPort:
-            async def update_link(self, link_id: str, link: str | None, platform: str | None):
+            async def update_link(
+                self, link_id: str, link: str | None, platform: str | None
+            ):
                 raise RuntimeError("API error")
 
-        monkeypatch.setattr(tool, "get_stars_api", lambda: FailingPort())
+        monkeypatch.setattr(tool, "get_stars_api", FailingPort)
         data = {"link": "https://example.com"}
         res = await tool.update_link_impl("l1", data)
         assert res["success"] is False
         assert res["error"] == "API error"
 
     @pytest.mark.asyncio
-        # Covered by error_bubbles above
-
-    @pytest.mark.asyncio
     async def test_update_link_partial_update(self, mock_shared_client, monkeypatch):
         class FakePort2:
-            async def update_link(self, link_id: str, link: str | None, platform: str | None):
+            async def update_link(
+                self, link_id: str, link: str | None, platform: str | None
+            ):
                 return {"updateLink": {"id": link_id}}
 
-        monkeypatch.setattr(tool, "get_stars_api", lambda: FakePort2())
+        monkeypatch.setattr(tool, "get_stars_api", FakePort2)
 
         data = {"platform": "GITHUB"}
         res = await tool.update_link_impl("l1", data)
@@ -66,11 +77,13 @@ class TestUpdateLink:
         calls = {}
 
         class FakePort:
-            async def update_link(self, link_id: str, link: str | None, platform: str | None):
+            async def update_link(
+                self, link_id: str, link: str | None, platform: str | None
+            ):
                 calls["platform"] = platform
                 return {"updateLink": {"id": link_id, "platform": platform}}
 
-        monkeypatch.setattr(tool, "get_stars_api", lambda: FakePort())
+        monkeypatch.setattr(tool, "get_stars_api", FakePort)
         res = await tool.update_link_impl("l1", {"platform": "GITHUB"})
         assert res["success"] is True
         assert calls["platform"] == "GITHUB"
@@ -86,4 +99,4 @@ class TestUpdateLink:
 
         # Ensure logger is initialized (this covers the logger definition)
         assert logger is not None
-        assert hasattr(logger, 'info')  # Basic logger check
+        assert hasattr(logger, "info")  # Basic logger check
