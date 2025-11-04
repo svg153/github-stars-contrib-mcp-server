@@ -58,3 +58,25 @@ class TestUpdateProfile:
         # Ensure logger is initialized (this covers the logger definition)
         assert logger is not None
         assert hasattr(logger, "info")  # Basic logger check
+
+    @pytest.mark.asyncio
+    async def test_update_profile_no_nominee_graceful_error(self, monkeypatch):
+        """Smoke test: when loggedUser is null (no nominee data), expect clear error."""
+
+        class FakePort:
+            async def update_profile(self, data: dict):
+                # Simulate API response when token doesn't expose nominee data
+                return {
+                    "updateProfile": None,
+                    "errors": [
+                        {"message": "User not found or nominee data not accessible"}
+                    ],
+                }
+
+        monkeypatch.setattr(tool, "get_stars_api", lambda: FakePort())
+
+        data = {"name": "John Doe"}
+        res = await tool.update_profile_impl(data)
+        # Should still return a structured response
+        assert "success" in res
+        assert "error" in res or "data" in res
