@@ -6,7 +6,11 @@ import json
 import time
 
 import httpx
-from tenacity import retry, stop_after_attempt, wait_exponential
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_exponential_jitter,
+)
 import structlog
 
 from .models import APIResult
@@ -23,6 +27,8 @@ from .queries import (
     USER_DATA_QUERY,
     USER_QUERY,
 )
+from ..resilience import circuit_breaker_registry, CircuitBreakerException
+from ..observability import MetricsCollector, get_tracer
 
 logger = structlog.get_logger(__name__)
 
@@ -43,6 +49,15 @@ class StarsClient:
         # Also include Authorization as a fallback if server supports bearer tokens
         if self.token:
             self._headers["Authorization"] = f"Bearer {self.token}"
+
+        # Initialize circuit breaker for API calls
+        self.breaker = circuit_breaker_registry.get_or_create(
+            "stars_api",
+            failure_threshold=5,
+            recovery_timeout=60,
+        )
+        # Initialize tracer
+        self.tracer = get_tracer()
 
     # Contribution methods
     async def create_contributions(self, items: list[dict[str, Any]]) -> APIResult:
@@ -232,7 +247,7 @@ class StarsClient:
         )
 
     @retry(
-        wait=wait_exponential(multiplier=0.5, min=0.5, max=8),
+        wait=wait_exponential_jitter(initial=0.5, max=8, jitter=1),
         stop=stop_after_attempt(3),
     )
     async def _execute_graphql(
@@ -245,72 +260,175 @@ class StarsClient:
         """Execute a GraphQL query/mutation and return the response data or error.
 
         Returns a dict with keys: ok (bool), data (dict | None), error (str | None).
+        Uses circuit breaker to prevent cascading failures.
+        Traces requests and records metrics.
         """
-        payload = {"query": query, "variables": variables or {}}
         op_name = op or "unknown"
-        start = time.monotonic()
-        async with httpx.AsyncClient(
-            timeout=30, headers=self._headers, cookies=self._cookies
-        ) as client:
-            resp = await client.post(self.api_url, json=payload)
-            duration_ms = int((time.monotonic() - start) * 1000)
-            if resp.status_code >= 400:
-                logger.warning(
-                    "stars_client.request_failed",
-                    op=op_name,
-                    http_status=resp.status_code,
-                    duration_ms=duration_ms,
-                    request_size=len(json.dumps(payload.get("variables", {})))
-                    if payload.get("variables")
-                    else 0,
-                    response_size=len(resp.text) if resp.text else 0,
-                    error_kind="http_error",
-                )
-                return {
-                    "ok": False,
-                    "data": None,
-                    "error": f"HTTP {resp.status_code}: {resp.text}",
-                }
+        payload = {"query": query, "variables": variables or {}}
+        request_size = (
+            len(json.dumps(payload.get("variables", {})))
+            if payload.get("variables")
+            else 0
+        )
+
+        # Start tracing span
+        with self.tracer.span(
+            f"graphql_{op_name}",
+            {
+                "operation": op_name,
+                "request_size": request_size,
+            },
+        ) as span:
             try:
-                data = resp.json()
-            except json.JSONDecodeError:
-                logger.warning(
-                    "stars_client.request_failed",
-                    op=op_name,
-                    duration_ms=duration_ms,
-                    request_size=len(json.dumps(payload.get("variables", {})))
-                    if payload.get("variables")
-                    else 0,
-                    response_size=len(resp.text) if resp.text else 0,
-                    error_kind="json_error",
+                # Execute through circuit breaker
+                result = await self.breaker.call(
+                    self._make_graphql_request,
+                    payload,
+                    op_name,
+                    request_size,
+                    span,
                 )
-                return {"ok": False, "data": None, "error": "Invalid JSON response"}
-
-            if "errors" in data and data["errors"]:
-                logger.warning(
-                    "stars_client.request_failed",
+                return result
+            except CircuitBreakerException as e:
+                logger.error(
+                    "stars_client.circuit_breaker_open",
                     op=op_name,
-                    duration_ms=duration_ms,
-                    request_size=len(json.dumps(payload.get("variables", {})))
-                    if payload.get("variables")
-                    else 0,
-                    response_size=len(resp.text) if resp.text else 0,
-                    error_kind="graphql_error",
+                    error=str(e),
+                )
+                MetricsCollector.record_error(
+                    "CIRCUIT_BREAKER_OPEN", f"/graphql/{op_name}"
                 )
                 return {
                     "ok": False,
                     "data": None,
-                    "error": data["errors"][0].get("message", "Unknown error"),
+                    "error": "Service temporarily unavailable (circuit breaker open)",
                 }
 
-            logger.info(
-                "stars_client.request_ok",
+    async def _make_graphql_request(
+        self,
+        payload: dict[str, Any],
+        op_name: str,
+        request_size: int,
+        span: Any,
+    ) -> dict[str, Any]:
+        """Make actual GraphQL request (called through circuit breaker)."""
+        start = time.monotonic()
+        try:
+            async with httpx.AsyncClient(
+                timeout=30, headers=self._headers, cookies=self._cookies
+            ) as client:
+                resp = await client.post(self.api_url, json=payload)
+                duration_sec = time.monotonic() - start
+                duration_ms = int(duration_sec * 1000)
+                resp_text = resp.text
+                response_size = len(resp_text) if resp_text else 0
+
+                # Record metrics
+                MetricsCollector.record_request(
+                    method="POST",
+                    endpoint=f"/graphql/{op_name}",
+                    status=resp.status_code,
+                    latency_sec=duration_sec,
+                    req_size=request_size,
+                    resp_size=response_size,
+                )
+
+                # Add event to span
+                self.tracer.add_event(
+                    span,
+                    "http_response",
+                    {
+                        "status": resp.status_code,
+                        "duration_ms": duration_ms,
+                    },
+                )
+
+                if resp.status_code >= 400:
+                    logger.warning(
+                        "stars_client.request_failed",
+                        op=op_name,
+                        http_status=resp.status_code,
+                        duration_ms=duration_ms,
+                        request_size=request_size,
+                        response_size=response_size,
+                        error_kind="http_error",
+                    )
+                    MetricsCollector.record_error(
+                        f"HTTP_{resp.status_code}",
+                        f"/graphql/{op_name}",
+                    )
+                    return {
+                        "ok": False,
+                        "data": None,
+                        "error": f"HTTP {resp.status_code}: {resp_text}",
+                    }
+
+                try:
+                    data = resp.json()
+                except json.JSONDecodeError:
+                    logger.warning(
+                        "stars_client.request_failed",
+                        op=op_name,
+                        duration_ms=duration_ms,
+                        request_size=request_size,
+                        response_size=response_size,
+                        error_kind="json_error",
+                    )
+                    MetricsCollector.record_error(
+                        "JSON_DECODE_ERROR",
+                        f"/graphql/{op_name}",
+                    )
+                    return {
+                        "ok": False,
+                        "data": None,
+                        "error": "Invalid JSON response",
+                    }
+
+                if "errors" in data and data["errors"]:
+                    logger.warning(
+                        "stars_client.request_failed",
+                        op=op_name,
+                        duration_ms=duration_ms,
+                        request_size=request_size,
+                        response_size=response_size,
+                        error_kind="graphql_error",
+                    )
+                    MetricsCollector.record_error(
+                        "GRAPHQL_ERROR",
+                        f"/graphql/{op_name}",
+                    )
+                    return {
+                        "ok": False,
+                        "data": None,
+                        "error": data["errors"][0].get("message", "Unknown error"),
+                    }
+
+                logger.info(
+                    "stars_client.request_ok",
+                    op=op_name,
+                    duration_ms=duration_ms,
+                    http_status=resp.status_code,
+                    request_size=request_size,
+                    response_size=response_size,
+                )
+
+                # Add success event to span
+                self.tracer.add_event(
+                    span,
+                    "graphql_success",
+                    {"has_data": "data" in data},
+                )
+
+                return {"ok": True, "data": data.get("data", {}), "error": None}
+        except Exception as e:
+            logger.error(
+                "stars_client.request_exception",
                 op=op_name,
-                duration_ms=duration_ms,
-                http_status=resp.status_code,
-                request_size=len(json.dumps(payload.get("variables", {})))
-                if payload.get("variables")
-                else 0,
-                response_size=len(resp.text) if resp.text else 0,
+                error=str(e),
+                error_type=type(e).__name__,
             )
-            return {"ok": True, "data": data.get("data", {}), "error": None}
+            MetricsCollector.record_error(
+                type(e).__name__,
+                f"/graphql/{op_name}",
+            )
+            raise
