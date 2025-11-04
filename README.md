@@ -25,16 +25,23 @@ Environment variables:
 
 The server provides the following MCP tools:
 
+**Mutations (write operations):**
+- **create_contribution**: Create a single contribution
 - **create_contributions**: Create one or more contributions in a single mutation
-- **create_link**: Create a link in GitHub Stars profile
-- **delete_contributions**: Delete one or more contributions
-- **delete_link**: Delete a link from GitHub Stars profile
-- **get_stars**: Get the public profile stars/contributions for a GitHub user
-- **get_user_data**: Get the currently logged user's data (profile, nominee, contributions)
 - **update_contributions**: Update one or more contributions
+- **delete_contributions**: Delete one or more contributions
+- **create_link**: Create a link in GitHub Stars profile
 - **update_link**: Update a link in GitHub Stars profile
+- **delete_link**: Delete a link from GitHub Stars profile
 - **update_profile**: Update the user's profile information
-- **search_contributions**: Filter contributions from a user's public Stars profile (see `tools/search_contributions.py`)
+
+**Queries (read operations):**
+- **get_user**: Get the logged user (minimal user info without nominee data)
+- **get_stars**: Get the public profile stars/contributions for a GitHub user
+- **search_contributions**: Filter contributions from a user's public Stars profile
+- **get_contributions_stats**: Get contribution statistics and analytics (groupable by type, month, year)
+- **compare_contributions**: Compare contributions between two users
+- **export_contributions**: Export contributions in JSON, CSV, or Markdown format
 
 All tools return a standardized response format: `{ "success": boolean, "data": object | null, "error": string | null }`
 
