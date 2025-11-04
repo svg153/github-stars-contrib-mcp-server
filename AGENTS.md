@@ -14,9 +14,19 @@ Source of truth: see `src/github_stars_contrib_mcp/tools/*` and `src/github_star
 
 ## Tools overview
 
+**Mutations:**
+- create_contribution
+  - input: { data: ContributionInput }
+  - output: { success: boolean, id?: string, error?: any }
 - create_contributions
   - input: { data: ContributionInput[] }
   - output: { success: boolean, ids?: string[], error?: any }
+- update_contributions
+  - input: { data: ContributionUpdateInput[] }
+  - output: { success: boolean, data?: object, error?: any }
+- delete_contributions
+  - input: { ids: string[] }
+  - output: { success: boolean, data?: object, error?: any }
 - create_link
   - input: { link: string, platform: string }
   - output: { success: boolean, data?: object, error?: any }
@@ -26,24 +36,29 @@ Source of truth: see `src/github_stars_contrib_mcp/tools/*` and `src/github_star
 - delete_link
   - input: { id: string }
   - output: { success: boolean, data?: object, error?: any }
-- update_contribution
-  - input: { id: string, data: ContributionUpdateInput }
+- update_profile
+  - input: { data: ProfileUpdateInput }
   - output: { success: boolean, data?: object, error?: any }
-- delete_contribution
-  - input: { id: string }
-  - output: { success: boolean, data?: object, error?: any }
-- get_user_data
-  - input: none
-  - output: { success: boolean, data?: object, error?: any }
+
+**Queries:**
 - get_user
   - input: none
   - output: { success: boolean, data?: object, error?: any }
 - get_stars
   - input: { username: string }
   - output: { success: boolean, data?: object, error?: any }
-- update_profile
-  - input: { data: ProfileUpdateInput }
+- search_contributions
+  - input: { username?: string, type?: string, title_contains?: string, date_from?: string, date_to?: string }
+  - output: { success: boolean, data?: object[], error?: any }
+- get_contributions_stats
+  - input: { username: string, group_by?: "type" | "month" | "year" | None }
   - output: { success: boolean, data?: object, error?: any }
+- compare_contributions
+  - input: { username1: string, username2: string, metric?: "total" | "by_type" | "by_year" | None }
+  - output: { success: boolean, data?: object, error?: any }
+- export_contributions
+  - input: { username: string, format?: "json" | "csv" | "markdown", sort_by?: "date" | "title" | "type" | None }
+  - output: { success: boolean, data?: string, error?: any }
 
 ContributionInput fields: title, url, description?, type, date (ISO)
 
