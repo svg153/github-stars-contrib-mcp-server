@@ -42,15 +42,13 @@ class TestSearchContributions:
         # Patch DI to use our FakePort
         monkeypatch.setattr(tool, "get_stars_api", FakePort)
 
-        res = await tool.search_contributions_impl(
-            {
-                "username": "u",
-                "type": "BLOGPOST",
-                "title_contains": "MCP",
-                "date_from": "2025-01-01",
-                "date_to": "2025-02-28",
-            }
-        )
+        res = await tool.search_contributions_impl({
+            "username": "u",
+            "type": "BLOGPOST",
+            "title_contains": "MCP",
+            "date_from": "2025-01-01",
+            "date_to": "2025-02-28",
+        })
         assert res["success"] is True
         data = res["data"]
         assert len(data) == 1
@@ -74,11 +72,9 @@ class TestSearchContributions:
                 }
 
         monkeypatch.setattr(tool, "get_stars_api", FakePort)
-        res = await tool.search_contributions_impl(
-            {
-                "username": "u",
-                "date_from": "not-a-date",
-            }
-        )
+        res = await tool.search_contributions_impl({
+            "username": "u",
+            "date_from": "not-a-date",
+        })
         assert res["success"] is False
         assert "Invalid date format" in res["error"]

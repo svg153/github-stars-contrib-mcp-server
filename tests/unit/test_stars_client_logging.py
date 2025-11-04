@@ -26,7 +26,7 @@ class _DummyClient:
     async def __aexit__(self, exc_type, exc, tb):
         return False
 
-    async def post(self, url, json=None):  # noqa: A002 - shadowing json param acceptable in test
+    async def post(self, url, json=None):
         return self._resp
 
 
