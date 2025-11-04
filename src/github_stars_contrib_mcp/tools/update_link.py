@@ -92,7 +92,7 @@ async def update_link_impl(link_id: str, data: dict) -> dict:
             else update_data.get("platform")
         )
         if platform is not None:
-            # Convert enum to raw string if needed
+            # Convert enum to raw string if needed; if platform is string or lacks 'value', use as-is
             try:
                 platform = platform.value  # type: ignore[attr-defined]
             except (AttributeError, TypeError):

@@ -11,6 +11,7 @@ from ..application.use_cases.create_contributions import CreateContributions
 from ..config.settings import settings
 from ..di.container import get_stars_api
 from ..models import ContributionType
+from ..observability import MetricsCollector, get_tracer
 from ..shared import mcp
 from ..utils.normalization import normalize_description
 from ..utils.url_check import check_url_head
@@ -34,43 +35,77 @@ class CreateContributionsArgs(BaseModel):
 
 async def create_contributions_impl(data: list[dict]) -> dict:
     """Implementation: validates input and calls Stars API client."""
-    try:
-        payload = CreateContributionsArgs(
-            data=[ContributionInput(**item) for item in data]
-        )
-    except ValidationError as e:
-        return {"success": False, "error": e.errors()}
+    tracer = get_tracer()
 
-    items = []
-    for i in payload.data:
-        # Optional URL validation behind flag
-        if settings.validate_urls:
-            ok, reason = await check_url_head(
-                str(i.url), timeout_s=settings.url_validation_timeout_s
+    with tracer.span("create_contributions", {"count": len(data)}) as span:
+        try:
+            payload = CreateContributionsArgs(
+                data=[ContributionInput(**item) for item in data]
             )
-            if not ok:
-                logger.warning(
-                    "create_contributions.url_invalid", url=str(i.url), reason=reason
+        except ValidationError as e:
+            MetricsCollector.record_error("VALIDATION_ERROR", "/contributions")
+            return {"success": False, "error": e.errors()}
+
+        items = []
+        for i in payload.data:
+            # Optional URL validation behind flag
+            if settings.validate_urls:
+                ok, reason = await check_url_head(
+                    str(i.url), timeout_s=settings.url_validation_timeout_s
                 )
-                return {
-                    "success": False,
-                    "error": f"Invalid URL ({reason}) for: {i.url}",
-                }
-        items.append(
-            {
+                if not ok:
+                    logger.warning(
+                        "create_contributions.url_invalid",
+                        url=str(i.url),
+                        reason=reason,
+                    )
+                    MetricsCollector.record_error("INVALID_URL", "/contributions")
+                    return {
+                        "success": False,
+                        "error": f"Invalid URL ({reason}) for: {i.url}",
+                    }
+            items.append({
                 "title": i.title,
                 "url": str(i.url),
                 "description": normalize_description(i.description),
                 "type": i.type,  # str Enum, JSON-serializable
                 "date": i.date.isoformat(),
-            }
-        )
-    try:
-        use_case = CreateContributions(get_stars_api())
-        data = await use_case(items)
-        return {"success": True, "ids": (data or {}).get("ids", [])}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
+            })
+
+        try:
+            tracer.add_event(
+                span,
+                "contributions_validated",
+                {"count": len(items)},
+            )
+
+            use_case = CreateContributions(get_stars_api())
+            result = await use_case(items)
+
+            # Record metrics for each contribution type
+            for item in items:
+                MetricsCollector.record_contribution_created(item["type"])
+
+            tracer.add_event(
+                span,
+                "contributions_created",
+                {"ids": len((result or {}).get("ids", []))},
+            )
+
+            return {"success": True, "ids": (result or {}).get("ids", [])}
+        except Exception as e:
+            MetricsCollector.record_error("API_ERROR", "/contributions")
+            logger.error(
+                "create_contributions.failed",
+                error=str(e),
+                error_type=type(e).__name__,
+            )
+            tracer.add_event(
+                span,
+                "error",
+                {"error": str(e), "type": type(e).__name__},
+            )
+            return {"success": False, "error": str(e)}
 
 
 @mcp.tool()

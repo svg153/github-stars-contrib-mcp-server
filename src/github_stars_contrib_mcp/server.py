@@ -27,11 +27,32 @@ from .tools import (
     update_profile,  # noqa: F401
 )
 
+# Register observability resource
+from .tools.metrics import (
+    get_prometheus_metrics,  # noqa: F401
+)
+
 logger = structlog.get_logger(__name__)
 
 
 async def initialize_server() -> None:
+    """Initialize server with observability."""
+    import os
+
+    from .observability import TracingConfig, initialize_tracing
     from .shared import initialize_stars_client
+
+    # Initialize tracing
+    tracing_enabled = os.getenv("OTEL_ENABLED", "false").lower() == "true"
+    if tracing_enabled:
+        config = TracingConfig(
+            service_name="github-stars-contrib-mcp",
+            jaeger_host=os.getenv("JAEGER_HOST", "localhost"),
+            jaeger_port=int(os.getenv("JAEGER_PORT", "6831")),
+            enabled=True,
+        )
+        initialize_tracing(config)
+        logger.info("Distributed tracing initialized", config=repr(config))
 
     await initialize_stars_client()
 
