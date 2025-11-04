@@ -1,12 +1,25 @@
-# Minimal pre-commit configuration
-# Focus: Python lint/format via Ruff across the repository, plus baseline hygiene hooks
+# Pre-commit configuration: lint, format, type checking, security, and file hygiene
+# Architecture: Fast file hygiene hooks + comprehensive checks via quality_check.py
+# Install: `pre-commit install` (one-time)
+# Run: automatic on commit, or `pre-commit run --all-files` manually
 
-# Exclude generated coverage outputs and similar artifacts
 exclude: |
-  ^(.*/)?htmlcov(-all|-unit)?/|
-  ^htmlcov(-all|-unit)?/
+  (?x)^(
+    htmlcov(-all|-unit)?/|
+    \.mypy_cache/|
+    \.ruff_cache/|
+    __pycache__/|
+    \.pytest_cache/|
+    \.venv/|
+    build/|
+    dist/
+  )
+
+default_language_version:
+  python: "3.11"
 
 repos:
+  # File hygiene: trailing spaces, line endings, YAML/JSON/TOML validation
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
@@ -21,9 +34,65 @@ repos:
         args: ["--fix=lf"]
       - id: detect-private-key
       - id: debug-statements
+      - id: requirements-txt-fixer
+        exclude: ^env\.template$
+
+  # Ruff: Python linting and formatting
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    # Pin to a recent stable ruff-pre-commit release
-    rev: v0.6.9
+    rev: v0.7.0
     hooks:
       - id: ruff
+        args: ["check", "--fix", "--show-fixes"]
+        stages: [commit]
       - id: ruff-format
+        stages: [commit]
+
+  # MyPy: Static type checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.11.2
+    hooks:
+      - id: mypy
+        args: ["--strict", "src/", "tests/"]
+        stages: [commit]
+        additional_dependencies: ["pydantic>=2.0", "types-httpx", "types-requests"]
+        exclude: ^(\.venv/|tests/fixtures/)
+
+  # Pyright: Alternative type checking (stricter in some cases)
+  - repo: https://github.com/ReubenBond/pyright-python
+    rev: 1.1.309
+    hooks:
+      - id: pyright
+        stages: [commit]
+        additional_dependencies: ["pyright==1.1.309"]
+        exclude: ^(\.venv/|tests/fixtures/)
+        verbose: false
+
+  # Bandit: Python security vulnerability scanner
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.8
+    hooks:
+      - id: bandit
+        args: ["-c", "pyproject.toml", "-r", "src/", "-ll"]
+        stages: [commit]
+        additional_dependencies: ["bandit[toml]"]
+        exclude: ^tests/
+
+  # Safety: Dependency vulnerability scanner
+  - repo: https://github.com/Lucas-C/pre-commit-hooks-safety
+    rev: v1.3.2
+    hooks:
+      - id: python-safety-dependencies-check
+        stages: [commit]
+        language: python
+
+  # Custom hooks: API safety and patterns
+  - repo: local
+    hooks:
+      - id: check-api-safety
+        name: Check API Safety Patterns
+        entry: python .github/hooks/check-api-safety.py
+        language: python
+        stages: [commit]
+        types: [python]
+        pass_filenames: true
+        exclude: ^(\.venv/|tests/fixtures/)
