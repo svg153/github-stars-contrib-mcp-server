@@ -29,6 +29,14 @@ dependencies = [
     "httpx>=0.27.0",
     "tenacity>=8.0",
     "structlog>=24.0",
+    "mcp-ui-server>=0.1.0",
+    # Observability (Phase 3 core)
+    "prometheus-client>=0.19.0",
+    "opentelemetry-api>=1.20.0",
+    "opentelemetry-sdk>=1.20.0",
+    "opentelemetry-exporter-jaeger>=1.20.0",
+    "opentelemetry-instrumentation-httpx>=0.41b0",
+    "deprecated>=1.2.14",
 ]
 
 [project.optional-dependencies]
@@ -39,6 +47,28 @@ dev = [
     "pytest-asyncio>=0.23.0",
     "mypy>=1.8.0",
     "pre-commit>=3.6.0",
+    "bandit[toml]>=1.7.5",
+    "safety>=3.0.0",
+    "pyright>=1.1.0",
+    # Observability (required for full functionality)
+    "prometheus-client>=0.19.0",
+    "opentelemetry-api>=1.20.0",
+    "opentelemetry-sdk>=1.20.0",
+    "opentelemetry-exporter-jaeger>=1.20.0",
+    "opentelemetry-instrumentation-httpx>=0.41b0",
+]
+
+observability = [
+    "prometheus-client>=0.19.0",
+    "opentelemetry-api>=1.20.0",
+    "opentelemetry-sdk>=1.20.0",
+    "opentelemetry-exporter-jaeger>=1.20.0",
+    "opentelemetry-instrumentation-httpx>=0.41b0",
+    "opentelemetry-instrumentation-flask>=0.41b0",
+]
+
+resilience = [
+    "pybreaker>=1.4.0",
 ]
 
 [project.scripts]
@@ -47,31 +77,59 @@ github-stars-contrib-mcp-server = "github_stars_contrib_mcp.server:main"
 [tool.ruff]
 target-version = "py311"
 line-length = 88
+preview = true
 
 [tool.ruff.lint]
 select = [
-    "E",  # pycodestyle errors
-    "W",  # pycodestyle warnings
-    "F",  # pyflakes
-    "I",  # isort
-    "B",  # flake8-bugbear
-    "C4", # flake8-comprehensions
-    "UP", # pyupgrade
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "UP",   # pyupgrade
+    "RUF",  # Ruff-specific rules
+    "A",    # flake8-builtins
+    "N",    # pep8-naming
+    "LOG",  # flake8-logging
+    "PIE",  # flake8-pie
+    "RSE",  # flake8-raise
+    "SIM",  # flake8-simplify
 ]
 ignore = [
-    "E501",  # line too long, handled by black
-    "B008",  # do not perform function calls in argument defaults
-    "C901",  # too complex
+    "E501",    # line too long, handled by ruff format
+    "B008",    # do not perform function calls in argument defaults
+    "B007",    # unused loop variable (pragmatic in tests)
+    "C901",    # too complex
+    "A002",    # builtin shadowing (pragmatic for use cases like 'type')
+    "RUF019",  # unnecessary dict key check (pragmatic)
+    "UP042",   # str+Enum inheritance (legacy pattern)
+    "N815",    # mixed-case class variables (API fields)
+    "N818",    # Exception naming (legacy)
+    "SIM108",  # ternary simplification (style preference)
+    "C416",    # dict comprehension rewrite (style preference)
+    "F841",    # unused variable (test fixtures)
+    "RUF029",  # async without await (pragmatic)
+    "SIM105",  # contextlib.suppress (style preference)
+    "B017",    # blind exception (test patterns)
 ]
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
 "src/github_stars_contrib_mcp/server.py" = ["E402"]
 "src/github_stars_contrib_mcp/shared.py" = ["E402"]
+"tests/**" = ["A", "F841"]  # Allow builtins, unused fixtures
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+docstring-code-format = true
+docstring-code-line-length = 88
 
 [tool.pytest.ini_options]
 minversion = "8.0"
-addopts = "-ra -q --strict-markers --cov=src --cov-report=term-missing --cov-report=html --cov-report=xml:coverage.xml --cov-fail-under=30"
+addopts = "-ra -q --strict-markers --cov=src --cov-report=term-missing --cov-report=html --cov-report=xml:coverage.xml --cov-fail-under=75"
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
 asyncio_mode = "auto"
@@ -94,3 +152,53 @@ warn_unused_ignores = true
 warn_no_return = true
 warn_unreachable = true
 strict_equality = true
+plugins = ["pydantic.mypy"]
+exclude = [
+    "^\\.venv/",
+    "^build/",
+    "^dist/",
+]
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_untyped_decorators = false
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+warn_untyped_fields = true
+
+[tool.bandit]
+# Security scanning configuration
+exclude_dirs = ["tests", "htmlcov"]
+skips = ["B101"]  # Skip assert_used (allowed in tests)
+tests = [
+    "B201",  # flask_debug_true
+    "B301",  # pickle
+    "B302",  # marshal
+    "B303",  # md5
+    "B304",  # cipher
+    "B305",  # cipher
+    "B306",  # temp_mktemp
+    "B307",  # eval
+    "B308",  # mark_safe
+    "B309",  # httpsconnection
+    "B310",  # urllib_urlopen
+    "B311",  # random
+    "B312",  # telnetlib
+    "B313",  # xml_etree
+    "B314",  # xml_etree
+    "B315",  # xml_etree
+    "B316",  # xml_etree
+    "B317",  # xml_etree
+    "B318",  # xml_etree
+    "B319",  # xml_etree
+    "B320",  # xml_etree
+    "B321",  # ftplib
+    "B322",  # input
+    "B323",  # unverified_context
+    "B324",  # hashlib
+    "B325",  # tempnam
+]
