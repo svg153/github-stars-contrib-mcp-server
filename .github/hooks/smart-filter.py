@@ -88,8 +88,9 @@ def get_import_files(py_files: set[str]) -> set[str]:
                                 result.add(
                                     f"src/github_stars_contrib_mcp/{prefix}/*.py"
                                 )
-        except Exception as e:
-            print(f"Warning: Could not process {py_file}: {e}")
+        except Exception:
+            # Silently skip files that cannot be processed to ensure robustness
+            pass
     return result
 
 

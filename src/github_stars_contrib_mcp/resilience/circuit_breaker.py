@@ -86,7 +86,7 @@ class CircuitBreaker:
             self._on_failure()
             raise
 
-    async def acall(self, func: Callable, *args: Any, **kwargs: Any) -> Any:
+    async def async_call(self, func: Callable, *args: Any, **kwargs: Any) -> Any:
         """
         Execute async function through circuit breaker.
         Provides thread-safe state management via asyncio.Lock.

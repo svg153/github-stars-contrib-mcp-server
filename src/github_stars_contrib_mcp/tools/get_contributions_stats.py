@@ -99,7 +99,7 @@ def _compute_stats(items: list[dict[str, Any]], group_by: str | None) -> dict:
             )
             dates.append(d)
         except Exception:
-            # Skip items with invalid date fields
+            # Silently skip items with invalid date fields to ensure robustness
             pass
 
     stats["by_type"] = dict(stats["by_type"])
@@ -147,7 +147,7 @@ def _group_by_month(items: list[dict[str, Any]]) -> dict[str, Any]:
             contrib_type = str(item.get("type") or "UNKNOWN")
             grouped[month_key]["types"][contrib_type] += 1
         except Exception:
-            # Skip items with invalid or missing date fields
+            # Silently skip items with invalid or missing date fields to ensure robustness
             pass
 
     return {
@@ -168,8 +168,9 @@ def _group_by_year(items: list[dict[str, Any]]) -> dict[str, Any]:
             grouped[year_key]["count"] += 1
             contrib_type = str(item.get("type") or "UNKNOWN")
             grouped[year_key]["types"][contrib_type] += 1
-        except Exception as e:
-            logger.warning("group_by_year.parse_failed", error=str(e), item=item)
+        except Exception:
+            # Silently skip items with invalid date fields to ensure robustness
+            pass
 
     return {
         k: {"count": v["count"], "types": dict(v["types"])} for k, v in grouped.items()

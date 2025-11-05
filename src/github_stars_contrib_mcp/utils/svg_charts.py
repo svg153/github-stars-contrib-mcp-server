@@ -135,12 +135,10 @@ class SVGChartGenerator:
             # SVG arc path (simplified for readability)
             large_arc = 1 if angle > 180 else 0
 
-            x1 = center_x + radius * cos(start_rad)
-            y1 = center_y + radius * sin(start_rad)
             x2 = center_x + radius * cos(end_rad)
             y2 = center_y + radius * sin(end_rad)
 
-            path = f"M {center_x} {center_y} L {x1} {y1} A {radius} {radius} 0 {large_arc} 1 {x2} {y2} Z"
+            path = f"M {center_x} {center_y} L {center_x + radius * cos(start_rad)} {center_y + radius * sin(start_rad)} A {radius} {radius} 0 {large_arc} 1 {x2} {y2} Z"
 
             color = colors[i % len(colors)]
             svg_parts.append(f'<path d="{path}" fill="{color}" opacity="0.8"/>')

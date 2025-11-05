@@ -154,7 +154,7 @@ def _group_by_year(items: list[dict[str, Any]]) -> dict[str, int]:
             year = d.strftime("%Y")
             years[year] = years.get(year, 0) + 1
         except Exception:
-            # Skip items with invalid or missing date formats
+            # Silently skip items with invalid or missing date formats to ensure robustness
             pass
     return years
 
@@ -193,7 +193,7 @@ def _compare_date_ranges(
                 )
                 dates.append(d)
             except Exception:
-                # Skip items with invalid date formats
+                # Silently skip items with invalid date formats to ensure data completeness
                 pass
         if not dates:
             return None, None

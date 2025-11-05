@@ -281,7 +281,7 @@ class StarsClient:
         ) as span:
             try:
                 # Execute through circuit breaker
-                result = await self.breaker.acall(
+                result = await self.breaker.async_call(
                     self._make_graphql_request,
                     payload,
                     op_name,
