@@ -1,13 +1,15 @@
 """SVG chart generation utilities for MCP visualization."""
 
+from collections.abc import Sequence
+
 
 class SVGChartGenerator:
     """Generate SVG charts without external dependencies."""
 
     @staticmethod
     def bar_chart(
-        labels: list[str],
-        values: list[int | float],
+        labels: Sequence[str],
+        values: Sequence[int | float],
         title: str = "",
         width: int = 500,
         height: int = 300,
@@ -77,8 +79,8 @@ class SVGChartGenerator:
 
     @staticmethod
     def pie_chart(
-        labels: list[str],
-        values: list[int | float],
+        labels: Sequence[str],
+        values: Sequence[int | float],
         title: str = "",
         width: int = 400,
         height: int = 400,
@@ -171,8 +173,8 @@ class SVGChartGenerator:
 
     @staticmethod
     def line_chart(
-        x_labels: list[str],
-        y_values: list[int | float],
+        x_labels: Sequence[str],
+        y_values: Sequence[int | float],
         title: str = "",
         width: int = 500,
         height: int = 300,

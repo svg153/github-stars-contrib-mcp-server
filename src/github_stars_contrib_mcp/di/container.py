@@ -5,7 +5,6 @@ from __future__ import annotations
 from ..config.settings import Settings
 from ..infrastructure.adapters.stars_api_graphql import StarsAPIAdapter
 from ..utils.stars_client import StarsClient
-from . import __init__ as _di_pkg  # noqa: F401  # Ensure package recognized
 
 
 def get_settings() -> Settings:

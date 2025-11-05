@@ -58,7 +58,7 @@ async def update_link_impl(link_id: str, data: dict) -> dict:
     try:
         payload = UpdateLinkArgs(id=link_id, data=UpdateLinkInput(**norm_data))
     except ValidationError as e:
-        if _has_platform_validation_error(e.errors()):
+        if _has_platform_validation_error(e.errors()):  # type: ignore[arg-type]
             allowed = [p.value for p in PlatformType]
             return {
                 "success": False,

@@ -168,10 +168,20 @@ class TestGetContributionsStats:
                 ui_resource = result[0]
                 assert hasattr(ui_resource, "resource")
                 assert str(ui_resource.resource.uri).startswith("ui://")
+                assert ui_resource.resource.mimeType is not None
                 assert "text/html" in ui_resource.resource.mimeType
-                assert ui_resource.resource.text is not None
-                assert "<html" in ui_resource.resource.text.lower()
-                assert "plotly" in ui_resource.resource.text.lower()
+                if hasattr(ui_resource.resource, "text"):
+                    assert ui_resource.resource.text is not None  # type: ignore[attr-defined]
+                    html_text = ui_resource.resource.text  # type: ignore[attr-defined]
+                else:
+                    assert ui_resource.resource.blob is not None  # type: ignore[attr-defined]
+                    html_text = (
+                        ui_resource.resource.blob.decode("utf-8")
+                        if isinstance(ui_resource.resource.blob, bytes)
+                        else ui_resource.resource.blob
+                    )  # type: ignore[attr-defined,union-attr]
+                assert "<html" in html_text.lower()
+                assert "plotly" in html_text.lower()
 
 
 class TestExportContributions:
