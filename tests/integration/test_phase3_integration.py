@@ -123,6 +123,7 @@ class TestCircuitBreakerIntegration:
             try:
                 breaker.call(lambda: (_ for _ in ()).throw(Exception("fail")))
             except Exception:
+                # Expected: record failure
                 pass
 
         # Should be OPEN

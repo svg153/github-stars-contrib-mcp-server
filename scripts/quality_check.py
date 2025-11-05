@@ -191,36 +191,66 @@ Examples:
     # Run selected checks
     results = []
 
-    if args.lint or not any(
-        [args.lint, args.format, args.type, args.security, args.tests, args.pre_commit]
-    ):
+    if args.lint or not any([
+        args.lint,
+        args.format,
+        args.type,
+        args.security,
+        args.tests,
+        args.pre_commit,
+    ]):
         results.append(lint_check())
 
-    if args.format or not any(
-        [args.lint, args.format, args.type, args.security, args.tests, args.pre_commit]
-    ):
+    if args.format or not any([
+        args.lint,
+        args.format,
+        args.type,
+        args.security,
+        args.tests,
+        args.pre_commit,
+    ]):
         results.append(format_check())
 
-    if args.type or not any(
-        [args.lint, args.format, args.type, args.security, args.tests, args.pre_commit]
-    ):
+    if args.type or not any([
+        args.lint,
+        args.format,
+        args.type,
+        args.security,
+        args.tests,
+        args.pre_commit,
+    ]):
         results.append(type_check())
 
-    if args.security or not any(
-        [args.lint, args.format, args.type, args.security, args.tests, args.pre_commit]
-    ):
+    if args.security or not any([
+        args.lint,
+        args.format,
+        args.type,
+        args.security,
+        args.tests,
+        args.pre_commit,
+    ]):
         results.append(security_bandit())
         results.append(security_safety())
         results.append(security_api_safety())
 
-    if args.pre_commit or not any(
-        [args.lint, args.format, args.type, args.security, args.tests, args.pre_commit]
-    ):
+    if args.pre_commit or not any([
+        args.lint,
+        args.format,
+        args.type,
+        args.security,
+        args.tests,
+        args.pre_commit,
+    ]):
         results.append(pre_commit_run())
 
-    if args.tests or not any(
-        [args.lint, args.format, args.type, args.security, args.tests, args.pre_commit]
-    ):
+    if args.tests or not any([
+        args.lint,
+        args.format,
+        args.type,
+        args.security,
+        args.tests,
+        args.pre_commit,
+    ]):
         results.append(tests_run())
 
     # Summary

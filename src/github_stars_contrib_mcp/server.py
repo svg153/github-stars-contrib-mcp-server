@@ -15,22 +15,25 @@ from .shared import mcp
 
 # Register tools
 from .tools import (
+    compare_contributions,  # noqa: F401
+    create_contribution,  # noqa: F401
     create_contributions,  # noqa: F401
     create_link,  # noqa: F401
     delete_contributions,  # noqa: F401
     delete_link,  # noqa: F401
+    export_contributions,  # noqa: F401
+    get_contributions_stats,  # noqa: F401
     get_stars,  # noqa: F401
     get_user,  # noqa: F401
     get_user_data,  # noqa: F401
+    search_contributions,  # noqa: F401
     update_contributions,  # noqa: F401
     update_link,  # noqa: F401
     update_profile,  # noqa: F401
 )
 
 # Register observability resource
-from .tools.metrics import (
-    get_prometheus_metrics,  # noqa: F401
-)
+from .tools.metrics import get_prometheus_metrics  # noqa: F401
 
 logger = structlog.get_logger(__name__)
 

@@ -13,10 +13,9 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Set
 
 
-def get_changed_files() -> Set[str]:
+def get_changed_files() -> set[str]:
     """Get list of staged files."""
     try:
         result = subprocess.run(
@@ -24,13 +23,15 @@ def get_changed_files() -> Set[str]:
             capture_output=True,
             text=True,
         )
-        return set(result.stdout.strip().split("\n")) if result.stdout.strip() else set()
+        return (
+            set(result.stdout.strip().split("\n")) if result.stdout.strip() else set()
+        )
     except Exception as e:
         print(f"Warning: Could not get changed files: {e}")
         return set()
 
 
-def get_python_files(files: Set[str]) -> Set[str]:
+def get_python_files(files: set[str]) -> set[str]:
     """Filter to only Python files."""
     return {f for f in files if f.endswith(".py")}
 
@@ -69,7 +70,7 @@ def should_skip() -> bool:
     return False
 
 
-def get_import_files(py_files: Set[str]) -> Set[str]:
+def get_import_files(py_files: set[str]) -> set[str]:
     """Get files that might be imports (for cascading type check)."""
     result = py_files.copy()
     for py_file in py_files:
@@ -84,13 +85,15 @@ def get_import_files(py_files: Set[str]) -> Set[str]:
                         for prefix in ["tools", "utils", "models", "config", "domain"]:
                             if prefix in py_file:
                                 # Re-run type check on main modules
-                                result.add(f"src/github_stars_contrib_mcp/{prefix}/*.py")
-        except Exception:
-            pass
+                                result.add(
+                                    f"src/github_stars_contrib_mcp/{prefix}/*.py"
+                                )
+        except Exception as e:
+            print(f"Warning: Could not process {py_file}: {e}")
     return result
 
 
-def filter_expensive_hooks(hook_name: str, file_list: Set[str]) -> bool:
+def filter_expensive_hooks(hook_name: str, file_list: set[str]) -> bool:
     """
     Determine if expensive hook should run.
 
@@ -127,7 +130,6 @@ def main() -> int:
         return 0
 
     hook_name = os.environ.get("PRE_COMMIT_HOOK_NAME", "unknown")
-    py_files = get_python_files(changed_files)
 
     if not filter_expensive_hooks(hook_name, changed_files):
         return 0

@@ -132,10 +132,6 @@ class SVGChartGenerator:
             start_rad = start_angle * 3.14159 / 180
             end_rad = end_angle * 3.14159 / 180
 
-            # Calculate start and end points
-            x1 = center_x + radius * (3.14159 / 180 * start_angle / (3.14159 / 180))
-            y1 = center_y + radius * (3.14159 / 180 * start_angle / (3.14159 / 180))
-
             # SVG arc path (simplified for readability)
             large_arc = 1 if angle > 180 else 0
 

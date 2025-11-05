@@ -13,7 +13,6 @@ Checks for:
 import re
 import sys
 from pathlib import Path
-from typing import List
 
 # Patterns indicating potential API safety issues
 PATTERNS = {
@@ -54,12 +53,12 @@ def is_skip_file(path: Path) -> bool:
     return False
 
 
-def check_file(filepath: str) -> List[str]:
+def check_file(filepath: str) -> list[str]:
     """Check single file for API safety issues."""
     errors = []
     path = Path(filepath)
 
-    if is_skip_file(path) or not path.suffix == ".py":
+    if is_skip_file(path) or path.suffix != ".py":
         return errors
 
     try:

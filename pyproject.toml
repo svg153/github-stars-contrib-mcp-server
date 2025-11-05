@@ -129,6 +129,8 @@ docstring-code-line-length = 88
 
 [tool.pytest.ini_options]
 minversion = "8.0"
+# Coverage threshold increased from 30% to 75%. Ensure all new code is adequately tested.
+# Run `pytest --cov=src` locally to verify coverage before merging to avoid CI failures.
 addopts = "-ra -q --strict-markers --cov=src --cov-report=term-missing --cov-report=html --cov-report=xml:coverage.xml --cov-fail-under=75"
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
