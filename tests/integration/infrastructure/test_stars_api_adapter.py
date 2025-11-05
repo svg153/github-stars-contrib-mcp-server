@@ -18,13 +18,13 @@ class FakeStarsClientFail:
 
 @pytest.mark.asyncio
 async def test_adapter_returns_data_on_success():
-    adapter = StarsAPIAdapter(FakeStarsClientOK())
+    adapter = StarsAPIAdapter(FakeStarsClientOK())  # type: ignore[arg-type]
     data = await adapter.get_user_data()
     assert data["viewer"]["login"] == "ok-user"
 
 
 @pytest.mark.asyncio
 async def test_adapter_raises_on_error():
-    adapter = StarsAPIAdapter(FakeStarsClientFail())
+    adapter = StarsAPIAdapter(FakeStarsClientFail())  # type: ignore[arg-type]
     with pytest.raises(RuntimeError, match="nope"):
         await adapter.get_user_data()

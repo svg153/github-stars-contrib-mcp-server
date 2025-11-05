@@ -59,7 +59,12 @@ async def test_integration_contribution_full_e2e():
         description="Automated test entry; safe to ignore",
     )
     assert create_result.get("ok") is True
-    contrib_data = create_result.get("data", {}).get("createContribution", {})
+    contrib_data = create_result.get("data", {}) or {}
+    contrib_data = (
+        contrib_data.get("createContribution", {})
+        if isinstance(contrib_data, dict)
+        else {}
+    )
     assert "id" in contrib_data
     contrib_id = contrib_data["id"]
     print(f"Created contribution {contrib_id}")
@@ -73,7 +78,12 @@ async def test_integration_contribution_full_e2e():
         contribution_id=contrib_id, data=update_data
     )
     assert update_result.get("ok") is True
-    updated_contrib_data = update_result.get("data", {}).get("updateContribution", {})
+    updated_contrib_data = update_result.get("data", {}) or {}
+    updated_contrib_data = (
+        updated_contrib_data.get("updateContribution", {})
+        if isinstance(updated_contrib_data, dict)
+        else {}
+    )
     assert updated_contrib_data.get("title") == "Updated E2E Test Contribution"
     print(f"Updated contribution {contrib_id}")
 

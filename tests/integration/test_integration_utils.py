@@ -34,7 +34,7 @@ def get_test_client():
     """Get a StarsClient for testing."""
     api_url = os.getenv("STARS_API_URL", "https://api-stars.github.com/")
     token = os.getenv("STARS_API_TOKEN")
-    return StarsClient(api_url=api_url, token=token)
+    return StarsClient(api_url=api_url, token=token)  # type: ignore[arg-type]
 
 
 def generate_unique_url(prefix="github-stars-mcp-e2e"):

@@ -135,7 +135,9 @@ def _group_by_type(items: list[dict[str, Any]]) -> dict[str, Any]:
 
 def _group_by_month(items: list[dict[str, Any]]) -> dict[str, Any]:
     """Group contributions by month (YYYY-MM)."""
-    grouped = defaultdict(lambda: {"count": 0, "types": defaultdict(int)})
+    grouped: dict[str, dict[str, Any]] = defaultdict(
+        lambda: {"count": 0, "types": defaultdict(int)}
+    )
 
     for item in items:
         try:
@@ -143,9 +145,12 @@ def _group_by_month(items: list[dict[str, Any]]) -> dict[str, Any]:
                 str(item.get("date") or "").replace("Z", "+00:00")
             )
             month_key = d.strftime("%Y-%m")
-            grouped[month_key]["count"] += 1
+            month_data = grouped[month_key]
+            month_data["count"] = month_data.get("count", 0) + 1
             contrib_type = str(item.get("type") or "UNKNOWN")
-            grouped[month_key]["types"][contrib_type] += 1
+            types_dict = month_data.get("types", defaultdict(int))
+            types_dict[contrib_type] = types_dict.get(contrib_type, 0) + 1
+            month_data["types"] = types_dict
         except Exception:
             # Silently skip items with invalid or missing date fields to ensure robustness
             pass
@@ -157,7 +162,9 @@ def _group_by_month(items: list[dict[str, Any]]) -> dict[str, Any]:
 
 def _group_by_year(items: list[dict[str, Any]]) -> dict[str, Any]:
     """Group contributions by year."""
-    grouped = defaultdict(lambda: {"count": 0, "types": defaultdict(int)})
+    grouped: dict[str, dict[str, Any]] = defaultdict(
+        lambda: {"count": 0, "types": defaultdict(int)}
+    )
 
     for item in items:
         try:
@@ -165,9 +172,12 @@ def _group_by_year(items: list[dict[str, Any]]) -> dict[str, Any]:
                 str(item.get("date") or "").replace("Z", "+00:00")
             )
             year_key = d.strftime("%Y")
-            grouped[year_key]["count"] += 1
+            year_data = grouped[year_key]
+            year_data["count"] = year_data.get("count", 0) + 1
             contrib_type = str(item.get("type") or "UNKNOWN")
-            grouped[year_key]["types"][contrib_type] += 1
+            types_dict = year_data.get("types", defaultdict(int))
+            types_dict[contrib_type] = types_dict.get(contrib_type, 0) + 1
+            year_data["types"] = types_dict
         except Exception:
             # Silently skip items with invalid date fields to ensure robustness
             pass

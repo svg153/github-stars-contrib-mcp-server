@@ -61,7 +61,10 @@ class TestCircuitBreaker:
     def test_half_open_retries_after_timeout(self):
         """Test HALF_OPEN state retries after recovery timeout."""
         breaker = CircuitBreaker(
-            "test", failure_threshold=1, recovery_timeout=0.1, success_threshold=1
+            "test",
+            failure_threshold=1,
+            recovery_timeout=0.1,  # type: ignore[arg-type]
+            success_threshold=1,
         )
 
         def failing_func():
@@ -118,7 +121,7 @@ class TestCircuitBreaker:
         breaker = CircuitBreaker(
             "test",
             failure_threshold=1,
-            recovery_timeout=0.1,
+            recovery_timeout=0.1,  # type: ignore[arg-type]
             success_threshold=2,
         )
 
@@ -160,7 +163,7 @@ class TestCircuitBreakerIntegration:
         breaker = CircuitBreaker(
             "api",
             failure_threshold=2,
-            recovery_timeout=0.1,
+            recovery_timeout=0.1,  # type: ignore[arg-type]
             success_threshold=1,
         )
 

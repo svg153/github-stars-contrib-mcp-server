@@ -17,7 +17,7 @@ async def test_integration_update_profile_e2e():
     # Get current profile data
     user_data = await client.get_user_data()
     assert user_data.get("ok") is True
-    logged_user = user_data.get("data", {}).get("loggedUser")
+    logged_user = (user_data.get("data") or {}).get("loggedUser")
     if not logged_user:
         pytest.skip(
             "Token not valid for reading user data or loggedUser is null; skipping profile update e2e test"
@@ -35,7 +35,7 @@ async def test_integration_update_profile_e2e():
     updated_data = await client.get_user_data()
     assert updated_data.get("ok") is True
     updated_nominee = (
-        updated_data.get("data", {}).get("loggedUser", {}).get("nominee", {})
+        (updated_data.get("data") or {}).get("loggedUser", {}).get("nominee", {})
     )
     assert updated_nominee.get("bio") == test_bio
 

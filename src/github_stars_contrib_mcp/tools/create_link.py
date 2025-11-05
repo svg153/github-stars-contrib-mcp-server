@@ -31,7 +31,7 @@ async def create_link_impl(link: str, platform: str) -> dict:
     # Normalize legacy aliases before validation
     norm_platform, aliased = normalize_platform(platform)
     try:
-        payload = CreateLinkArgs(link=link, platform=norm_platform)
+        payload = CreateLinkArgs(link=link, platform=norm_platform)  # type: ignore[arg-type]
     except ValidationError as e:
         # Improve error message for invalid platform values
         if any(err.get("loc") == ("platform",) for err in e.errors()):

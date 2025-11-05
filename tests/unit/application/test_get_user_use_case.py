@@ -15,13 +15,13 @@ class FailingPort:
 
 @pytest.mark.asyncio
 async def test_get_user_happy_path():
-    use_case = GetUser(FakePort())
+    use_case = GetUser(FakePort())  # type: ignore[arg-type]
     data = await use_case()
     assert data["loggedUser"]["id"] == "u1"
 
 
 @pytest.mark.asyncio
 async def test_get_user_error_bubbles():
-    use_case = GetUser(FailingPort())
+    use_case = GetUser(FailingPort())  # type: ignore[arg-type]
     with pytest.raises(RuntimeError, match="boom"):
         await use_case()

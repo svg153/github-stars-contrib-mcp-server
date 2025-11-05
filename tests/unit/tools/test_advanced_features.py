@@ -140,7 +140,7 @@ class TestGetContributionsStats:
                 result = await get_contributions_stats_impl({"username": "testuser"})
 
                 assert result["success"] is True
-                assert result["data"]["total_count"] == 0
+                assert result.get("data", {}).get("total_count") == 0
 
     @pytest.mark.asyncio
     async def test_stats_with_mcp_ui(self):
@@ -176,10 +176,10 @@ class TestGetContributionsStats:
                 else:
                     assert ui_resource.resource.blob is not None  # type: ignore[attr-defined]
                     html_text = (
-                        ui_resource.resource.blob.decode("utf-8")
-                        if isinstance(ui_resource.resource.blob, bytes)
-                        else ui_resource.resource.blob
-                    )  # type: ignore[attr-defined,union-attr]
+                        ui_resource.resource.blob.decode("utf-8")  # type: ignore[attr-defined,union-attr]
+                        if isinstance(ui_resource.resource.blob, bytes)  # type: ignore[attr-defined]
+                        else ui_resource.resource.blob  # type: ignore[attr-defined]
+                    )
                 assert "<html" in html_text.lower()
                 assert "plotly" in html_text.lower()
 

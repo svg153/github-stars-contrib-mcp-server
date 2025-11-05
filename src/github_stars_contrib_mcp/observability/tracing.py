@@ -91,7 +91,7 @@ class DistributedTracer:
         self,
         name: str,
         attributes: dict[str, Any] | None = None,
-    ) -> Generator[trace.Span, None, None]:
+    ) -> Generator[trace.Span | None, None, None]:
         """
         Create a named span for tracing.
 
@@ -149,7 +149,7 @@ class DistributedTracer:
             # Get the tracer provider and shutdown
             provider = trace.get_tracer_provider()
             if hasattr(provider, "force_flush"):
-                provider.force_flush()
+                provider.force_flush()  # type: ignore[attr-defined]
             logger.info("tracing_shutdown", service=self.config.service_name)
         except Exception as e:
             logger.error("tracing_shutdown_failed", error=str(e))

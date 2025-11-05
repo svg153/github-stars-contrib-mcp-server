@@ -43,6 +43,7 @@ def stars_client_real(require_token) -> StarsClient:
     """Provide a real StarsClient configured from env vars."""
     api_url = os.getenv("STARS_API_URL", "https://api-stars.github.com/")
     token = os.getenv("STARS_API_TOKEN")
+    assert token is not None, "STARS_API_TOKEN must be set"
     return StarsClient(api_url=api_url, token=token)
 
 

@@ -37,7 +37,7 @@ class TestContributionItem:
     def test_valid_item(self):
         item = ContributionItem(
             title="Test Title",
-            url="https://example.com",
+            url="https://example.com",  # type: ignore[arg-type]
             description="Test description",
             type=ContributionType.BLOGPOST,
             date=datetime(2024, 1, 1, 12, 0, 0),
@@ -51,7 +51,7 @@ class TestContributionItem:
     def test_minimal_item(self):
         item = ContributionItem(
             title="Test",
-            url="https://example.com",
+            url="https://example.com",  # type: ignore[arg-type]
             type=ContributionType.BLOGPOST,
             date=datetime(2024, 1, 1),
         )
