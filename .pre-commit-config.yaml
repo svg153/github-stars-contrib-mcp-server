@@ -1,12 +1,25 @@
-# Minimal pre-commit configuration
-# Focus: Python lint/format via Ruff across the repository, plus baseline hygiene hooks
+# Pre-commit configuration: lint, format, type checking, security, and file hygiene
+# Architecture: Fast file hygiene hooks + comprehensive checks via quality_check.py
+# Install: `pre-commit install` (one-time)
+# Run: automatic on commit, or `pre-commit run --all-files` manually
 
-# Exclude generated coverage outputs and similar artifacts
 exclude: |
-  ^(.*/)?htmlcov(-all|-unit)?/|
-  ^htmlcov(-all|-unit)?/
+  (?x)^(
+    htmlcov(-all|-unit)?/|
+    \.mypy_cache/|
+    \.ruff_cache/|
+    __pycache__/|
+    \.pytest_cache/|
+    \.venv/|
+    build/|
+    dist/
+  )
+
+default_language_version:
+  python: "3.12"
 
 repos:
+  # File hygiene: trailing spaces, line endings, YAML/JSON/TOML validation
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
@@ -21,9 +34,40 @@ repos:
         args: ["--fix=lf"]
       - id: detect-private-key
       - id: debug-statements
+      - id: requirements-txt-fixer
+        exclude: ^env\.template$
+
+  # Ruff: Python linting and formatting
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    # Pin to a recent stable ruff-pre-commit release
-    rev: v0.6.9
+    rev: v0.7.0
     hooks:
       - id: ruff
+        args: ["--fix", "--show-fixes"]
+        stages: [pre-commit]
+        exclude: ^(\.venv/|\.github/hooks/|scripts/)
       - id: ruff-format
+        stages: [pre-commit]
+        exclude: ^(\.venv/|\.github/hooks/|scripts/)
+
+  # Bandit: Python security vulnerability scanner
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.8
+    hooks:
+      - id: bandit
+        args: ["-r", "src/", "-ll"]
+        stages: [pre-commit]
+        additional_dependencies: ["bandit[toml]"]
+        pass_filenames: false
+        exclude: ^tests/
+
+  # Custom hooks: API safety and patterns
+  - repo: local
+    hooks:
+      - id: check-api-safety
+        name: Check API Safety Patterns
+        entry: python .github/hooks/check-api-safety.py
+        language: python
+        stages: [pre-commit]
+        types: [python]
+        pass_filenames: true
+        exclude: ^(\.venv/|tests/fixtures/)

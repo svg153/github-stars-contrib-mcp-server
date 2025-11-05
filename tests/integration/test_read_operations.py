@@ -44,7 +44,7 @@ async def test_integration_get_user_data_tool_flow():
 
     # First check if token is valid by calling client directly
     check_res = await client.get_user_data()
-    if not check_res.get("ok") or not check_res.get("data", {}).get("loggedUser"):
+    if not check_res.get("ok") or not (check_res.get("data") or {}).get("loggedUser"):
         pytest.skip(
             "Token not valid for reading user data or loggedUser is null; skipping tool flow test"
         )
@@ -101,7 +101,7 @@ async def test_integration_get_user_tool_flow():
 
     # First check if token is valid by calling client directly
     check_res = await client.get_user()
-    if not check_res.get("ok") or not check_res.get("data", {}).get("loggedUser"):
+    if not check_res.get("ok") or not (check_res.get("data") or {}).get("loggedUser"):
         pytest.skip(
             "Token not valid for reading user data or loggedUser is null; skipping tool flow test"
         )

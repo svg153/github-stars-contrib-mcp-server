@@ -101,17 +101,15 @@ async def test_create_contributions_validates_urls(monkeypatch):
         return (False, "error")
 
     monkeypatch.setattr(create_contribs_mod, "check_url_head", _bad3)
-    res_bad = await create_contribs_mod.create_contributions_impl(
-        [
-            {
-                "title": "t",
-                "url": "https://example.com/a",
-                "description": None,
-                "type": "BLOGPOST",
-                "date": "2025-01-01T00:00:00Z",
-            }
-        ]
-    )
+    res_bad = await create_contribs_mod.create_contributions_impl([
+        {
+            "title": "t",
+            "url": "https://example.com/a",
+            "description": None,
+            "type": "BLOGPOST",
+            "date": "2025-01-01T00:00:00Z",
+        }
+    ])
     assert res_bad["success"] is False and "Invalid URL (error)" in res_bad["error"]
 
     # Valid path
@@ -129,15 +127,13 @@ async def test_create_contributions_validates_urls(monkeypatch):
     )
     monkeypatch.setattr(create_contribs_mod, "get_stars_api", lambda: object())
 
-    res_ok = await create_contribs_mod.create_contributions_impl(
-        [
-            {
-                "title": "t",
-                "url": "https://example.com/a",
-                "description": None,
-                "type": "BLOGPOST",
-                "date": "2025-01-01T00:00:00Z",
-            }
-        ]
-    )
+    res_ok = await create_contribs_mod.create_contributions_impl([
+        {
+            "title": "t",
+            "url": "https://example.com/a",
+            "description": None,
+            "type": "BLOGPOST",
+            "date": "2025-01-01T00:00:00Z",
+        }
+    ])
     assert res_ok["success"] is True and res_ok.get("ids") == ["1"]

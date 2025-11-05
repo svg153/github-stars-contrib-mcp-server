@@ -45,6 +45,41 @@ The server provides the following MCP tools:
 
 All tools return a standardized response format: `{ "success": boolean, "data": object | null, "error": string | null }`
 
+### Supported Enumerations
+
+**ContributionType** (for contributions):
+Reference: `src/github_stars_contrib_mcp/models.py::ContributionType`
+
+| Value | Description |
+|-------|-------------|
+| SPEAKING | Speaking engagement |
+| BLOGPOST | Blog post |
+| ARTICLE_PUBLICATION | Article publication |
+| EVENT_ORGANIZATION | Event organization |
+| HACKATHON | Hackathon participation |
+| OPEN_SOURCE_PROJECT | Open source project |
+| VIDEO_PODCAST | Video or podcast |
+| FORUM | Forum discussion/answer |
+| OTHER | Other contribution type |
+
+**PlatformType** (for links):
+Reference: `src/github_stars_contrib_mcp/models.py::PlatformType`
+
+| Value | Platform |
+|-------|----------|
+| TWITTER | Twitter/X |
+| MEDIUM | Medium |
+| LINKEDIN | LinkedIn |
+| README | GitHub README profile |
+| STACK_OVERFLOW | Stack Overflow |
+| DEV_TO | Dev.to |
+| MASTODON | Mastodon |
+| OTHER | Other platform |
+
+**Legacy aliases** (for backward compatibility, automatically normalized):
+- `GITHUB` → `README` (with warning log)
+- `WEBSITE` → `OTHER` (with warning log)
+
 ## Quick start
 
 1. Create a virtualenv and install

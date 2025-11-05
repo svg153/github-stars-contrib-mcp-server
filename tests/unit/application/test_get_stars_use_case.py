@@ -10,13 +10,13 @@ class FakePort:
 
 @pytest.mark.asyncio
 async def test_get_stars_happy_path():
-    use_case = GetStars(FakePort())
+    use_case = GetStars(FakePort())  # type: ignore[arg-type]
     data = await use_case("alice")
     assert data["publicProfile"]["username"] == "alice"
 
 
 @pytest.mark.asyncio
 async def test_get_stars_validates_username():
-    use_case = GetStars(FakePort())
+    use_case = GetStars(FakePort())  # type: ignore[arg-type]
     with pytest.raises(ValueError):
         await use_case("")

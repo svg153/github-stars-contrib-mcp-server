@@ -90,13 +90,11 @@ async def test_adapter_error_paths_raise():
     # Exercise a representative subset; all methods share the same error pattern
     failing = APIResult(False, None, "boom")
     adapter = StarsAPIAdapter(
-        FakeClient(
-            {
-                "get_user_data": failing,
-                "create_link": failing,
-                "update_profile": failing,
-            }
-        )
+        FakeClient({
+            "get_user_data": failing,
+            "create_link": failing,
+            "update_profile": failing,
+        })
     )
     with pytest.raises(RuntimeError):
         await adapter.get_user_data()

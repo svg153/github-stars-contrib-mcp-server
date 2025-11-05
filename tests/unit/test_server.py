@@ -77,9 +77,11 @@ class TestServer:
         async def failing_init():
             raise RuntimeError("boom")
 
-        with patch.object(
-            server_mod, "initialize_server", new=AsyncMock(side_effect=failing_init)
+        with (
+            patch.object(
+                server_mod, "initialize_server", new=AsyncMock(side_effect=failing_init)
+            ),
+            patch("sys.exit") as mock_exit,
         ):
-            with patch("sys.exit") as mock_exit:
-                server_mod.main()
-                mock_exit.assert_called_once_with(1)
+            server_mod.main()
+            mock_exit.assert_called_once_with(1)

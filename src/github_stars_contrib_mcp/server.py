@@ -15,23 +15,47 @@ from .shared import mcp
 
 # Register tools
 from .tools import (
+    compare_contributions,  # noqa: F401
+    create_contribution,  # noqa: F401
     create_contributions,  # noqa: F401
     create_link,  # noqa: F401
     delete_contributions,  # noqa: F401
     delete_link,  # noqa: F401
+    export_contributions,  # noqa: F401
+    get_contributions_stats,  # noqa: F401
     get_stars,  # noqa: F401
     get_user,  # noqa: F401
     get_user_data,  # noqa: F401
+    search_contributions,  # noqa: F401
     update_contributions,  # noqa: F401
     update_link,  # noqa: F401
     update_profile,  # noqa: F401
 )
 
+# Register observability resource
+from .tools.metrics import get_prometheus_metrics  # noqa: F401
+
 logger = structlog.get_logger(__name__)
 
 
 async def initialize_server() -> None:
+    """Initialize server with observability."""
+    import os
+
+    from .observability import TracingConfig, initialize_tracing
     from .shared import initialize_stars_client
+
+    # Initialize tracing
+    tracing_enabled = os.getenv("OTEL_ENABLED", "false").lower() == "true"
+    if tracing_enabled:
+        config = TracingConfig(
+            service_name="github-stars-contrib-mcp",
+            jaeger_host=os.getenv("JAEGER_HOST", "localhost"),
+            jaeger_port=int(os.getenv("JAEGER_PORT", "6831")),
+            enabled=True,
+        )
+        initialize_tracing(config)
+        logger.info("Distributed tracing initialized", config=repr(config))
 
     await initialize_stars_client()
 
@@ -63,11 +87,11 @@ def main() -> None:
     host = os.getenv("MCP_HOST", "127.0.0.1")
     port = int(os.getenv("MCP_PORT", "8766"))
     path = os.getenv("MCP_PATH", "/mcp")
-    transport = os.getenv("MCP_TRANSPORT", "stdio")
+    transport_str = os.getenv("MCP_TRANSPORT", "stdio")
 
     # Select transport explicitly to avoid passing HTTP kwargs to stdio runner
-    if transport in {"http", "streamable-http", "sse"}:
-        mcp.run(transport=transport, host=host, port=port, path=path)
+    if transport_str in {"http", "streamable-http", "sse"}:
+        mcp.run(transport=transport_str, host=host, port=port, path=path)  # type: ignore[arg-type]
     else:
         mcp.run(transport="stdio")
 

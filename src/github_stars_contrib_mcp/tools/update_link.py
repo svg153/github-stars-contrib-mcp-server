@@ -58,7 +58,7 @@ async def update_link_impl(link_id: str, data: dict) -> dict:
     try:
         payload = UpdateLinkArgs(id=link_id, data=UpdateLinkInput(**norm_data))
     except ValidationError as e:
-        if _has_platform_validation_error(e.errors()):
+        if _has_platform_validation_error(e.errors()):  # type: ignore[arg-type]
             allowed = [p.value for p in PlatformType]
             return {
                 "success": False,
@@ -92,7 +92,7 @@ async def update_link_impl(link_id: str, data: dict) -> dict:
             else update_data.get("platform")
         )
         if platform is not None:
-            # Convert enum to raw string if needed
+            # Convert enum to raw string if needed; if platform is string or lacks 'value', use as-is
             try:
                 platform = platform.value  # type: ignore[attr-defined]
             except (AttributeError, TypeError):
