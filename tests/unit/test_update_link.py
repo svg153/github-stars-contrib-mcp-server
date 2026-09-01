@@ -78,7 +78,9 @@ class TestUpdateLink:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("platform", ["LINKEDIN", "OTHER", "DEV_TO"])
-    async def test_update_link_accepts_live_platform_values(self, monkeypatch, platform):
+    async def test_update_link_accepts_live_platform_values(
+        self, monkeypatch, platform
+    ):
         calls = {}
 
         class FakePort:

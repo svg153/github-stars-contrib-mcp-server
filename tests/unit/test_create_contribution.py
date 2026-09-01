@@ -43,7 +43,9 @@ class TestCreateContribution:
             "2024-06-01T12:30:45+02:00",
         ],
     )
-    async def test_create_contribution_accepts_timezone_boundaries(self, monkeypatch, date):
+    async def test_create_contribution_accepts_timezone_boundaries(
+        self, monkeypatch, date
+    ):
         class FakePort:
             async def create_contribution(self, **kwargs):
                 return {"createContribution": {"id": "1"}}
