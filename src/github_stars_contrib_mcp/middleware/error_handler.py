@@ -62,9 +62,7 @@ class ErrorHandlerMiddleware:
         elif isinstance(exc, TimeoutError):
             status = 504
 
-        body = json.dumps(
-            {"success": False, "data": None, "error": str(exc)}
-        ).encode()
+        body = json.dumps({"success": False, "data": None, "error": str(exc)}).encode()
         await send(
             {
                 "type": "http.response.start",
