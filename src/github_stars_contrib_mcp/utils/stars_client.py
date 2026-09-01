@@ -10,7 +10,12 @@ from urllib.parse import quote
 
 import httpx
 import structlog
-from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential_jitter
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential_jitter,
+)
 
 from ..models import PlatformType
 from ..observability import MetricsCollector, get_tracer
@@ -383,9 +388,7 @@ class StarsClient:
                 }
             except _RetryableHTTPError as exc:
                 MetricsCollector.record_error("RETRY_EXHAUSTED", endpoint)
-                logger.error(
-                    "stars_client.retry_exhausted", op=op_name, error=str(exc)
-                )
+                logger.error("stars_client.retry_exhausted", op=op_name, error=str(exc))
                 return {"ok": False, "data": None, "error": str(exc)}
 
     @retry(
@@ -454,7 +457,9 @@ class StarsClient:
             MetricsCollector.record_error("GRAPHQL_ERROR", endpoint)
             message = data["errors"][0].get("message", "Unknown error")
             lowered = message.lower()
-            if "enum" in lowered and ("platform" in lowered or "platformtype" in lowered):
+            if "enum" in lowered and (
+                "platform" in lowered or "platformtype" in lowered
+            ):
                 valid = ", ".join(platform.value for platform in PlatformType)
                 message = f"{message}. Valid PlatformType values: {valid}"
             return {"ok": False, "data": None, "error": message}
