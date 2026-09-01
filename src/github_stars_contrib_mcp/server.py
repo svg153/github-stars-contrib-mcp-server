@@ -37,6 +37,7 @@ def main() -> None:
     logger.info("Starting Stars Contributions MCP Server", log_level=settings.log_level)
 
     try:
+
         async def _init_with_timeout() -> None:
             try:
                 await asyncio.wait_for(initialize_server(), timeout=2)

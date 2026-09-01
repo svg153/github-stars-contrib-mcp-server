@@ -1,13 +1,13 @@
 """Data models for GitHub Stars Contributions MCP Server."""
 
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 
 
-class ContributionType(str, Enum):
+class ContributionType(StrEnum):
     SPEAKING = "SPEAKING"
     BLOGPOST = "BLOGPOST"
     ARTICLE_PUBLICATION = "ARTICLE_PUBLICATION"
@@ -19,7 +19,7 @@ class ContributionType(str, Enum):
     OTHER = "OTHER"
 
 
-class PlatformType(str, Enum):
+class PlatformType(StrEnum):
     TWITTER = "TWITTER"
     MEDIUM = "MEDIUM"
     LINKEDIN = "LINKEDIN"

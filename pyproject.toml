@@ -52,6 +52,9 @@ line-length = 88
 select = ["E", "W", "F", "I", "B", "C4", "UP"]
 ignore = ["E501", "B008", "C901"]
 
+[tool.ruff.lint.isort]
+known-first-party = ["github_stars_contrib_mcp"]
+
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
 

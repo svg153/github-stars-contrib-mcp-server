@@ -69,7 +69,9 @@ async def cmd_upsert_contribution(client_id: str, data: str) -> None:
 
 async def cmd_update_profile(data: str) -> None:
     await ensure_client()
-    print(json.dumps(await update_profile.update_profile_impl(load_json(data)), indent=2))
+    print(
+        json.dumps(await update_profile.update_profile_impl(load_json(data)), indent=2)
+    )
 
 
 def main() -> None:
@@ -94,7 +96,9 @@ def main() -> None:
         help="Idempotently create/replace one contribution by stable client ID",
     )
     upsert_parser.add_argument("--client-id", required=True)
-    upsert_parser.add_argument("--data", required=True, help="Complete JSON contribution")
+    upsert_parser.add_argument(
+        "--data", required=True, help="Complete JSON contribution"
+    )
 
     profile_parser = sub.add_parser("update-profile", help="Update user profile")
     profile_parser.add_argument("--data", required=True, help="JSON profile object")
