@@ -4,6 +4,7 @@ import json
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from mcp.types import EmbeddedResource
 
 from github_stars_contrib_mcp.tools.compare_contributions import (
     compare_contributions_impl,
@@ -12,6 +13,7 @@ from github_stars_contrib_mcp.tools.export_contributions import (
     export_contributions_impl,
 )
 from github_stars_contrib_mcp.tools.get_contributions_stats import (
+    MCP_APP_HTML_MIME_TYPE,
     get_contributions_stats_impl,
 )
 
@@ -58,7 +60,7 @@ async def test_stats_total_and_grouping():
 
 
 @pytest.mark.asyncio
-async def test_stats_ui_returns_resource():
+async def test_stats_ui_returns_native_mcp_app_resource():
     use_case = AsyncMock(return_value=SAMPLE)
     with patch(
         "github_stars_contrib_mcp.tools.get_contributions_stats.GetStars",
@@ -68,7 +70,10 @@ async def test_stats_ui_returns_resource():
             {"username": "testuser", "include_ui": True}
         )
     assert isinstance(result, list)
-    assert str(result[0].resource.uri).startswith("ui://")
+    assert isinstance(result[0], EmbeddedResource)
+    assert result[0].resource.uri == "ui://contributions-stats/testuser"
+    assert result[0].resource.mime_type == MCP_APP_HTML_MIME_TYPE
+    assert "Contributions for @testuser" in result[0].resource.text
 
 
 @pytest.mark.asyncio

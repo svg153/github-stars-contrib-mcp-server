@@ -1,4 +1,4 @@
-"""Contribution statistics with an optional MCP-UI Plotly visualization."""
+"""Contribution statistics with an optional MCP Apps visualization."""
 
 from __future__ import annotations
 
@@ -7,8 +7,7 @@ from datetime import datetime
 from typing import Any
 
 import structlog
-from mcp_ui_server import create_ui_resource
-from mcp_ui_server.core import UIResource
+from mcp.types import EmbeddedResource, TextResourceContents
 from pydantic import BaseModel, Field, ValidationError
 
 from ..application.use_cases.get_stars import GetStars
@@ -17,6 +16,7 @@ from ..shared import mcp
 from ..utils.plotly_charts import PlotlyChartGenerator
 
 logger = structlog.get_logger(__name__)
+MCP_APP_HTML_MIME_TYPE = "text/html;profile=mcp-app"
 
 
 class StatsArgs(BaseModel):
@@ -25,7 +25,9 @@ class StatsArgs(BaseModel):
     include_ui: bool = False
 
 
-async def get_contributions_stats_impl(args: dict[str, Any]) -> dict | list[UIResource]:
+async def get_contributions_stats_impl(
+    args: dict[str, Any],
+) -> dict | list[EmbeddedResource]:
     try:
         payload = StatsArgs(**(args or {}))
     except ValidationError as exc:
@@ -88,7 +90,7 @@ def _parse_date(value: Any) -> datetime | None:
         return None
 
 
-def _create_ui(username: str, stats: dict[str, Any]) -> list[UIResource]:
+def _create_ui(username: str, stats: dict[str, Any]) -> list[EmbeddedResource]:
     if not stats["total_count"]:
         html = f"<html><body><h1>No contributions for @{username}</h1></body></html>"
     else:
@@ -100,17 +102,20 @@ def _create_ui(username: str, stats: dict[str, Any]) -> list[UIResource]:
             title=f"Contributions for @{username}",
         )
 
-    resource = create_ui_resource(
-        {
-            "uri": f"ui://contributions-stats/{username}",
-            "content": {"type": "rawHtml", "htmlString": html},
-            "encoding": "text",
-        }
+    resource = EmbeddedResource(
+        type="resource",
+        resource=TextResourceContents(
+            uri=f"ui://contributions-stats/{username}",
+            mime_type=MCP_APP_HTML_MIME_TYPE,
+            text=html,
+        ),
     )
     return [resource]
 
 
 @mcp.tool()
-async def get_contributions_stats(args: dict[str, Any]) -> dict | list[UIResource]:
-    """Return contribution statistics, optionally as an MCP-UI resource."""
+async def get_contributions_stats(
+    args: dict[str, Any],
+) -> dict | list[EmbeddedResource]:
+    """Return contribution statistics, optionally as an MCP Apps resource."""
     return await get_contributions_stats_impl(args)
