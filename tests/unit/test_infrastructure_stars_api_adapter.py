@@ -73,9 +73,9 @@ async def test_adapter_success_paths():
         )
     )["createContribution"]["id"] == "c1"
     assert (await adapter.create_contributions([{}]))["ids"] == ["c1", "c2"]
-    assert (await adapter.upsert_contribution("stable-id", {}))[
-        "upsertContribution"
-    ]["id"] == "c1"
+    assert (await adapter.upsert_contribution("stable-id", {}))["upsertContribution"][
+        "id"
+    ] == "c1"
     assert (await adapter.create_link("u", "OTHER"))["createLink"]["id"] == "l1"
     assert (await adapter.update_link("l1", "u", "OTHER"))["updateLink"]["id"] == "l1"
     assert (await adapter.delete_link("l1"))["deleteLink"]["id"] == "l1"

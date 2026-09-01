@@ -222,7 +222,9 @@ class StarsClient:
         if resp.status_code >= 400:
             try:
                 error_body = resp.json()
-                detail = error_body.get("message") or error_body.get("error") or resp.text
+                detail = (
+                    error_body.get("message") or error_body.get("error") or resp.text
+                )
             except (json.JSONDecodeError, AttributeError):
                 detail = resp.text
             logger.warning(

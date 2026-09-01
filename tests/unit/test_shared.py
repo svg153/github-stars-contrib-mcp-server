@@ -16,7 +16,9 @@ async def test_initialize_stars_client_validates_via_rest():
     ):
         settings.stars_api_token = "token"
         settings.stars_api_url = "https://api-stars.github.com/"
-        settings.stars_contributions_api_url = "https://stars.github.com/api/contributions"
+        settings.stars_contributions_api_url = (
+            "https://stars.github.com/api/contributions"
+        )
         settings.dangerously_omit_auth = False
         fake = AsyncMock()
         fake.validate_token.return_value = APIResult(True, {"data": []})
@@ -40,7 +42,9 @@ async def test_initialize_stars_client_rejects_invalid_rest_token():
     ):
         settings.stars_api_token = "bad"
         settings.stars_api_url = "https://api-stars.github.com/"
-        settings.stars_contributions_api_url = "https://stars.github.com/api/contributions"
+        settings.stars_contributions_api_url = (
+            "https://stars.github.com/api/contributions"
+        )
         settings.dangerously_omit_auth = False
         fake = AsyncMock()
         fake.validate_token.return_value = APIResult(False, None, "HTTP 401")

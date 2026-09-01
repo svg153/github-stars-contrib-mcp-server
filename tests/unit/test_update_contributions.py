@@ -1,5 +1,8 @@
 """Tests for full-payload REST upsert semantics."""
 
+# This import layout is already intentionally split into third-party and first-party
+# sections; Ruff 0.16.5 reports a false-positive I001 for this single alias import.
+# ruff: noqa: I001
 import pytest
 
 from github_stars_contrib_mcp.tools import update_contributions as tool
