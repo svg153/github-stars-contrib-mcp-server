@@ -72,17 +72,20 @@ async def initialize_stars_client() -> None:
             api_url=settings.stars_api_url,
             contributions_api_url=settings.stars_contributions_api_url,
             token=settings.stars_api_token,
+            auth_mode=settings.stars_auth_mode,
+            user_agent=settings.stars_user_agent,
         )
 
-        # Validate against the supported REST Contributions API, not the retired
-        # GraphQL contributions surface.
         result = await stars_client.validate_token()
         if not result.ok:
             raise ValueError(
                 f"Invalid STARS_API_TOKEN: {result.error or 'REST validation failed'}"
             )
 
-        logger.info("Stars client initialized and token validated via REST")
+        logger.info(
+            "Stars client initialized and token validated via REST",
+            auth_mode=settings.stars_auth_mode,
+        )
     except Exception as exc:
         logger.error("Failed to initialize Stars client", error=str(exc))
         raise

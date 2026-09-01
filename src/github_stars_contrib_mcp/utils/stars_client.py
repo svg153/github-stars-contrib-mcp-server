@@ -10,8 +10,9 @@ from urllib.parse import quote
 
 import httpx
 import structlog
-from tenacity import retry, stop_after_attempt, wait_exponential_jitter
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential_jitter
 
+from ..models import PlatformType
 from ..observability import MetricsCollector, get_tracer
 from ..resilience import CircuitBreakerException, circuit_breaker_registry
 from .models import APIResult
@@ -27,6 +28,32 @@ from .queries import (
 
 logger = structlog.get_logger(__name__)
 _CLIENT_ID_RE = re.compile(r"^[A-Za-z0-9._:-]{1,255}$")
+_SENSITIVE_KEYS = {"token", "secret", "password", "authorization", "cookie"}
+
+
+class _RetryableHTTPError(RuntimeError):
+    """Internal signal used to retry transient Stars API responses."""
+
+
+def _redact(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {
+            key: "<redacted>" if str(key).lower() in _SENSITIVE_KEYS else _redact(item)
+            for key, item in value.items()
+        }
+    if isinstance(value, list):
+        return [_redact(item) for item in value]
+    return value
+
+
+def _error_detail(resp: httpx.Response) -> str:
+    try:
+        body = resp.json()
+    except (json.JSONDecodeError, ValueError):
+        return resp.text
+    if isinstance(body, dict):
+        return str(body.get("message") or body.get("error") or resp.text)
+    return resp.text
 
 
 class StarsClient:
@@ -35,20 +62,27 @@ class StarsClient:
         api_url: str,
         token: str,
         contributions_api_url: str = "https://stars.github.com/api/contributions",
+        auth_mode: str = "both",
+        user_agent: str = "github-stars-contrib-mcp-server/0.3.1",
     ) -> None:
+        if auth_mode not in {"both", "bearer", "cookie"}:
+            raise ValueError("auth_mode must be one of: both, bearer, cookie")
         self.api_url = api_url.rstrip("/") + "/"
         self.contributions_api_url = contributions_api_url.rstrip("/")
         self.token = token
+        self.auth_mode = auth_mode
         self._headers = {
             "Content-Type": "application/json",
             "Origin": "https://stars.github.com",
             "Referer": "https://stars.github.com/",
-            "User-Agent": "github-stars-contrib-mcp-server/0.3.0",
+            "User-Agent": user_agent,
             "Accept": "application/json",
         }
-        self._cookies = {"token": self.token}
-        if self.token:
+        self._cookies: dict[str, str] = {}
+        if self.token and auth_mode in {"both", "bearer"}:
             self._headers["Authorization"] = f"Bearer {self.token}"
+        if self.token and auth_mode in {"both", "cookie"}:
+            self._cookies["token"] = self.token
         self.breaker = circuit_breaker_registry.get_or_create(
             "stars_api", failure_threshold=5, recovery_timeout=60
         )
@@ -197,10 +231,6 @@ class StarsClient:
             )
         )
 
-    @retry(
-        wait=wait_exponential_jitter(initial=0.5, max=8, jitter=1),
-        stop=stop_after_attempt(3),
-    )
     async def _execute_rest(
         self,
         method: str,
@@ -235,7 +265,17 @@ class StarsClient:
                     "data": None,
                     "error": "Service temporarily unavailable (circuit breaker open)",
                 }
+            except _RetryableHTTPError as exc:
+                MetricsCollector.record_error("RETRY_EXHAUSTED", endpoint)
+                logger.error("stars_client.retry_exhausted", op=op, error=str(exc))
+                return {"ok": False, "data": None, "error": str(exc)}
 
+    @retry(
+        retry=retry_if_exception_type(_RetryableHTTPError),
+        wait=wait_exponential_jitter(initial=0.25, max=4, jitter=0.25),
+        stop=stop_after_attempt(3),
+        reraise=True,
+    )
     async def _make_rest_request(
         self,
         method: str,
@@ -268,14 +308,12 @@ class StarsClient:
             {"status": resp.status_code, "duration_ms": duration_ms},
         )
 
+        if resp.status_code == 429 or resp.status_code >= 500:
+            detail = _error_detail(resp)
+            raise _RetryableHTTPError(f"HTTP {resp.status_code}: {detail}")
+
         if resp.status_code >= 400:
-            try:
-                error_body = resp.json()
-                detail = (
-                    error_body.get("message") or error_body.get("error") or resp.text
-                )
-            except (json.JSONDecodeError, AttributeError):
-                detail = resp.text
+            detail = _error_detail(resp)
             MetricsCollector.record_error(f"HTTP_{resp.status_code}", endpoint)
             logger.warning(
                 "stars_client.request_failed",
@@ -307,10 +345,6 @@ class StarsClient:
         )
         return {"ok": True, "data": body, "error": None}
 
-    @retry(
-        wait=wait_exponential_jitter(initial=0.5, max=8, jitter=1),
-        stop=stop_after_attempt(3),
-    )
     async def _execute_graphql(
         self,
         query: str,
@@ -322,6 +356,11 @@ class StarsClient:
         payload = {"query": query, "variables": variables or {}}
         endpoint = f"/graphql/{op_name}"
         request_size = len(json.dumps(payload["variables"]))
+        logger.debug(
+            "stars_client.graphql_request",
+            op=op_name,
+            variables=_redact(payload["variables"]),
+        )
         with self.tracer.span(f"graphql_{op_name}", {"operation": op_name}) as span:
             try:
                 return await self.breaker.async_call(
@@ -342,7 +381,19 @@ class StarsClient:
                     "data": None,
                     "error": "Service temporarily unavailable (circuit breaker open)",
                 }
+            except _RetryableHTTPError as exc:
+                MetricsCollector.record_error("RETRY_EXHAUSTED", endpoint)
+                logger.error(
+                    "stars_client.retry_exhausted", op=op_name, error=str(exc)
+                )
+                return {"ok": False, "data": None, "error": str(exc)}
 
+    @retry(
+        retry=retry_if_exception_type(_RetryableHTTPError),
+        wait=wait_exponential_jitter(initial=0.25, max=4, jitter=0.25),
+        stop=stop_after_attempt(3),
+        reraise=True,
+    )
     async def _make_graphql_request(
         self,
         payload: dict[str, Any],
@@ -353,7 +404,9 @@ class StarsClient:
     ) -> dict[str, Any]:
         start = time.monotonic()
         async with httpx.AsyncClient(
-            timeout=30, headers=self._headers, cookies=self._cookies
+            timeout=30,
+            headers=self._headers,
+            cookies=self._cookies or None,
         ) as client:
             resp = await client.post(self.api_url, json=payload)
         duration_sec = time.monotonic() - start
@@ -372,6 +425,10 @@ class StarsClient:
             "http_response",
             {"status": resp.status_code, "duration_ms": duration_ms},
         )
+
+        if resp.status_code == 429 or resp.status_code >= 500:
+            detail = _error_detail(resp)
+            raise _RetryableHTTPError(f"HTTP {resp.status_code}: {detail}")
 
         if resp.status_code >= 400:
             MetricsCollector.record_error(f"HTTP_{resp.status_code}", endpoint)
@@ -395,11 +452,12 @@ class StarsClient:
 
         if data.get("errors"):
             MetricsCollector.record_error("GRAPHQL_ERROR", endpoint)
-            return {
-                "ok": False,
-                "data": None,
-                "error": data["errors"][0].get("message", "Unknown error"),
-            }
+            message = data["errors"][0].get("message", "Unknown error")
+            lowered = message.lower()
+            if "enum" in lowered and ("platform" in lowered or "platformtype" in lowered):
+                valid = ", ".join(platform.value for platform in PlatformType)
+                message = f"{message}. Valid PlatformType values: {valid}"
+            return {"ok": False, "data": None, "error": message}
 
         logger.info(
             "stars_client.request_ok",

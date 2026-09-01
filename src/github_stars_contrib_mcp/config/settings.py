@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings
 
@@ -20,6 +22,14 @@ class Settings(BaseSettings):
     stars_api_token: str | None = Field(
         default=None, description="Personal Stars API token from stars.github.com"
     )
+    stars_auth_mode: Literal["both", "bearer", "cookie"] = Field(
+        default="both",
+        description="Credential transport: bearer header, cookie, or both",
+    )
+    stars_user_agent: str = Field(
+        default="github-stars-contrib-mcp-server/0.3.1",
+        description="User-Agent sent to GitHub Stars endpoints",
+    )
     log_level: str = Field(default="INFO", description="Python logging level")
     dangerously_omit_auth: bool = Field(
         default=False,
@@ -27,7 +37,10 @@ class Settings(BaseSettings):
     )
     validate_urls: bool = Field(
         default=False,
-        description="When true, perform a lightweight HEAD check for URLs before calling the API (may slow calls).",
+        description=(
+            "When true, perform a lightweight HEAD check for URLs before calling "
+            "the API (may slow calls)."
+        ),
     )
     url_validation_timeout_s: int = Field(default=3)
     url_validation_ttl_s: int = Field(default=3600)
@@ -43,6 +56,14 @@ class Settings(BaseSettings):
             raise ValueError(
                 f"Invalid log level: {v}. Must be one of {valid_levels} or 'TRACE'"
             )
+        return normalized
+
+    @field_validator("stars_user_agent")
+    @classmethod
+    def validate_user_agent(cls, v: str) -> str:
+        normalized = v.strip()
+        if not normalized:
+            raise ValueError("STARS_USER_AGENT must not be empty")
         return normalized
 
 
