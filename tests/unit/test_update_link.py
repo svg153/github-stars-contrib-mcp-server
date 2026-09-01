@@ -21,7 +21,7 @@ class TestUpdateLink:
         data = {"link": "https://updated.com", "platform": "WEBSITE"}
         res = await tool.update_link_impl("l1", data)
         assert res["success"] is True
-        # WEBSITE is aliased to OTHER in live API enum
+        assert res["error"] is None
         assert res["data"] == {
             "updateLink": {
                 "id": "l1",
@@ -32,17 +32,17 @@ class TestUpdateLink:
 
     @pytest.mark.asyncio
     async def test_update_link_invalid_url(self):
-        data = {"link": "not-a-url"}
-        res = await tool.update_link_impl("l1", data)
+        res = await tool.update_link_impl("l1", {"link": "not-a-url"})
         assert res["success"] is False
+        assert res["data"] is None
         assert "url" in str(res["error"])
 
     @pytest.mark.asyncio
     async def test_update_link_invalid_platform(self):
-        data = {"platform": "INVALID"}
-        res = await tool.update_link_impl("l1", data)
+        res = await tool.update_link_impl("l1", {"platform": "INVALID"})
         assert res["success"] is False
-        assert "platform" in str(res["error"])
+        assert res["data"] is None
+        assert "Allowed:" in str(res["error"])
 
     @pytest.mark.asyncio
     async def test_update_link_error_bubbles(self, monkeypatch):
@@ -53,27 +53,32 @@ class TestUpdateLink:
                 raise RuntimeError("API error")
 
         monkeypatch.setattr(tool, "get_stars_api", FailingPort)
-        data = {"link": "https://example.com"}
-        res = await tool.update_link_impl("l1", data)
-        assert res["success"] is False
-        assert res["error"] == "API error"
+        res = await tool.update_link_impl("l1", {"link": "https://example.com"})
+        assert res == {"success": False, "data": None, "error": "API error"}
 
     @pytest.mark.asyncio
-    async def test_update_link_partial_update(self, mock_shared_client, monkeypatch):
-        class FakePort2:
+    async def test_update_link_aliases_are_consistent(self, monkeypatch):
+        calls = []
+
+        class FakePort:
             async def update_link(
                 self, link_id: str, link: str | None, platform: str | None
             ):
-                return {"updateLink": {"id": link_id}}
+                calls.append(platform)
+                return {"updateLink": {"id": link_id, "platform": platform}}
 
-        monkeypatch.setattr(tool, "get_stars_api", FakePort2)
+        monkeypatch.setattr(tool, "get_stars_api", FakePort)
 
-        data = {"platform": "GITHUB"}
-        res = await tool.update_link_impl("l1", data)
-        assert res["success"] is True
+        github = await tool.update_link_impl("l1", {"platform": "GITHUB"})
+        website = await tool.update_link_impl("l2", {"platform": "WEBSITE"})
+
+        assert github["success"] is True
+        assert website["success"] is True
+        assert calls == ["README", "OTHER"]
 
     @pytest.mark.asyncio
-    async def test_update_link_alias_platform(self, monkeypatch):
+    @pytest.mark.parametrize("platform", ["LINKEDIN", "OTHER", "DEV_TO"])
+    async def test_update_link_accepts_live_platform_values(self, monkeypatch, platform):
         calls = {}
 
         class FakePort:
@@ -81,22 +86,9 @@ class TestUpdateLink:
                 self, link_id: str, link: str | None, platform: str | None
             ):
                 calls["platform"] = platform
-                return {"updateLink": {"id": link_id, "platform": platform}}
+                return {"updateLink": {"id": link_id}}
 
         monkeypatch.setattr(tool, "get_stars_api", FakePort)
-        res = await tool.update_link_impl("l1", {"platform": "GITHUB"})
+        res = await tool.update_link_impl("l1", {"platform": platform})
         assert res["success"] is True
-        assert calls["platform"] == "GITHUB"
-        # WEBSITE alias
-        res2 = await tool.update_link_impl("l2", {"platform": "WEBSITE"})
-        assert res2["success"] is True
-        assert calls["platform"] == "OTHER"
-
-    @pytest.mark.asyncio
-    async def test_update_link_logger_initialization(self):
-        """Test that logger is properly initialized."""
-        from github_stars_contrib_mcp.tools.update_link import logger
-
-        # Ensure logger is initialized (this covers the logger definition)
-        assert logger is not None
-        assert hasattr(logger, "info")  # Basic logger check
+        assert calls["platform"] == platform

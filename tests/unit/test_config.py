@@ -13,6 +13,8 @@ class TestSettings:
     def test_default_settings(self):
         settings = Settings()
         assert settings.stars_api_token is None
+        assert settings.stars_auth_mode == "both"
+        assert settings.stars_user_agent == "github-stars-contrib-mcp-server/0.3.1"
         assert settings.log_level == "INFO"
         assert settings.dangerously_omit_auth is False
 
@@ -29,10 +31,28 @@ class TestSettings:
         with pytest.raises(ValidationError):
             Settings(log_level="INVALID")
 
+    @pytest.mark.parametrize("auth_mode", ["both", "bearer", "cookie"])
+    def test_valid_auth_modes(self, auth_mode):
+        assert Settings(stars_auth_mode=auth_mode).stars_auth_mode == auth_mode
+
+    def test_invalid_auth_mode(self):
+        with pytest.raises(ValidationError):
+            Settings(stars_auth_mode="invalid")
+
+    def test_user_agent_must_not_be_empty(self):
+        with pytest.raises(ValidationError):
+            Settings(stars_user_agent="   ")
+
     def test_with_token(self):
         settings = Settings(
-            stars_api_token="test_token", log_level="DEBUG", dangerously_omit_auth=True
+            stars_api_token="test_token",
+            log_level="DEBUG",
+            dangerously_omit_auth=True,
+            stars_auth_mode="bearer",
+            stars_user_agent="custom-agent/1.0",
         )
         assert settings.stars_api_token == "test_token"
         assert settings.log_level == "DEBUG"
         assert settings.dangerously_omit_auth is True
+        assert settings.stars_auth_mode == "bearer"
+        assert settings.stars_user_agent == "custom-agent/1.0"
