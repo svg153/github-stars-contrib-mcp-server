@@ -1,6 +1,9 @@
 """Tests for optional OTLP tracing."""
 
-from github_stars_contrib_mcp.observability.tracing import DistributedTracer, TracingConfig
+from github_stars_contrib_mcp.observability.tracing import (
+    DistributedTracer,
+    TracingConfig,
+)
 
 
 def test_disabled_tracer_is_noop():
