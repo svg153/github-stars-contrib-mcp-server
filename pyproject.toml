@@ -7,7 +7,7 @@ packages = ["src/github_stars_contrib_mcp"]
 
 [project]
 name = "github-stars-contrib-mcp-server"
-version = "0.3.0"
+version = "0.3.1"
 description = "MCP server for GitHub Stars contributions using the current REST Contributions API"
 authors = [{name = "GitHub Stars MCP Team", email = "team@github-stars-mcp.dev"}]
 readme = "README.md"

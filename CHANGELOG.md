@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.3.1 — 2026-09-01
+
+### Added
+
+- Configurable Stars credential transport via `STARS_AUTH_MODE=both|bearer|cookie`.
+- Configurable `STARS_USER_AGENT` for diagnostics.
+- Retries for transient HTTP 429/5xx responses with exponential jitter and controlled errors after exhaustion.
+- Platform enum hints for GraphQL validation errors.
+- Dedicated Stars API integration workflow separate from always-on unit CI.
+
+### Fixed
+
+- `update_link` now normalizes `GITHUB -> README` consistently instead of passing the retired alias through unchanged.
+- Link platform tests now cover live values such as `LINKEDIN`, `OTHER`, and `DEV_TO`.
+- Contribution tests cover query-string URLs, missing descriptions, UTC boundaries, explicit offsets, and second precision.
+
+### Changed
+
+- DEBUG GraphQL variables are logged only after recursive sensitive-key redaction.
+- `ProfileUpdateInput` documents its mapping to GraphQL `NomineeProfileInput`.
+- README and agent guidance now document supported operations, valid platform values, auth modes, retry behavior, and the REST no-DELETE constraint.
+
 ## 0.2.0 — 2026-09-01
 
 ### Breaking
@@ -19,13 +41,11 @@
 
 ### Changed
 
-- Raised the MCP SDK floor to `mcp>=2.1.1,<3` (latest mainline stable reviewed for this migration).
+- Raised the MCP SDK floor to `mcp>=2.1.1,<3`.
 - Updated runtime and development dependency floors with next-major upper bounds.
-- Updated pre-commit hooks to the current Ruff hook IDs and current hook releases.
 - Streamable HTTP is the preferred deployed transport; SSE remains for legacy clients.
-- `MCP_TRANSPORT=http` is retained as an alias for `streamable-http`.
-- Contribution enum serialization now sends values such as `BLOGPOST`, not Python enum representations such as `ContributionType.BLOGPOST`.
+- Contribution enum serialization now sends values such as `BLOGPOST`, not Python enum representations.
 
 ### Compatibility note
 
-The Stars GraphQL endpoint remains only for profile/link/public-profile operations for which the reviewed Contributions migration does not establish a REST replacement. This release intentionally avoids assuming unrelated GraphQL surfaces were removed.
+The Stars GraphQL endpoint remains only for profile/link/public-profile operations for which the reviewed Contributions migration does not establish a REST replacement.
