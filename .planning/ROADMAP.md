@@ -30,26 +30,26 @@ flowchart TD
   P12 --> P13["13 Quality/release"]
 ```
 
-| Phase | Goal | Requirements | Issue | Blocked by |
-| --- | --- | --- | --- | --- |
-| 01 | Define discovery domain, lifecycle and SQLite persistence | DOMAIN-01..04 | #17 | — |
-| 02 | Bootstrap/manage trusted source identity | IDENT-01..04 | #18 | 01 |
-| 03 | Build safe fetch and untrusted-content boundary | SAFE-01..04 | #19 | 01 |
-| 04 | Orchestrate adapters into persisted candidates | DISC-01..04 | #20 | 01,02,03 |
-| 05 | Ship RSS/Atom + trusted website adapters | RSS-01..03 | #21 | 04 |
-| 06 | Ship GitHub discovery adapter | GH-01..04 | #22 | 04 |
-| 07 | Ship YouTube discovery adapter | YT-01..03 | #23 | 04 |
-| 08 | Ship public speaker/event adapters | SPEAK-01..03 | JIT | 03,04 |
-| 09 | Add compliant restricted-social ingestion | SOCIAL-01..03 | JIT | 03,04 |
-| 10 | Add dedupe, confidence and conflict resolution | DEDUPE-01..04 | JIT | 05-09 |
-| 11 | Expose review and publish MCP workflows | REVIEW-01..02, PUB-01..03 | JIT | 10 |
-| 12 | Package reusable skills/agent workflows | AGENT-01..05 | JIT | 11 |
-| 13 | Add evals, observability, docs and release proof | QUAL-01..02, OBS-01, DOC-01, REL-01 | JIT | 12 |
+| Phase | Goal | Requirements | Issue | Blocked by | Status |
+| --- | --- | --- | --- | --- | --- |
+| 01 | Define discovery domain, lifecycle and SQLite persistence | DOMAIN-01..04 | #17 | — | verified; PR #25 |
+| 02 | Bootstrap/manage trusted source identity | IDENT-01..04 | #18 | 01 | ready after #25 |
+| 03 | Build safe fetch and untrusted-content boundary | SAFE-01..04 | #19 | 01 | planned |
+| 04 | Orchestrate adapters into persisted candidates | DISC-01..04 | #20 | 01,02,03 | planned |
+| 05 | Ship RSS/Atom + trusted website adapters | RSS-01..03 | #21 | 04 | planned |
+| 06 | Ship GitHub discovery adapter | GH-01..04 | #22 | 04 | planned |
+| 07 | Ship YouTube discovery adapter | YT-01..03 | #23 | 04 | planned |
+| 08 | Ship public speaker/event adapters | SPEAK-01..03 | JIT | 03,04 | planned |
+| 09 | Add compliant restricted-social ingestion | SOCIAL-01..03 | JIT | 03,04 | planned |
+| 10 | Add dedupe, confidence and conflict resolution | DEDUPE-01..04 | JIT | 05-09 | planned |
+| 11 | Expose review and publish MCP workflows | REVIEW-01..02, PUB-01..03 | JIT | 10 | planned |
+| 12 | Package reusable skills/agent workflows | AGENT-01..05 | JIT | 11 | planned |
+| 13 | Add evals, observability, docs and release proof | QUAL-01..02, OBS-01, DOC-01, REL-01 | JIT | 12 | planned |
 
 ## Phase exit criteria
 
 ### 01 — Domain and persistence
-Provider-neutral models, lifecycle rules, repository ports and SQLite round-trip are deterministic and tested.
+Provider-neutral models, lifecycle rules, repository ports and SQLite round-trip are deterministic and tested. **Verified in PR #25.**
 
 ### 02 — Identity and source registry
 Profile/link bootstrap creates canonical sources with explicit ownership confidence; inferred sources cannot silently become trusted.
