@@ -133,9 +133,7 @@ class StarsClient:
             if not isinstance(contributions, list)
             else None
         )
-        MetricsCollector.record_contribution_updated(
-            str(data.get("type") or "UNKNOWN")
-        )
+        MetricsCollector.record_contribution_updated(str(data.get("type") or "UNKNOWN"))
         return APIResult(True, {"upsertContribution": contribution})
 
     async def update_contribution(
