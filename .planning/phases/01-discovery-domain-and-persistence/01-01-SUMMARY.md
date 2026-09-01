@@ -1,7 +1,7 @@
 # Phase 01 Summary — Discovery domain and persistence
 
-**Issue:** #17  
-**PR:** #25  
+**Issue:** #17
+**PR:** #25
 **Status:** implemented and verified
 
 ## Delivered
