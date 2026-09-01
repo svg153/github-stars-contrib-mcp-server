@@ -1,84 +1,48 @@
-"""Unit tests for update_contributions tool (DI path)."""
+"""Tests for full-payload REST upsert semantics."""
 
-from datetime import datetime
-
+# This import layout is already intentionally split into third-party and first-party
+# sections; Ruff 0.16.5 reports a false-positive I001 for this single alias import.
+# ruff: noqa: I001
 import pytest
 
 from github_stars_contrib_mcp.tools import update_contributions as tool
 
 
-class TestUpdateContributions:
-    @pytest.mark.asyncio
-    async def test_update_contribution_success(self, monkeypatch):
-        class FakePort:
-            async def update_contribution(self, contribution_id: str, data: dict):
-                return {
-                    "updateContribution": {
-                        "id": contribution_id,
-                        "title": data["title"],
-                    }
-                }
+FULL = {
+    "title": "Updated",
+    "url": "https://example.com/post",
+    "description": "Description",
+    "type": "BLOGPOST",
+    "date": "2026-08-25T00:00:00Z",
+}
 
-        monkeypatch.setattr(tool, "get_stars_api", FakePort)
 
-        data = {"title": "Updated Title"}
-        res = await tool.update_contribution_impl("c1", data)
-        assert res["success"] is True
-        assert res["data"] == {
-            "updateContribution": {"id": "c1", "title": "Updated Title"}
-        }
+@pytest.mark.asyncio
+async def test_upsert_requires_complete_payload():
+    result = await tool.upsert_contribution_impl("stable-id", {"title": "Only title"})
+    assert result["success"] is False
 
-    @pytest.mark.asyncio
-    async def test_update_contribution_invalid_url(self):
-        data = {"url": "not-a-url"}
-        res = await tool.update_contribution_impl("c1", data)
-        assert res["success"] is False
-        assert "url" in str(res["error"])
 
-    @pytest.mark.asyncio
-    async def test_update_contribution_invalid_date(self):
-        data = {"date": "not-a-date"}
-        res = await tool.update_contribution_impl("c1", data)
-        assert res["success"] is False
-        assert "date" in str(res["error"])
+@pytest.mark.asyncio
+async def test_upsert_sends_canonical_enum_value(monkeypatch):
+    class FakePort:
+        async def upsert_contribution(self, client_id: str, data: dict):
+            assert client_id == "stable-id"
+            assert data["type"] == "BLOGPOST"
+            assert data["url"] == "https://example.com/post"
+            return {"upsertContribution": {"id": "server-id"}}
 
-    @pytest.mark.asyncio
-    async def test_update_contribution_error_bubbles(self, monkeypatch):
-        class FailingPort:
-            async def update_contribution(self, contribution_id: str, data: dict):
-                raise RuntimeError("API error")
+    monkeypatch.setattr(tool, "get_stars_api", FakePort)
+    result = await tool.upsert_contribution_impl("stable-id", FULL)
+    assert result == {"success": True, "data": {"id": "server-id"}}
 
-        monkeypatch.setattr(tool, "get_stars_api", FailingPort)
-        data = {"title": "Test"}
-        res = await tool.update_contribution_impl("c1", data)
-        assert res["success"] is False
-        assert res["error"] == "API error"
 
-    @pytest.mark.asyncio
-    async def test_update_contribution_full_update(
-        self, mock_shared_client, monkeypatch
-    ):
-        class FakePort2:
-            async def update_contribution(self, contribution_id: str, data: dict):
-                return {"updateContribution": {"id": contribution_id}}
+@pytest.mark.asyncio
+async def test_upsert_surfaces_adapter_errors(monkeypatch):
+    class FailingPort:
+        async def upsert_contribution(self, client_id: str, data: dict):
+            raise RuntimeError("API error")
 
-        monkeypatch.setattr(tool, "get_stars_api", FakePort2)
-
-        data = {
-            "title": "New Title",
-            "url": "https://example.com",
-            "description": "New desc",
-            "type": "BLOGPOST",
-            "date": datetime(2024, 1, 1, 0, 0, 0).isoformat(),
-        }
-        res = await tool.update_contribution_impl("c1", data)
-        assert res["success"] is True
-
-    @pytest.mark.asyncio
-    async def test_update_contribution_logger_initialization(self):
-        """Test that logger is properly initialized."""
-        from github_stars_contrib_mcp.tools.update_contributions import logger
-
-        # Ensure logger is initialized (this covers the logger definition)
-        assert logger is not None
-        assert hasattr(logger, "info")  # Basic logger check
+    monkeypatch.setattr(tool, "get_stars_api", FailingPort)
+    result = await tool.upsert_contribution_impl("stable-id", FULL)
+    assert result == {"success": False, "error": "API error"}

@@ -1,4 +1,4 @@
-"""MCP tool to create contributions via GitHub Stars GraphQL API."""
+"""MCP tool to create contributions through the GitHub Stars REST API."""
 
 from __future__ import annotations
 
@@ -33,54 +33,48 @@ class CreateContributionsArgs(BaseModel):
 
 
 async def create_contributions_impl(data: list[dict]) -> dict:
-    """Implementation: validates input and calls Stars API client."""
+    """Validate input and create one REST batch."""
     try:
         payload = CreateContributionsArgs(
             data=[ContributionInput(**item) for item in data]
         )
-    except ValidationError as e:
-        return {"success": False, "error": e.errors()}
+    except ValidationError as exc:
+        return {"success": False, "error": exc.errors()}
 
     items = []
-    for i in payload.data:
-        # Optional URL validation behind flag
+    for item in payload.data:
         if settings.validate_urls:
             ok, reason = await check_url_head(
-                str(i.url), timeout_s=settings.url_validation_timeout_s
+                str(item.url), timeout_s=settings.url_validation_timeout_s
             )
             if not ok:
                 logger.warning(
-                    "create_contributions.url_invalid", url=str(i.url), reason=reason
+                    "create_contributions.url_invalid",
+                    url=str(item.url),
+                    reason=reason,
                 )
                 return {
                     "success": False,
-                    "error": f"Invalid URL ({reason}) for: {i.url}",
+                    "error": f"Invalid URL ({reason}) for: {item.url}",
                 }
         items.append(
             {
-                "title": i.title,
-                "url": str(i.url),
-                "description": normalize_description(i.description),
-                "type": i.type,  # str Enum, JSON-serializable
-                "date": i.date.isoformat(),
+                "title": item.title,
+                "url": str(item.url),
+                "description": normalize_description(item.description),
+                "type": item.type.value,
+                "date": item.date.isoformat(),
             }
         )
+
     try:
-        use_case = CreateContributions(get_stars_api())
-        data = await use_case(items)
-        return {"success": True, "ids": (data or {}).get("ids", [])}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
+        result = await CreateContributions(get_stars_api())(items)
+        return {"success": True, "ids": (result or {}).get("ids", [])}
+    except Exception as exc:
+        return {"success": False, "error": str(exc)}
 
 
 @mcp.tool()
 async def create_contributions(data: list[dict]) -> dict:
-    """
-    Create one or more contributions in GitHub Stars profile.
-
-    Args:
-        data: List of contribution items with keys: title, url, description?, type, date (ISO)
-    Returns:
-        { "ids": [...], "success": true }
-    """
+    """Create one or more contributions in one REST POST request."""
     return await create_contributions_impl(data)

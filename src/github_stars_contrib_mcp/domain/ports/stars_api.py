@@ -1,7 +1,4 @@
-"""Port for interacting with GitHub Stars API.
-
-Defines the abstract contract the application layer depends on.
-"""
+"""Port for interacting with GitHub Stars APIs."""
 
 from __future__ import annotations
 
@@ -10,45 +7,30 @@ from typing import Any, Protocol, runtime_checkable
 
 @runtime_checkable
 class StarsAPIPort(Protocol):
-    async def get_user_data(self) -> dict[str, Any]:
-        """Return the raw JSON-like dict for the logged user data.
+    async def get_user_data(self) -> dict[str, Any]: ...
+    async def get_user(self) -> dict[str, Any]: ...
+    async def get_stars(self, username: str) -> dict[str, Any]: ...
 
-        On error, should raise an exception specific to the adapter or return
-        a structured error at the adapter boundary (adapters may wrap).
-        Application layer will normalize/handle exceptions.
-        """
+    async def list_contributions(self, page: int = 1) -> dict[str, Any]:
+        """Return one authenticated REST contributions page."""
         ...
 
-    async def get_user(self) -> dict[str, Any]:
-        """Return the logged user data including nominations."""
-        ...
-
-    async def get_stars(self, username: str) -> dict[str, Any]:
-        """Return the public profile stars for the given username."""
-        ...
-
-    # Contributions
     async def create_contribution(
         self, *, type: str, date: str, title: str, url: str, description: str | None
     ) -> dict[str, Any]:
-        """Create a single contribution and return the raw GraphQL data dict."""
+        """Create a single contribution via REST POST."""
         ...
 
     async def create_contributions(self, items: list[dict[str, Any]]) -> dict[str, Any]:
-        """Create multiple contributions; returns data dict, typically containing ids."""
+        """Create multiple contributions via REST POST."""
         ...
 
-    async def update_contribution(
-        self, contribution_id: str, data: dict[str, Any]
+    async def upsert_contribution(
+        self, client_id: str, data: dict[str, Any]
     ) -> dict[str, Any]:
-        """Update a single contribution and return data dict."""
+        """Idempotently create/replace a full contribution by stable client ID."""
         ...
 
-    async def delete_contribution(self, contribution_id: str) -> dict[str, Any]:
-        """Delete a single contribution and return data dict."""
-        ...
-
-    # Links
     async def create_link(self, link: str, platform: str) -> dict[str, Any]: ...
 
     async def update_link(
@@ -56,6 +38,4 @@ class StarsAPIPort(Protocol):
     ) -> dict[str, Any]: ...
 
     async def delete_link(self, link_id: str) -> dict[str, Any]: ...
-
-    # Profile
     async def update_profile(self, data: dict[str, Any]) -> dict[str, Any]: ...

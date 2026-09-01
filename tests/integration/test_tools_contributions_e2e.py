@@ -1,20 +1,14 @@
-"""Integration tests for MCP tool contributions end-to-end."""
-
-from __future__ import annotations
+"""Live integration tests for MCP contribution tool implementations."""
 
 import pytest
 
-from github_stars_contrib_mcp import shared
-from github_stars_contrib_mcp.tools.create_contributions import (
-    create_contributions_impl,
+from github_stars_contrib_mcp.tools.list_contributions import list_contributions_impl
+from github_stars_contrib_mcp.tools.update_contributions import (
+    upsert_contribution_impl,
 )
-from github_stars_contrib_mcp.tools.delete_contributions import delete_contribution_impl
-from github_stars_contrib_mcp.tools.update_contributions import update_contribution_impl
 
 from .test_integration_utils import (
-    generate_unique_url,
     get_current_iso_datetime,
-    get_test_client,
     require_token_or_skip,
     should_skip_mutations,
 )
@@ -22,41 +16,30 @@ from .test_integration_utils import (
 
 @pytest.mark.asyncio
 @pytest.mark.tools
-async def test_tools_contributions_e2e():
+async def test_list_contributions_tool_e2e():
+    require_token_or_skip()
+    result = await list_contributions_impl(page=1)
+    assert result["success"] is True
+
+
+@pytest.mark.asyncio
+@pytest.mark.tools
+async def test_upsert_contribution_tool_e2e():
     require_token_or_skip()
     if should_skip_mutations():
         pytest.skip(
             "Mutation e2e disabled; set STARS_API_TOKEN and STARS_E2E_MUTATE=1 to run"
         )
 
-    client = get_test_client()
-    shared.stars_client = client
-    try:
-        now_iso = get_current_iso_datetime()
-        url = generate_unique_url("github-stars-mcp-tools-contrib")
-        base_payload = {
-            "title": "E2E Tools Contribution",
-            "url": url,
-            "description": "Automated tools e2e test; safe to ignore",
-            "type": "BLOGPOST",
-            "date": now_iso,
-        }
-
-        # Create
-        create_res = await create_contributions_impl([base_payload])
-        assert create_res["success"] is True
-        contrib_id = (create_res.get("ids") or [None])[0]
-        assert contrib_id
-
-        # Update (API expects non-null description, etc.)
-        upd_payload = {**base_payload, "title": "E2E Tools Contribution (updated)"}
-        upd_res = await update_contribution_impl(
-            contribution_id=contrib_id, data=upd_payload
-        )
-        assert upd_res["success"] is True
-
-        # Delete
-        del_res = await delete_contribution_impl(contrib_id)
-        assert del_res["success"] is True
-    finally:
-        shared.stars_client = None
+    payload = {
+        "title": "github-stars-contrib-mcp tool e2e",
+        "url": "https://github.com/svg153/github-stars-contrib-mcp-server",
+        "description": "Stable automated MCP tool upsert test record",
+        "type": "OPEN_SOURCE_PROJECT",
+        "date": get_current_iso_datetime(),
+    }
+    result = await upsert_contribution_impl(
+        "github-stars-contrib-mcp:tool-e2e",
+        payload,
+    )
+    assert result["success"] is True

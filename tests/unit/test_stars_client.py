@@ -1,6 +1,5 @@
-"""Unit tests for stars_client module."""
+"""Unit tests for the hybrid Stars client after the Contributions REST migration."""
 
-import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -8,220 +7,170 @@ import pytest
 from github_stars_contrib_mcp.utils.stars_client import StarsClient
 
 
-class TestStarsClient:
-    def test_init(self):
-        client = StarsClient("https://api.example.com", "token123")
-        assert client.api_url == "https://api.example.com/"
-        assert client.token == "token123"
+@pytest.fixture
+def mock_httpx_client():
+    with patch("httpx.AsyncClient") as mock_class:
+        client = AsyncMock()
+        mock_class.return_value.__aenter__.return_value = client
+        yield client
 
-    @pytest.fixture
-    def mock_client_class(self):
-        with patch("httpx.AsyncClient") as mock_class:
-            yield mock_class
 
-    def _setup_mock_response(
-        self,
-        mock_client_class,
-        status_code=200,
-        json_data=None,
-        json_error=None,
-        text="",
-    ):
-        mock_instance = AsyncMock()
-        mock_resp = MagicMock()
-        mock_resp.status_code = status_code
-        if json_error:
-            mock_resp.json.side_effect = json_error
-        elif json_data is not None:
-            mock_resp.json.return_value = json_data
-        mock_resp.text = text
-        mock_instance.post.return_value = mock_resp
-        mock_client_class.return_value.__aenter__.return_value = mock_instance
-        return mock_resp
+def response(status: int, body: dict | None = None, text: str = "") -> MagicMock:
+    resp = MagicMock()
+    resp.status_code = status
+    resp.text = text
+    if body is not None:
+        resp.json.return_value = body
+    return resp
 
-    @pytest.mark.asyncio
-    async def test_create_contributions_success(self, mock_client_class):
-        client = StarsClient("https://api.example.com", "token")
 
-        self._setup_mock_response(
-            mock_client_class,
-            json_data={"data": {"createContributions": [{"id": "1"}, {"id": "2"}]}},
-        )
-
-        result = await client.create_contributions([{"title": "Test"}])
-        assert result.ok is True
-        assert result.data["ids"] == ["1", "2"]
-
-    @pytest.mark.asyncio
-    async def test_create_contributions_http_error(self, mock_client_class):
-        client = StarsClient("https://api.example.com", "token")
-
-        self._setup_mock_response(
-            mock_client_class, status_code=400, text="Bad Request"
-        )
-
-        result = await client.create_contributions([{"title": "Test"}])
-        assert result.ok is False
-        assert result.data is None
-        assert "HTTP 400" in result.error
-
-    @pytest.mark.asyncio
-    async def test_create_contributions_invalid_json(self, mock_client_class):
-        client = StarsClient("https://api.example.com", "token")
-
-        self._setup_mock_response(
-            mock_client_class, json_error=json.JSONDecodeError("Invalid", "", 0)
-        )
-
-        result = await client.create_contributions([{"title": "Test"}])
-        assert result.ok is False
-        assert result.error == "Invalid JSON response"
-
-    @pytest.mark.asyncio
-    async def test_create_contributions_graphql_error(self, mock_client_class):
-        client = StarsClient("https://api.example.com", "token")
-
-        self._setup_mock_response(
-            mock_client_class, json_data={"errors": [{"message": "GraphQL error"}]}
-        )
-
-        result = await client.create_contributions([{"title": "Test"}])
-        assert result.ok is False
-        assert result.error == "GraphQL error"
-
-    @pytest.mark.asyncio
-    async def test_get_user_data_success(self, mock_client_class):
-        client = StarsClient("https://api.example.com", "token")
-
-        self._setup_mock_response(
-            mock_client_class, json_data={"data": {"loggedUser": {"id": "u1"}}}
-        )
-
-        result = await client.get_user_data()
-        assert result.ok is True
-        assert result.data == {"loggedUser": {"id": "u1"}}
-
-    @pytest.mark.asyncio
-    async def test_update_contribution_success(self, mock_client_class):
-        client = StarsClient("https://api.example.com", "token")
-
-        self._setup_mock_response(
-            mock_client_class,
-            json_data={
-                "data": {"updateContribution": {"id": "c1", "title": "Updated"}}
-            },
-        )
-
-        result = await client.update_contribution("c1", {"title": "Updated"})
-        assert result.ok is True
-        assert result.data == {"updateContribution": {"id": "c1", "title": "Updated"}}
-
-    @pytest.mark.asyncio
-    async def test_delete_contribution_success(self, mock_client_class):
-        client = StarsClient("https://api.example.com", "token")
-
-        self._setup_mock_response(
-            mock_client_class, json_data={"data": {"deleteContribution": {"id": "c1"}}}
-        )
-
-        result = await client.delete_contribution("c1")
-        assert result.ok is True
-        assert result.data == {"deleteContribution": {"id": "c1"}}
-
-    @pytest.mark.asyncio
-    async def test_get_stars_success(self, mock_client_class):
-        client = StarsClient("https://api.example.com", "token")
-
-        self._setup_mock_response(
-            mock_client_class, json_data={"data": {"publicProfile": {"username": "u"}}}
-        )
-
-        result = await client.get_stars("u")
-        assert result.ok is True
-        assert result.data["publicProfile"]["username"] == "u"
-
-    @pytest.mark.asyncio
-    async def test_get_user_success(self, mock_client_class):
-        client = StarsClient("https://api.example.com", "token")
-
-        self._setup_mock_response(
-            mock_client_class, json_data={"data": {"loggedUser": {"id": "u1"}}}
-        )
-
-        result = await client.get_user()
-        assert result.ok is True
-        assert result.data["loggedUser"]["id"] == "u1"
-
-    @pytest.mark.asyncio
-    async def test_update_profile_success(self, mock_client_class):
-        client = StarsClient("https://api.example.com", "token")
-
-        self._setup_mock_response(
-            mock_client_class, json_data={"data": {"updateProfile": {"id": "p1"}}}
-        )
-
-        result = await client.update_profile({"bio": "hi"})
-        assert result.ok is True
-        assert result.data["updateProfile"]["id"] == "p1"
-
-    # Parametrized error tests
-    @pytest.mark.parametrize(
-        "method_name, args, expected_key",
-        [
-            ("get_user_data", (), None),
-            ("get_stars", ("u",), "publicProfile"),
-            ("get_user", (), "loggedUser"),
-            ("update_profile", ({"bio": "hi"},), "updateProfile"),
-            ("update_contribution", ("c1", {"title": "Test"}), "updateContribution"),
-            ("delete_contribution", ("c1",), "deleteContribution"),
-        ],
+def make_client() -> StarsClient:
+    return StarsClient(
+        "https://graphql.example",
+        "token",
+        "https://stars.example/api/contributions",
     )
-    @pytest.mark.parametrize(
-        "error_type, status_code, json_data, json_error, text, expected_error",
-        [
-            ("http", 500, None, None, "Server Error", "HTTP 500"),
-            ("invalid_json", 200, None, "json_error", "", "Invalid JSON response"),
-            (
-                "graphql",
-                200,
-                {"errors": [{"message": "GraphQL error"}]},
-                None,
-                "",
-                "GraphQL error",
-            ),
-        ],
+
+
+@pytest.mark.asyncio
+async def test_list_contributions_uses_rest_get(mock_httpx_client):
+    mock_httpx_client.request.return_value = response(
+        200,
+        {
+            "data": [{"id": "one", "title": "Hello"}],
+            "pagination": {"page": 2, "totalPages": 3},
+        },
     )
-    @pytest.mark.asyncio
-    async def test_method_errors(
-        self,
-        mock_client_class,
-        method_name,
-        args,
-        expected_key,
-        error_type,
-        status_code,
-        json_data,
-        json_error,
-        text,
-        expected_error,
-    ):
-        client = StarsClient("https://api.example.com", "token")
 
-        if json_error == "json_error":
-            json_error = json.JSONDecodeError("Invalid", "", 0)
-        else:
-            json_error = None
+    result = await make_client().list_contributions(page=2)
 
-        self._setup_mock_response(
-            mock_client_class,
-            status_code=status_code,
-            json_data=json_data,
-            json_error=json_error,
-            text=text,
-        )
+    assert result.ok is True
+    assert result.data["pagination"]["page"] == 2
+    mock_httpx_client.request.assert_awaited_once_with(
+        "GET",
+        "https://stars.example/api/contributions",
+        params={"page": 2},
+        json=None,
+    )
 
-        method = getattr(client, method_name)
-        result = await method(*args)
 
-        assert result.ok is False
-        assert expected_error in result.error
+@pytest.mark.asyncio
+async def test_list_contributions_rejects_invalid_page(mock_httpx_client):
+    result = await make_client().list_contributions(page=0)
+
+    assert result.ok is False
+    assert result.error == "page must be >= 1"
+    mock_httpx_client.request.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_create_contributions_posts_batch(mock_httpx_client):
+    mock_httpx_client.request.return_value = response(
+        200, {"data": [{"id": "one"}, {"id": "two"}]}
+    )
+    items = [{"title": "A"}, {"title": "B"}]
+
+    result = await make_client().create_contributions(items)
+
+    assert result.ok is True
+    assert result.data["ids"] == ["one", "two"]
+    mock_httpx_client.request.assert_awaited_once_with(
+        "POST",
+        "https://stars.example/api/contributions",
+        params=None,
+        json={"data": items},
+    )
+
+
+@pytest.mark.asyncio
+async def test_create_one_keeps_existing_result_shape(mock_httpx_client):
+    mock_httpx_client.request.return_value = response(
+        200, {"data": [{"id": "one", "title": "A"}]}
+    )
+
+    result = await make_client().create_contribution(
+        type="BLOGPOST",
+        date="2026-08-25T00:00:00+00:00",
+        title="A",
+        url="https://example.com",
+        description="D",
+    )
+
+    assert result.ok is True
+    assert result.data["createContribution"]["id"] == "one"
+
+
+@pytest.mark.asyncio
+async def test_upsert_uses_client_id_put(mock_httpx_client):
+    mock_httpx_client.request.return_value = response(
+        200, {"data": [{"id": "server-id", "title": "A"}]}
+    )
+    payload = {
+        "type": "BLOGPOST",
+        "date": "2026-08-25T00:00:00+00:00",
+        "title": "A",
+        "url": "https://example.com",
+        "description": "D",
+    }
+
+    result = await make_client().upsert_contribution("stable:blog-1", payload)
+
+    assert result.ok is True
+    assert result.data["upsertContribution"]["id"] == "server-id"
+    mock_httpx_client.request.assert_awaited_once_with(
+        "PUT",
+        "https://stars.example/api/contributions/stable%3Ablog-1",
+        params=None,
+        json=payload,
+    )
+
+
+@pytest.mark.asyncio
+async def test_upsert_rejects_invalid_client_id_without_request(mock_httpx_client):
+    result = await make_client().upsert_contribution("bad/id", {"title": "A"})
+
+    assert result.ok is False
+    assert "client ID" in result.error
+    mock_httpx_client.request.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_legacy_update_is_rejected_to_avoid_duplicate_creation(mock_httpx_client):
+    result = await make_client().update_contribution("old-server-id", {"title": "A"})
+
+    assert result.ok is False
+    assert "retired" in result.error
+    assert "stable caller-controlled client ID" in result.error
+    mock_httpx_client.request.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_delete_is_explicitly_unsupported(mock_httpx_client):
+    result = await make_client().delete_contribution("one")
+
+    assert result.ok is False
+    assert "does not provide DELETE" in result.error
+    mock_httpx_client.request.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_rest_204_is_accepted(mock_httpx_client):
+    mock_httpx_client.request.return_value = response(204)
+
+    result = await make_client().list_contributions(page=1)
+
+    assert result.ok is True
+    assert result.data == {}
+
+
+@pytest.mark.asyncio
+async def test_profile_read_stays_on_graphql(mock_httpx_client):
+    mock_httpx_client.post.return_value = response(
+        200, {"data": {"loggedUser": {"id": "user-1"}}}
+    )
+
+    result = await make_client().get_user_data()
+
+    assert result.ok is True
+    assert result.data["loggedUser"]["id"] == "user-1"
+    mock_httpx_client.post.assert_awaited_once()

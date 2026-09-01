@@ -1,4 +1,4 @@
-"""MCP tool to update a contribution via GitHub Stars GraphQL API."""
+"""MCP tool for idempotent REST upsert of a GitHub Stars contribution."""
 
 from __future__ import annotations
 
@@ -7,60 +7,53 @@ from datetime import datetime
 import structlog
 from pydantic import BaseModel, HttpUrl, ValidationError
 
-from ..application.use_cases.update_contribution import UpdateContribution
+from ..application.use_cases.upsert_contribution import UpsertContribution
 from ..di.container import get_stars_api
 from ..models import ContributionType
 from ..shared import mcp
+from ..utils.normalization import normalize_description
 
 logger = structlog.get_logger(__name__)
 
 
-class UpdateContributionInput(BaseModel):
-    title: str | None = None
-    url: HttpUrl | None = None
+class UpsertContributionInput(BaseModel):
+    title: str
+    url: HttpUrl
     description: str | None = None
-    type: ContributionType | None = None
-    date: datetime | None = None
+    type: ContributionType
+    date: datetime
 
 
-class UpdateContributionArgs(BaseModel):
-    id: str
-    data: UpdateContributionInput
-
-
-async def update_contribution_impl(contribution_id: str, data: dict) -> dict:
-    """Implementation: validates input and calls Stars API client."""
-    logger.info("Updating contribution", contribution_id=contribution_id, data=data)
+async def upsert_contribution_impl(client_id: str, data: dict) -> dict:
+    """Validate a complete payload and execute REST PUT /{clientId}."""
+    logger.info("Upserting contribution", client_id=client_id, data=data)
     try:
-        payload = UpdateContributionArgs(
-            id=contribution_id, data=UpdateContributionInput(**data)
-        )
-    except ValidationError as e:
-        return {"success": False, "error": e.errors()}
+        payload = UpsertContributionInput(**data)
+    except ValidationError as exc:
+        return {"success": False, "error": exc.errors()}
 
-    # Convert to dict, handling datetime
-    update_data = payload.data.model_dump()
-    if update_data.get("date"):
-        update_data["date"] = update_data["date"].isoformat()
-    if update_data.get("url"):
-        update_data["url"] = str(update_data["url"])
+    upsert_data = payload.model_dump()
+    upsert_data["date"] = payload.date.isoformat()
+    upsert_data["url"] = str(payload.url)
+    upsert_data["type"] = payload.type.value
+    upsert_data["description"] = normalize_description(payload.description)
+
     try:
-        use_case = UpdateContribution(get_stars_api())
-        data = await use_case(payload.id, update_data)
-        return {"success": True, "data": data}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
+        result = await UpsertContribution(get_stars_api())(client_id, upsert_data)
+        return {"success": True, "data": result.get("upsertContribution")}
+    except Exception as exc:
+        return {"success": False, "error": str(exc)}
 
 
 @mcp.tool()
-async def update_contribution(contribution_id: str, data: dict) -> dict:
-    """
-    Update a single contribution in GitHub Stars profile.
+async def upsert_contribution(client_id: str, data: dict) -> dict:
+    """Create or replace one contribution idempotently using a stable client ID.
 
-    Args:
-        contribution_id: The ID of the contribution to update
-        data: Dictionary with optional fields to update: title, url, description, type, date (ISO string)
-    Returns:
-        { "success": boolean, "data": object | null, "error": string | null }
+    `data` must contain the complete contribution: title, url, type, date and
+    optional description. This is not the retired partial GraphQL update.
+
+    `client_id` is caller-controlled. Do not pass a legacy server-generated
+    contribution ID unless it was originally chosen by your client as the
+    REST client ID.
     """
-    return await update_contribution_impl(contribution_id, data)
+    return await upsert_contribution_impl(client_id, data)

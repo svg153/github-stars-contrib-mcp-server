@@ -15,9 +15,12 @@ def get_settings() -> Settings:
 def get_stars_client(settings: Settings | None = None) -> StarsClient:
     settings = settings or get_settings()
     token = settings.stars_api_token or ""
-    return StarsClient(api_url=settings.stars_api_url, token=token)
+    return StarsClient(
+        api_url=settings.stars_api_url,
+        contributions_api_url=settings.stars_contributions_api_url,
+        token=token,
+    )
 
 
 def get_stars_api(settings: Settings | None = None) -> StarsAPIAdapter:
-    client = get_stars_client(settings)
-    return StarsAPIAdapter(client)
+    return StarsAPIAdapter(get_stars_client(settings))

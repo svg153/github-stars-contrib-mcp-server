@@ -1,4 +1,4 @@
-"""MCP tool to create a single contribution via GitHub Stars GraphQL API."""
+"""MCP tool to create a single contribution via GitHub Stars REST API."""
 
 from __future__ import annotations
 
@@ -27,35 +27,28 @@ class ContributionInput(BaseModel):
 
 
 async def create_contribution_impl(data: dict) -> dict:
-    """Implementation: validates input and calls Stars API client."""
+    """Validate one contribution and create it via the REST-backed use case."""
     logger.info("Creating contribution", data=data)
     try:
         payload = ContributionInput(**data)
-    except ValidationError as e:
-        return {"success": False, "error": e.errors()}
+    except ValidationError as exc:
+        return {"success": False, "error": exc.errors()}
 
     try:
         use_case = CreateContribution(get_stars_api())
-        data = await use_case(
-            type=str(payload.type),
+        result = await use_case(
+            type=payload.type.value,
             date=payload.date.isoformat(),
             title=payload.title,
             url=str(payload.url),
             description=normalize_description(payload.description),
         )
-        return {"success": True, "contribution": data.get("createContribution")}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
+        return {"success": True, "contribution": result.get("createContribution")}
+    except Exception as exc:
+        return {"success": False, "error": str(exc)}
 
 
 @mcp.tool()
 async def create_contribution(data: dict) -> dict:
-    """
-    Create a single contribution in GitHub Stars profile.
-
-    Args:
-        data: Contribution item with keys: title, url, description?, type, date (ISO)
-    Returns:
-        { "contribution": {...}, "success": true }
-    """
+    """Create a single contribution in the GitHub Stars profile."""
     return await create_contribution_impl(data)

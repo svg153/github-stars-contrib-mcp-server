@@ -1,9 +1,4 @@
-"""Application settings (12-factor) for Stars MCP server.
-
-Consolidated settings implementation using pydantic-settings.
-This replaces the earlier ad-hoc dataclass to support validation
-and additional fields required by the server (e.g., log_level).
-"""
+"""Application settings (12-factor) for Stars MCP server."""
 
 from __future__ import annotations
 
@@ -16,7 +11,11 @@ class Settings(BaseSettings):
 
     stars_api_url: str = Field(
         default="https://api-stars.github.com/",
-        description="Base URL for GitHub Stars GraphQL API",
+        description="Legacy GitHub Stars GraphQL API used for profile/link operations",
+    )
+    stars_contributions_api_url: str = Field(
+        default="https://stars.github.com/api/contributions",
+        description="Current GitHub Stars REST Contributions API",
     )
     stars_api_token: str | None = Field(
         default=None, description="Personal Stars API token from stars.github.com"
@@ -30,26 +29,14 @@ class Settings(BaseSettings):
         default=False,
         description="When true, perform a lightweight HEAD check for URLs before calling the API (may slow calls).",
     )
-    url_validation_timeout_s: int = Field(
-        default=3,
-        description="Timeout in seconds for URL validation requests",
-    )
-    url_validation_ttl_s: int = Field(
-        default=3600,
-        description="TTL in seconds to cache URL validation results",
-    )
+    url_validation_timeout_s: int = Field(default=3)
+    url_validation_ttl_s: int = Field(default=3600)
 
     @field_validator("log_level")
     @classmethod
     def validate_log_level(cls, v: str) -> str:
-        """Normalize and validate LOG_LEVEL.
-
-        Accept standard levels and allow the common alias TRACE by mapping it to DEBUG
-        so that environments using LOG_LEVEL=TRACE don't crash.
-        """
         valid_levels = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
         normalized = v.upper()
-        # Support TRACE as an alias of DEBUG
         if normalized == "TRACE":
             return "DEBUG"
         if normalized not in valid_levels:
@@ -59,5 +46,4 @@ class Settings(BaseSettings):
         return normalized
 
 
-# Global settings instance, exported by the package in __init__.py
 settings = Settings()

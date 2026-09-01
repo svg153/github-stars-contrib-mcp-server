@@ -8,7 +8,6 @@ from github_stars_contrib_mcp.utils.models import APIResult
 
 class FakeClient:
     def __init__(self, results):
-        # queue of (method_name, APIResult)
         self._results = results
 
     async def get_user_data(self):
@@ -20,17 +19,17 @@ class FakeClient:
     async def get_stars(self, username: str):
         return self._results.get("get_stars")
 
+    async def list_contributions(self, page: int = 1):
+        return self._results.get("list_contributions")
+
     async def create_contribution(self, **kwargs):
         return self._results.get("create_contribution")
 
     async def create_contributions(self, items):
         return self._results.get("create_contributions")
 
-    async def update_contribution(self, contribution_id, data):
-        return self._results.get("update_contribution")
-
-    async def delete_contribution(self, contribution_id):
-        return self._results.get("delete_contribution")
+    async def upsert_contribution(self, client_id, data):
+        return self._results.get("upsert_contribution")
 
     async def create_link(self, link, platform):
         return self._results.get("create_link")
@@ -51,12 +50,12 @@ async def test_adapter_success_paths():
         "get_user_data": APIResult(True, {"user": {"id": "u"}}),
         "get_user": APIResult(True, {"me": {"id": "me"}}),
         "get_stars": APIResult(True, {"publicProfile": {"username": "x"}}),
-        "create_contribution": APIResult(True, {"createContribution": {"id": "c1"}}),
-        "create_contributions": APIResult(
-            True, {"createContributions": [{"id": "c1"}, {"id": "c2"}]}
+        "list_contributions": APIResult(
+            True, {"data": [{"id": "c1"}], "pagination": {"page": 1}}
         ),
-        "update_contribution": APIResult(True, {"updateContribution": {"id": "c1"}}),
-        "delete_contribution": APIResult(True, {"deleteContribution": {"id": "c1"}}),
+        "create_contribution": APIResult(True, {"createContribution": {"id": "c1"}}),
+        "create_contributions": APIResult(True, {"ids": ["c1", "c2"]}),
+        "upsert_contribution": APIResult(True, {"upsertContribution": {"id": "c1"}}),
         "create_link": APIResult(True, {"createLink": {"id": "l1"}}),
         "update_link": APIResult(True, {"updateLink": {"id": "l1"}}),
         "delete_link": APIResult(True, {"deleteLink": {"id": "l1"}}),
@@ -67,18 +66,16 @@ async def test_adapter_success_paths():
     assert (await adapter.get_user_data())["user"]["id"] == "u"
     assert (await adapter.get_user())["me"]["id"] == "me"
     assert (await adapter.get_stars("who"))["publicProfile"]["username"] == "x"
+    assert (await adapter.list_contributions())["data"][0]["id"] == "c1"
     assert (
         await adapter.create_contribution(
             type="T", date="D", title="t", url="u", description=""
         )
     )["createContribution"]["id"] == "c1"
-    assert (await adapter.create_contributions([{}]))["createContributions"][0][
+    assert (await adapter.create_contributions([{}]))["ids"] == ["c1", "c2"]
+    assert (await adapter.upsert_contribution("stable-id", {}))["upsertContribution"][
         "id"
     ] == "c1"
-    assert (await adapter.update_contribution("c1", {}))["updateContribution"][
-        "id"
-    ] == "c1"
-    assert (await adapter.delete_contribution("c1"))["deleteContribution"]["id"] == "c1"
     assert (await adapter.create_link("u", "OTHER"))["createLink"]["id"] == "l1"
     assert (await adapter.update_link("l1", "u", "OTHER"))["updateLink"]["id"] == "l1"
     assert (await adapter.delete_link("l1"))["deleteLink"]["id"] == "l1"
@@ -87,12 +84,12 @@ async def test_adapter_success_paths():
 
 @pytest.mark.asyncio
 async def test_adapter_error_paths_raise():
-    # Exercise a representative subset; all methods share the same error pattern
     failing = APIResult(False, None, "boom")
     adapter = StarsAPIAdapter(
         FakeClient(
             {
                 "get_user_data": failing,
+                "list_contributions": failing,
                 "create_link": failing,
                 "update_profile": failing,
             }
@@ -100,6 +97,8 @@ async def test_adapter_error_paths_raise():
     )
     with pytest.raises(RuntimeError):
         await adapter.get_user_data()
+    with pytest.raises(RuntimeError):
+        await adapter.list_contributions()
     with pytest.raises(RuntimeError):
         await adapter.create_link("u", "OTHER")
     with pytest.raises(RuntimeError):

@@ -1,44 +1,8 @@
-"""GraphQL queries and mutations for GitHub Stars API."""
+"""GraphQL queries and mutations for Stars surfaces without a REST replacement."""
 
-# Contribution mutations
-CREATE_CONTRIBUTIONS_MUTATION = """
-    mutation CreateContributions($data: [ContributionInput!]!) {
-        createContributions(data: $data) {
-            id
-            __typename
-        }
-    }
-    """.strip()
+# Contribution create/update/delete mutations were removed on 2026-09-01.
+# Contributions are handled by StarsClient through the REST API instead.
 
-CREATE_CONTRIBUTION_MUTATION = """
-    mutation CreateContribution($data: ContributionInput!) {
-        createContribution(data: $data) {
-            id
-            __typename
-        }
-    }
-    """.strip()
-
-UPDATE_CONTRIBUTION_MUTATION = """
-    mutation UpdateContribution($id: String!, $data: ContributionInput!) {
-        updateContribution(id: $id, data: $data) {
-            id
-            title
-            __typename
-        }
-    }
-    """.strip()
-
-DELETE_CONTRIBUTION_MUTATION = """
-    mutation DeleteContribution($id: String!) {
-        deleteContribution(id: $id) {
-            id
-            __typename
-        }
-    }
-    """.strip()
-
-# Link mutations
 CREATE_LINK_MUTATION = """
     mutation CreateLink($link: URL!, $platform: PlatformType!) {
         createLink(data: {link: $link, platform: $platform}) {
@@ -67,7 +31,9 @@ DELETE_LINK_MUTATION = """
     }
     """.strip()
 
-# Profile queries and mutations
+# Authenticated profile and public-profile reads remain on GraphQL because the
+# announced Contributions migration does not document REST replacements for
+# these profile/link surfaces.
 USER_DATA_QUERY = """
     query UserData {
         loggedUser {

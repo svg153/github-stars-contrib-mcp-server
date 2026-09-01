@@ -4,14 +4,9 @@ import logging
 import sys
 
 import structlog
+from mcp.server import MCPServer
 
-# Redirect stdout to stderr before importing FastMCP
-_original_stdout = sys.stdout
-sys.stdout = sys.stderr
-from fastmcp import FastMCP
-
-sys.stdout = _original_stdout
-
+from . import __version__
 from .config.settings import settings
 from .utils.stars_client import StarsClient
 
@@ -50,8 +45,15 @@ def _configure_logging() -> None:
 
 _configure_logging()
 
-mcp = FastMCP("GitHub Stars Contributions MCP Server")
-
+mcp = MCPServer(
+    name="GitHub Stars Contributions MCP Server",
+    version=__version__,
+    instructions=(
+        "Manage GitHub Stars contributions with the current REST Contributions API. "
+        "Use stable caller-controlled client IDs for idempotent upserts. "
+        "Contribution deletion is not available through the API."
+    ),
+)
 stars_client: StarsClient | None = None
 
 
@@ -65,18 +67,22 @@ async def initialize_stars_client() -> None:
             logger.warning("No STARS_API_TOKEN provided; tools will be disabled")
             stars_client = None
             return
+
         stars_client = StarsClient(
-            api_url="https://api-stars.github.com/", token=settings.stars_api_token
+            api_url=settings.stars_api_url,
+            contributions_api_url=settings.stars_contributions_api_url,
+            token=settings.stars_api_token,
         )
 
-        # Validate token by fetching user data
-        result = await stars_client.get_user_data()
-        if not result["ok"] or result.get("data") is None:
+        # Validate against the supported REST Contributions API, not the retired
+        # GraphQL contributions surface.
+        result = await stars_client.validate_token()
+        if not result.ok:
             raise ValueError(
-                f"Invalid STARS_API_TOKEN: {result['error'] or 'No user data'}"
+                f"Invalid STARS_API_TOKEN: {result.error or 'REST validation failed'}"
             )
 
-        logger.info("Stars client initialized and token validated")
-    except Exception as e:
-        logger.error("Failed to initialize Stars client", error=str(e))
-        raise  # Re-raise to stop server
+        logger.info("Stars client initialized and token validated via REST")
+    except Exception as exc:
+        logger.error("Failed to initialize Stars client", error=str(exc))
+        raise
