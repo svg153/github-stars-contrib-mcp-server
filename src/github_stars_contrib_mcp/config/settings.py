@@ -2,10 +2,26 @@
 
 from __future__ import annotations
 
+import os
+import sys
+from pathlib import Path
 from typing import Literal
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings
+
+
+def _default_discovery_db_path() -> str:
+    """Return a platform-appropriate local data path without creating it."""
+
+    home = Path.home()
+    if os.name == "nt":
+        base = Path(os.getenv("LOCALAPPDATA") or home / "AppData" / "Local")
+    elif sys.platform == "darwin":
+        base = home / "Library" / "Application Support"
+    else:
+        base = Path(os.getenv("XDG_DATA_HOME") or home / ".local" / "share")
+    return str(base / "github-stars-contrib-mcp-server" / "discovery.db")
 
 
 class Settings(BaseSettings):
@@ -29,6 +45,12 @@ class Settings(BaseSettings):
     stars_user_agent: str = Field(
         default="github-stars-contrib-mcp-server/0.3.1",
         description="User-Agent sent to GitHub Stars endpoints",
+    )
+    discovery_db_path: str = Field(
+        default_factory=_default_discovery_db_path,
+        description=(
+            "Local SQLite database used for discovery sources, candidates, and runs"
+        ),
     )
     log_level: str = Field(default="INFO", description="Python logging level")
     dangerously_omit_auth: bool = Field(
