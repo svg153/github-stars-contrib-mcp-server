@@ -1,7 +1,7 @@
 # Roadmap — v0.3.0 Autonomous contribution discovery
 
-**Epic:** #16  
-**Mode:** brownfield / standard  
+**Epic:** #16
+**Mode:** brownfield / standard
 **Issue policy:** Phases 01-07 are seeded (#17-#23). Phases 08-13 are created just-in-time from these packets.
 
 ## Dependency map
