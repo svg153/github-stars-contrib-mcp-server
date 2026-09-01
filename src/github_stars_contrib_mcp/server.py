@@ -1,6 +1,7 @@
 """MCP server entry point for Stars Contributions."""
 
 import asyncio
+import atexit
 import os
 import sys
 
@@ -11,14 +12,19 @@ from .shared import mcp
 
 # Importing tool modules registers their decorators on the shared MCPServer.
 from .tools import (  # noqa: F401,E402
+    compare_contributions,
     create_contribution,
     create_contributions,
     create_link,
     delete_link,
+    export_contributions,
+    get_contributions_stats,
     get_stars,
     get_user,
     get_user_data,
     list_contributions,
+    metrics,
+    search_contributions,
     update_contributions,
     update_link,
     update_profile,
@@ -28,13 +34,30 @@ logger = structlog.get_logger(__name__)
 
 
 async def initialize_server() -> None:
+    from .observability import TracingConfig, initialize_tracing
     from .shared import initialize_stars_client
 
+    if os.getenv("OTEL_ENABLED", "false").lower() in {"1", "true", "yes"}:
+        initialize_tracing(
+            TracingConfig(
+                service_name=os.getenv(
+                    "OTEL_SERVICE_NAME", "github-stars-contrib-mcp"
+                ),
+                endpoint=os.getenv(
+                    "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT",
+                    "http://localhost:4318/v1/traces",
+                ),
+                enabled=True,
+            )
+        )
     await initialize_stars_client()
 
 
 def main() -> None:
+    from .observability import shutdown_tracing
+
     logger.info("Starting Stars Contributions MCP Server", log_level=settings.log_level)
+    atexit.register(shutdown_tracing)
 
     try:
 
@@ -57,7 +80,6 @@ def main() -> None:
     path = os.getenv("MCP_PATH", "/mcp")
     transport = os.getenv("MCP_TRANSPORT", "stdio").lower()
 
-    # Keep the historical "http" alias, but serve the current MCP transport.
     if transport == "http":
         transport = "streamable-http"
 
@@ -70,7 +92,6 @@ def main() -> None:
             stateless_http=True,
         )
     elif transport == "sse":
-        # SSE remains only for legacy clients; Streamable HTTP is preferred.
         mcp.run(transport="sse", host=host, port=port, sse_path=path)
     else:
         mcp.run(transport="stdio")

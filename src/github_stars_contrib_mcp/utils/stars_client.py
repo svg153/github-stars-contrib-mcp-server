@@ -1,9 +1,4 @@
-"""GitHub Stars API client.
-
-Contribution writes/reads use the REST API introduced in August 2026.
-Profile and link operations remain on the legacy GraphQL endpoint until GitHub
-publishes equivalent supported REST endpoints for those surfaces.
-"""
+"""GitHub Stars API client with REST Contributions and observable legacy GraphQL."""
 
 from __future__ import annotations
 
@@ -15,8 +10,10 @@ from urllib.parse import quote
 
 import httpx
 import structlog
-from tenacity import retry, stop_after_attempt, wait_exponential
+from tenacity import retry, stop_after_attempt, wait_exponential_jitter
 
+from ..observability import MetricsCollector, get_tracer
+from ..resilience import CircuitBreakerException, circuit_breaker_registry
 from .models import APIResult
 from .queries import (
     CREATE_LINK_MUTATION,
@@ -46,16 +43,18 @@ class StarsClient:
             "Content-Type": "application/json",
             "Origin": "https://stars.github.com",
             "Referer": "https://stars.github.com/",
-            "User-Agent": "github-stars-contrib-mcp-server/0.2.0",
+            "User-Agent": "github-stars-contrib-mcp-server/0.3.0",
             "Accept": "application/json",
         }
         self._cookies = {"token": self.token}
         if self.token:
             self._headers["Authorization"] = f"Bearer {self.token}"
+        self.breaker = circuit_breaker_registry.get_or_create(
+            "stars_api", failure_threshold=5, recovery_timeout=60
+        )
+        self.tracer = get_tracer()
 
-    # Current REST Contributions API -------------------------------------
     async def validate_token(self) -> APIResult:
-        """Validate auth using the supported Contributions REST API."""
         return await self.list_contributions(page=1)
 
     async def list_contributions(self, page: int = 1) -> APIResult:
@@ -73,7 +72,6 @@ class StarsClient:
         )
         if not result["ok"]:
             return APIResult(False, None, result["error"])
-
         body = result["data"] or {}
         contributions = body.get("data", []) if isinstance(body, dict) else []
         if not isinstance(contributions, list):
@@ -83,6 +81,8 @@ class StarsClient:
             for item in contributions
             if isinstance(item, dict) and item.get("id")
         ]
+        for item in items:
+            MetricsCollector.record_contribution_created(str(item.get("type") or "UNKNOWN"))
         return APIResult(True, {"ids": ids, "contributions": contributions})
 
     async def create_contribution(
@@ -108,7 +108,6 @@ class StarsClient:
     async def upsert_contribution(
         self, client_id: str, data: dict[str, Any]
     ) -> APIResult:
-        """Idempotently create or replace a contribution by REST client ID."""
         if not _CLIENT_ID_RE.fullmatch(client_id):
             return APIResult(
                 False,
@@ -125,21 +124,17 @@ class StarsClient:
             return APIResult(False, None, result["error"])
         body = result["data"] or {}
         contributions = body.get("data", []) if isinstance(body, dict) else []
-        if isinstance(contributions, list):
-            contribution = contributions[0] if contributions else None
-        else:
-            contribution = contributions
+        contribution = (
+            contributions[0]
+            if isinstance(contributions, list) and contributions
+            else contributions if not isinstance(contributions, list) else None
+        )
+        MetricsCollector.record_contribution_updated(str(data.get("type") or "UNKNOWN"))
         return APIResult(True, {"upsertContribution": contribution})
 
     async def update_contribution(
         self, contribution_id: str, data: dict[str, Any]
     ) -> APIResult:
-        """Reject the retired server-ID partial update contract.
-
-        The new REST PUT key is a caller-controlled client ID, not the old
-        GraphQL contribution ID, so silently forwarding this method could create
-        a duplicate contribution.
-        """
         return APIResult(
             False,
             None,
@@ -147,14 +142,12 @@ class StarsClient:
         )
 
     async def delete_contribution(self, contribution_id: str) -> APIResult:
-        """Reject deletion because the current REST API exposes no DELETE method."""
         return APIResult(
             False,
             None,
             "GitHub Stars REST Contributions API does not provide DELETE; remove the contribution in the Stars web UI.",
         )
 
-    # Legacy GraphQL surfaces --------------------------------------------
     async def create_link(self, link: str, platform: str) -> APIResult:
         return APIResult(
             **await self._execute_graphql(
@@ -201,7 +194,7 @@ class StarsClient:
         )
 
     @retry(
-        wait=wait_exponential(multiplier=0.5, min=0.5, max=8),
+        wait=wait_exponential_jitter(initial=0.5, max=8, jitter=1),
         stop=stop_after_attempt(3),
     )
     async def _execute_rest(
@@ -213,11 +206,58 @@ class StarsClient:
         json_body: dict[str, Any] | None = None,
         op: str,
     ) -> dict[str, Any]:
+        endpoint = f"/contributions{path}"
+        request_size = len(json.dumps(json_body or {}))
+        with self.tracer.span(
+            f"rest_{op}", {"operation": op, "http.method": method}
+        ) as span:
+            try:
+                return await self.breaker.async_call(
+                    self._make_rest_request,
+                    method,
+                    path,
+                    params,
+                    json_body,
+                    op,
+                    endpoint,
+                    request_size,
+                    span,
+                )
+            except CircuitBreakerException as exc:
+                MetricsCollector.record_error("CIRCUIT_BREAKER_OPEN", endpoint)
+                logger.error("stars_client.circuit_breaker_open", op=op, error=str(exc))
+                return {
+                    "ok": False,
+                    "data": None,
+                    "error": "Service temporarily unavailable (circuit breaker open)",
+                }
+
+    async def _make_rest_request(
+        self,
+        method: str,
+        path: str,
+        params: dict[str, Any] | None,
+        json_body: dict[str, Any] | None,
+        op: str,
+        endpoint: str,
+        request_size: int,
+        span: Any,
+    ) -> dict[str, Any]:
         url = f"{self.contributions_api_url}{path}"
         start = time.monotonic()
         async with httpx.AsyncClient(timeout=30, headers=self._headers) as client:
             resp = await client.request(method, url, params=params, json=json_body)
-        duration_ms = int((time.monotonic() - start) * 1000)
+        duration_sec = time.monotonic() - start
+        duration_ms = int(duration_sec * 1000)
+        response_size = len(resp.text or "")
+        MetricsCollector.record_request(
+            method, endpoint, resp.status_code, duration_sec, request_size, response_size
+        )
+        self.tracer.add_event(
+            span,
+            "http_response",
+            {"status": resp.status_code, "duration_ms": duration_ms},
+        )
 
         if resp.status_code >= 400:
             try:
@@ -227,6 +267,7 @@ class StarsClient:
                 )
             except (json.JSONDecodeError, AttributeError):
                 detail = resp.text
+            MetricsCollector.record_error(f"HTTP_{resp.status_code}", endpoint)
             logger.warning(
                 "stars_client.request_failed",
                 op=op,
@@ -246,6 +287,7 @@ class StarsClient:
             try:
                 body = resp.json()
             except json.JSONDecodeError:
+                MetricsCollector.record_error("JSON_DECODE_ERROR", endpoint)
                 return {"ok": False, "data": None, "error": "Invalid JSON response"}
 
         logger.info(
@@ -257,7 +299,7 @@ class StarsClient:
         return {"ok": True, "data": body, "error": None}
 
     @retry(
-        wait=wait_exponential(multiplier=0.5, min=0.5, max=8),
+        wait=wait_exponential_jitter(initial=0.5, max=8, jitter=1),
         stop=stop_after_attempt(3),
     )
     async def _execute_graphql(
@@ -267,16 +309,60 @@ class StarsClient:
         *,
         op: str | None = None,
     ) -> dict[str, Any]:
-        payload = {"query": query, "variables": variables or {}}
         op_name = op or "unknown"
+        payload = {"query": query, "variables": variables or {}}
+        endpoint = f"/graphql/{op_name}"
+        request_size = len(json.dumps(payload["variables"]))
+        with self.tracer.span(
+            f"graphql_{op_name}", {"operation": op_name}
+        ) as span:
+            try:
+                return await self.breaker.async_call(
+                    self._make_graphql_request,
+                    payload,
+                    op_name,
+                    endpoint,
+                    request_size,
+                    span,
+                )
+            except CircuitBreakerException as exc:
+                MetricsCollector.record_error("CIRCUIT_BREAKER_OPEN", endpoint)
+                logger.error(
+                    "stars_client.circuit_breaker_open", op=op_name, error=str(exc)
+                )
+                return {
+                    "ok": False,
+                    "data": None,
+                    "error": "Service temporarily unavailable (circuit breaker open)",
+                }
+
+    async def _make_graphql_request(
+        self,
+        payload: dict[str, Any],
+        op_name: str,
+        endpoint: str,
+        request_size: int,
+        span: Any,
+    ) -> dict[str, Any]:
         start = time.monotonic()
         async with httpx.AsyncClient(
             timeout=30, headers=self._headers, cookies=self._cookies
         ) as client:
             resp = await client.post(self.api_url, json=payload)
-        duration_ms = int((time.monotonic() - start) * 1000)
+        duration_sec = time.monotonic() - start
+        duration_ms = int(duration_sec * 1000)
+        response_size = len(resp.text or "")
+        MetricsCollector.record_request(
+            "POST", endpoint, resp.status_code, duration_sec, request_size, response_size
+        )
+        self.tracer.add_event(
+            span,
+            "http_response",
+            {"status": resp.status_code, "duration_ms": duration_ms},
+        )
 
         if resp.status_code >= 400:
+            MetricsCollector.record_error(f"HTTP_{resp.status_code}", endpoint)
             logger.warning(
                 "stars_client.request_failed",
                 op=op_name,
@@ -292,9 +378,11 @@ class StarsClient:
         try:
             data = resp.json()
         except json.JSONDecodeError:
+            MetricsCollector.record_error("JSON_DECODE_ERROR", endpoint)
             return {"ok": False, "data": None, "error": "Invalid JSON response"}
 
         if data.get("errors"):
+            MetricsCollector.record_error("GRAPHQL_ERROR", endpoint)
             return {
                 "ok": False,
                 "data": None,
