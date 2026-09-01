@@ -1,30 +1,27 @@
 """MCP server entry point for Stars Contributions."""
 
 import asyncio
+import os
 import sys
 
-# Prevent stdout conflicts with MCP protocol during import
-_original_stdout = sys.stdout
-sys.stdout = sys.stderr
 import structlog
-
-sys.stdout = _original_stdout
 
 from .config.settings import settings
 from .shared import mcp
 
-# Register tools
-from .tools import (
-    create_contributions,  # noqa: F401
-    create_link,  # noqa: F401
-    delete_contributions,  # noqa: F401
-    delete_link,  # noqa: F401
-    get_stars,  # noqa: F401
-    get_user,  # noqa: F401
-    get_user_data,  # noqa: F401
-    update_contributions,  # noqa: F401
-    update_link,  # noqa: F401
-    update_profile,  # noqa: F401
+# Importing tool modules registers their decorators on the shared MCPServer.
+from .tools import (  # noqa: F401,E402
+    create_contribution,
+    create_contributions,
+    create_link,
+    delete_link,
+    get_stars,
+    get_user,
+    get_user_data,
+    list_contributions,
+    update_contributions,
+    update_link,
+    update_profile,
 )
 
 logger = structlog.get_logger(__name__)
@@ -37,37 +34,43 @@ async def initialize_server() -> None:
 
 
 def main() -> None:
-    import os
-
     logger.info("Starting Stars Contributions MCP Server", log_level=settings.log_level)
 
     try:
-        # Do not block server startup on external network calls.
-        # Attempt initialization briefly; if it times out or fails, continue so MCP can respond to initialize.
-        async def _init_with_timeout():
+        async def _init_with_timeout() -> None:
             try:
                 await asyncio.wait_for(initialize_server(), timeout=2)
             except TimeoutError:
                 logger.warning(
                     "Stars client initialization timed out; continuing without validation"
                 )
-            except Exception:
-                # Propagate non-timeout failures to trigger a clean exit as before.
-                raise
 
         asyncio.run(_init_with_timeout())
-    except Exception as e:
-        logger.error("Unexpected failure before MCP run", error=str(e))
+    except Exception as exc:
+        logger.error("Unexpected failure before MCP run", error=str(exc))
         sys.exit(1)
+        return
 
     host = os.getenv("MCP_HOST", "127.0.0.1")
     port = int(os.getenv("MCP_PORT", "8766"))
     path = os.getenv("MCP_PATH", "/mcp")
-    transport = os.getenv("MCP_TRANSPORT", "stdio")
+    transport = os.getenv("MCP_TRANSPORT", "stdio").lower()
 
-    # Select transport explicitly to avoid passing HTTP kwargs to stdio runner
-    if transport in {"http", "streamable-http", "sse"}:
-        mcp.run(transport=transport, host=host, port=port, path=path)
+    # Keep the historical "http" alias, but serve the current MCP transport.
+    if transport == "http":
+        transport = "streamable-http"
+
+    if transport == "streamable-http":
+        mcp.run(
+            transport="streamable-http",
+            host=host,
+            port=port,
+            streamable_http_path=path,
+            stateless_http=True,
+        )
+    elif transport == "sse":
+        # SSE remains only for legacy clients; Streamable HTTP is preferred.
+        mcp.run(transport="sse", host=host, port=port, sse_path=path)
     else:
         mcp.run(transport="stdio")
 

@@ -8,7 +8,6 @@ from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 
 
 class ContributionType(str, Enum):
-    # Based on GitHub Stars UI options
     SPEAKING = "SPEAKING"
     BLOGPOST = "BLOGPOST"
     ARTICLE_PUBLICATION = "ARTICLE_PUBLICATION"
@@ -20,12 +19,7 @@ class ContributionType(str, Enum):
     OTHER = "OTHER"
 
 
-# Migration note: The values 'GITHUB' and 'WEBSITE' have been removed from PlatformType.
-# If your code previously relied on these, review usages and update to supported platforms.
-
-
 class PlatformType(str, Enum):
-    # Based on live GitHub Stars API enum PlatformType
     TWITTER = "TWITTER"
     MEDIUM = "MEDIUM"
     LINKEDIN = "LINKEDIN"
@@ -56,34 +50,22 @@ class CreateContributionsResponse(BaseModel):
     error: str | None = None
 
 
-class DeleteContributionsResponse(BaseModel):
-    success: bool = Field(description="Whether the API call was successful")
-    ids: list[str] = Field(default_factory=list)
-    error: str | None = None
-
-
 class PlaygroundAuthHeader(BaseModel):
     key: Literal["Authorization"] = "Authorization"
     value: str = Field(description="Bearer <STARS_API_TOKEN>")
 
 
-class ContributionUpdateInput(BaseModel):
+class ContributionUpsertInput(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
-    title: str | None = None
-    url: HttpUrl | None = None
+    title: str
+    url: HttpUrl
     description: str | None = None
-    type: ContributionType | None = None
-    date: datetime | None = None
+    type: ContributionType
+    date: datetime
 
 
-class UpdateContributionResponse(BaseModel):
-    success: bool = Field(description="Whether the API call was successful")
-    data: dict | None = None
-    error: str | None = None
-
-
-class DeleteContributionResponse(BaseModel):
+class UpsertContributionResponse(BaseModel):
     success: bool = Field(description="Whether the API call was successful")
     data: dict | None = None
     error: str | None = None
