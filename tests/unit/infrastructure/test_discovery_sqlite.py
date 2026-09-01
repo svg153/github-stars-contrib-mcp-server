@@ -77,8 +77,7 @@ def test_enabled_source_and_candidate_state_filters(tmp_path) -> None:
         "site:example"
     ]
     assert [
-        item.id
-        for item in repository.list_candidates(states={CandidateState.APPROVED})
+        item.id for item in repository.list_candidates(states={CandidateState.APPROVED})
     ] == ["candidate:approved"]
 
 
@@ -124,7 +123,9 @@ def test_candidate_and_evidence_write_is_atomic(tmp_path) -> None:
     assert repository.get_candidate(second.id) is None
 
 
-def test_explicit_transaction_rolls_back_multiple_repository_operations(tmp_path) -> None:
+def test_explicit_transaction_rolls_back_multiple_repository_operations(
+    tmp_path,
+) -> None:
     repository = SQLiteDiscoveryRepository(tmp_path / "discovery.db")
     repository.upsert_source(_source())
 

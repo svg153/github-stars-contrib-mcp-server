@@ -321,8 +321,7 @@ class SQLiteDiscoveryRepository:
                     and existing["candidate_id"] != candidate_payload["id"]
                 ):
                     raise ValueError(
-                        "Evidence IDs are immutable across candidates: "
-                        f"{payload['id']}"
+                        f"Evidence IDs are immutable across candidates: {payload['id']}"
                     )
                 connection.execute(
                     """
