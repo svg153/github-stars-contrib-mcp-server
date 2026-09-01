@@ -1,10 +1,10 @@
 # Requirements — v0.3.0
 
 ## Domain and persistence
-- [ ] **DOMAIN-01** — Provider-neutral source, candidate, evidence, provenance, run and review models are versioned.
-- [ ] **DOMAIN-02** — Candidate lifecycle transitions are explicit and invalid transitions fail deterministically.
-- [ ] **DOMAIN-03** — Local persistence round-trips discovery state with repeatable schema bootstrap/migration.
-- [ ] **DOMAIN-04** — Domain/application code depends on repository ports, not SQLite or MCP.
+- [x] **DOMAIN-01** — Provider-neutral source, candidate, evidence, provenance, run and review models are versioned.
+- [x] **DOMAIN-02** — Candidate lifecycle transitions are explicit and invalid transitions fail deterministically.
+- [x] **DOMAIN-03** — Local persistence round-trips discovery state with repeatable schema bootstrap/migration.
+- [x] **DOMAIN-04** — Domain/application code depends on repository ports, not SQLite or MCP.
 
 ## Identity and source registry
 - [ ] **IDENT-01** — Existing Stars links/contributions can bootstrap likely sources without arbitrary crawling.
