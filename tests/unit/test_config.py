@@ -1,5 +1,6 @@
 """Unit tests for config module."""
 
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -15,6 +16,10 @@ class TestSettings:
         assert settings.stars_api_token is None
         assert settings.stars_auth_mode == "both"
         assert settings.stars_user_agent == "github-stars-contrib-mcp-server/0.3.1"
+        assert Path(settings.discovery_db_path).parts[-2:] == (
+            "github-stars-contrib-mcp-server",
+            "discovery.db",
+        )
         assert settings.log_level == "INFO"
         assert settings.dangerously_omit_auth is False
 
@@ -42,6 +47,10 @@ class TestSettings:
     def test_user_agent_must_not_be_empty(self):
         with pytest.raises(ValidationError):
             Settings(stars_user_agent="   ")
+
+    def test_discovery_db_path_can_be_overridden(self):
+        settings = Settings(discovery_db_path="/tmp/stars-discovery.db")
+        assert settings.discovery_db_path == "/tmp/stars-discovery.db"
 
     def test_with_token(self):
         settings = Settings(
