@@ -7,7 +7,7 @@ packages = ["src/github_stars_contrib_mcp"]
 
 [project]
 name = "github-stars-contrib-mcp-server"
-version = "0.2.0"
+version = "0.3.0"
 description = "MCP server for GitHub Stars contributions using the current REST Contributions API"
 authors = [{name = "GitHub Stars MCP Team", email = "team@github-stars-mcp.dev"}]
 readme = "README.md"
@@ -24,11 +24,16 @@ classifiers = [
 ]
 dependencies = [
     "mcp>=2.1.1,<3",
+    "mcp-ui-server>=1.0.0,<2",
     "pydantic>=2.13.5,<3",
     "pydantic-settings>=2.15.0,<3",
     "httpx>=0.28.1,<1",
     "tenacity>=9.1.4,<10",
     "structlog>=26.1.0,<27",
+    "prometheus-client>=0.26.0,<1",
+    "opentelemetry-api>=1.44.0,<2",
+    "opentelemetry-sdk>=1.44.0,<2",
+    "opentelemetry-exporter-otlp-proto-http>=1.44.0,<2",
 ]
 
 [project.optional-dependencies]
@@ -39,6 +44,9 @@ dev = [
     "pytest-asyncio>=1.4.0,<2",
     "mypy>=2.3.1,<3",
     "pre-commit>=4.6.2,<5",
+    "pyright>=1.1.411,<2",
+    "bandit[toml]>=1.9.4,<2",
+    "safety>=3.8.1,<4",
 ]
 
 [project.scripts]
@@ -57,6 +65,7 @@ known-first-party = ["github_stars_contrib_mcp"]
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
+"tests/**" = ["B017"]
 
 [tool.pytest.ini_options]
 minversion = "9.0"
@@ -83,3 +92,7 @@ warn_unused_ignores = true
 warn_no_return = true
 warn_unreachable = true
 strict_equality = true
+
+[tool.bandit]
+exclude_dirs = ["tests", "htmlcov"]
+skips = ["B101"]
