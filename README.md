@@ -4,38 +4,49 @@ Model Context Protocol server for the GitHub Stars program.
 
 ## Current compatibility
 
-- **MCP:** official Python SDK 2.x (`mcp>=2.1.1,<3`), implementing protocol revision `2026-07-28` with the SDK's compatibility path for older clients.
+- **MCP:** official Python SDK 2.x (`mcp>=2.1.1,<3`), protocol revision `2026-07-28` with SDK compatibility for older clients.
 - **Contributions API:** `https://stars.github.com/api/contributions` (REST).
-- **Profile/links/public Stars reads:** GraphQL remains in use only for surfaces for which the reviewed migration does not document a REST replacement.
+- **Profile/links/public Stars reads:** GraphQL remains only where the reviewed migration does not document a REST replacement.
 
-GitHub retired the old GraphQL **contribution mutations** on September 1, 2026. The REST API supports authenticated listing, POST creation and idempotent PUT by caller-controlled client ID. It exposes **no contribution DELETE**, so this server does not advertise a delete-contribution MCP tool.
+GitHub retired the old GraphQL **contribution mutations** on September 1, 2026. Contributions now use REST GET/POST/PUT. The REST API exposes **no contribution DELETE**.
+
+## Supported operations
+
+| Surface | Operation | Transport/API | Important input |
+| --- | --- | --- | --- |
+| Contributions | List | REST GET | `page >= 1` |
+| Contributions | Create one/batch | REST POST | title, URL, type, date; missing description becomes `""` |
+| Contributions | Idempotent upsert | REST PUT `/{clientId}` | stable caller-controlled client ID + complete payload |
+| Contributions | Delete | Not available | use the GitHub Stars web UI |
+| Links | Create/update/delete | Remaining GraphQL | valid `PlatformType`; aliases normalized |
+| Profile/public Stars | Read/update where exposed | Remaining GraphQL | existing Stars schema |
+
+Valid link platforms are `TWITTER`, `MEDIUM`, `LINKEDIN`, `README`, `STACK_OVERFLOW`, `DEV_TO`, `MASTODON`, and `OTHER`. Legacy aliases are accepted consistently: `GITHUB -> README`, `WEBSITE -> OTHER`.
 
 ## Configuration
 
 - `STARS_API_TOKEN` — GitHub Stars token.
 - `STARS_API_URL` — GraphQL base URL for remaining profile/link/public-profile operations; default `https://api-stars.github.com/`.
 - `STARS_CONTRIBUTIONS_API_URL` — Contributions REST URL; default `https://stars.github.com/api/contributions`.
+- `STARS_AUTH_MODE` — `both|bearer|cookie`; default `both`. REST normally needs bearer auth; `both` also preserves compatibility with remaining GraphQL calls.
+- `STARS_USER_AGENT` — diagnostic User-Agent; default `github-stars-contrib-mcp-server/0.3.1`.
 - `LOG_LEVEL` — `DEBUG|INFO|WARNING|ERROR|CRITICAL`; default `INFO`.
-- `MCP_TRANSPORT` — `stdio|http|streamable-http|sse`; default `stdio`. `http` is an alias for `streamable-http`.
-- `MCP_HOST` — HTTP bind host; default `127.0.0.1`.
-- `MCP_PORT` — HTTP bind port; default `8766`.
-- `MCP_PATH` — HTTP endpoint path; default `/mcp`.
+- `MCP_TRANSPORT` — `stdio|http|streamable-http|sse`; default `stdio`. `http` aliases `streamable-http`.
+- `MCP_HOST`, `MCP_PORT`, `MCP_PATH` — HTTP bind configuration.
 - `VALIDATE_URLS` — optional lightweight URL validation before writes.
+
+The HTTP client retries transient `429` and `5xx` responses up to three attempts with exponential jitter. Permanent `4xx` errors are returned immediately. GraphQL enum errors for link platforms include the valid `PlatformType` values.
 
 ## Contribution tools
 
-- `list_contributions(page=1)` — authenticated REST GET with pagination metadata.
-- `create_contribution(data)` — REST POST for one contribution.
-- `create_contributions(data)` — REST POST batch (`{"data": [...]}`).
-- `upsert_contribution(client_id, data)` — idempotent REST `PUT /{clientId}` with a **complete** contribution payload.
+- `list_contributions(page=1)`
+- `create_contribution(data)`
+- `create_contributions(data)`
+- `upsert_contribution(client_id, data)`
 
-### Breaking update semantics
+The old GraphQL `update_contribution(server_id, partial_data)` contract is intentionally rejected: a legacy server-generated ID is not the same thing as the REST caller-controlled `clientId` and translating it can create duplicates.
 
-The old GraphQL `update_contribution(server_id, partial_data)` contract no longer exists. The REST PUT key is a **client ID chosen by the caller**, not the legacy server-generated contribution ID. Reusing an old server ID as if it were a REST client ID can create an unintended new record, so the old update API is rejected rather than silently translated.
-
-Choose stable IDs such as `talk:commit-conf-2026` or `post:my-article-slug` when you want repeatable idempotent writes.
-
-Contribution deletion must be performed in the GitHub Stars web UI because the current REST API has no DELETE method.
+Choose stable IDs such as `talk:commit-conf-2026` or `post:my-article-slug` for repeatable idempotent writes.
 
 ## Running
 
@@ -55,24 +66,14 @@ MCP_TRANSPORT=streamable-http MCP_PORT=8766 \
   python -m github_stars_contrib_mcp.server
 ```
 
-SSE remains available only for legacy clients. New HTTP deployments should use Streamable HTTP.
-
-## Local utility
-
-```bash
-python scripts/demo.py list-contributions --page 1
-python scripts/demo.py create-contributions --data '[{"title":"Example","url":"https://example.com","type":"BLOGPOST","date":"2026-09-01T00:00:00Z"}]'
-python scripts/demo.py upsert-contribution \
-  --client-id 'post:example' \
-  --data '{"title":"Example","url":"https://example.com","type":"BLOGPOST","date":"2026-09-01T00:00:00Z"}'
-```
-
 ## Testing
 
+Unit tests run on every PR/push:
+
 ```bash
-pytest -q
+pytest -q tests/unit
 ```
 
-Live mutation tests are opt-in with `STARS_E2E_MUTATE=1`. They use stable PUT client IDs rather than POST+DELETE cleanup because the REST API has no DELETE operation.
+Stars API integration tests are isolated in a separate workflow and use `STARS_API_TOKEN` when configured. Mutation tests remain opt-in with `STARS_E2E_MUTATE=1`; they use stable PUT client IDs because REST does not provide DELETE cleanup.
 
 The source of truth for MCP tool schemas is `src/github_stars_contrib_mcp/tools/`.
