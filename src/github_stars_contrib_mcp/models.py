@@ -85,6 +85,8 @@ class CreateLinkResponse(BaseModel):
 
 
 class ProfileUpdateInput(BaseModel):
+    """Python representation of the Stars GraphQL `NomineeProfileInput` fields."""
+
     model_config = ConfigDict(populate_by_name=True)
 
     avatar: str | None = None

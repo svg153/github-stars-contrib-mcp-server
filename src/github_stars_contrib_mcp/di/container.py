@@ -19,6 +19,8 @@ def get_stars_client(settings: Settings | None = None) -> StarsClient:
         api_url=settings.stars_api_url,
         contributions_api_url=settings.stars_contributions_api_url,
         token=token,
+        auth_mode=settings.stars_auth_mode,
+        user_agent=settings.stars_user_agent,
     )
 
 
