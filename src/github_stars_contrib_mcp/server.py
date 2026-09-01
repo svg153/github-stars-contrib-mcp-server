@@ -40,9 +40,7 @@ async def initialize_server() -> None:
     if os.getenv("OTEL_ENABLED", "false").lower() in {"1", "true", "yes"}:
         initialize_tracing(
             TracingConfig(
-                service_name=os.getenv(
-                    "OTEL_SERVICE_NAME", "github-stars-contrib-mcp"
-                ),
+                service_name=os.getenv("OTEL_SERVICE_NAME", "github-stars-contrib-mcp"),
                 endpoint=os.getenv(
                     "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT",
                     "http://localhost:4318/v1/traces",

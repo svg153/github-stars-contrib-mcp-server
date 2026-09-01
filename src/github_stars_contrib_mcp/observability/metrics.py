@@ -1,9 +1,14 @@
 """Prometheus metrics for Stars API and MCP tool observability."""
 
-from prometheus_client import CollectorRegistry, Counter, Gauge, Histogram, generate_latest
+from prometheus_client import (
+    CollectorRegistry,
+    Counter,
+    Gauge,
+    Histogram,
+    generate_latest,
+)
 
 DEFAULT_REGISTRY = CollectorRegistry()
-
 REQUEST_COUNT = Counter(
     "mcp_requests_total",
     "Total number of upstream API requests",
@@ -65,13 +70,22 @@ CONTRIBUTIONS_UPSERTED = Counter(
     registry=DEFAULT_REGISTRY,
 )
 CACHE_HITS = Counter(
-    "mcp_cache_hits_total", "Total cache hits", ["cache_type"], registry=DEFAULT_REGISTRY
+    "mcp_cache_hits_total",
+    "Total cache hits",
+    ["cache_type"],
+    registry=DEFAULT_REGISTRY,
 )
 CACHE_MISSES = Counter(
-    "mcp_cache_misses_total", "Total cache misses", ["cache_type"], registry=DEFAULT_REGISTRY
+    "mcp_cache_misses_total",
+    "Total cache misses",
+    ["cache_type"],
+    registry=DEFAULT_REGISTRY,
 )
 CACHE_SIZE = Gauge(
-    "mcp_cache_size_bytes", "Current cache size in bytes", ["cache_type"], registry=DEFAULT_REGISTRY
+    "mcp_cache_size_bytes",
+    "Current cache size in bytes",
+    ["cache_type"],
+    registry=DEFAULT_REGISTRY,
 )
 
 
@@ -111,7 +125,6 @@ class MetricsCollector:
 
     @staticmethod
     def record_contribution_updated(contrib_type: str) -> None:
-        """Compatibility name for the REST upsert metric."""
         CONTRIBUTIONS_UPSERTED.labels(type=contrib_type).inc()
 
     @staticmethod

@@ -82,7 +82,9 @@ class StarsClient:
             if isinstance(item, dict) and item.get("id")
         ]
         for item in items:
-            MetricsCollector.record_contribution_created(str(item.get("type") or "UNKNOWN"))
+            MetricsCollector.record_contribution_created(
+                str(item.get("type") or "UNKNOWN")
+            )
         return APIResult(True, {"ids": ids, "contributions": contributions})
 
     async def create_contribution(
@@ -127,9 +129,13 @@ class StarsClient:
         contribution = (
             contributions[0]
             if isinstance(contributions, list) and contributions
-            else contributions if not isinstance(contributions, list) else None
+            else contributions
+            if not isinstance(contributions, list)
+            else None
         )
-        MetricsCollector.record_contribution_updated(str(data.get("type") or "UNKNOWN"))
+        MetricsCollector.record_contribution_updated(
+            str(data.get("type") or "UNKNOWN")
+        )
         return APIResult(True, {"upsertContribution": contribution})
 
     async def update_contribution(
@@ -251,7 +257,12 @@ class StarsClient:
         duration_ms = int(duration_sec * 1000)
         response_size = len(resp.text or "")
         MetricsCollector.record_request(
-            method, endpoint, resp.status_code, duration_sec, request_size, response_size
+            method,
+            endpoint,
+            resp.status_code,
+            duration_sec,
+            request_size,
+            response_size,
         )
         self.tracer.add_event(
             span,
@@ -313,9 +324,7 @@ class StarsClient:
         payload = {"query": query, "variables": variables or {}}
         endpoint = f"/graphql/{op_name}"
         request_size = len(json.dumps(payload["variables"]))
-        with self.tracer.span(
-            f"graphql_{op_name}", {"operation": op_name}
-        ) as span:
+        with self.tracer.span(f"graphql_{op_name}", {"operation": op_name}) as span:
             try:
                 return await self.breaker.async_call(
                     self._make_graphql_request,
@@ -353,7 +362,12 @@ class StarsClient:
         duration_ms = int(duration_sec * 1000)
         response_size = len(resp.text or "")
         MetricsCollector.record_request(
-            "POST", endpoint, resp.status_code, duration_sec, request_size, response_size
+            "POST",
+            endpoint,
+            resp.status_code,
+            duration_sec,
+            request_size,
+            response_size,
         )
         self.tracer.add_event(
             span,
