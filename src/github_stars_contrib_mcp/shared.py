@@ -2,12 +2,15 @@
 
 import logging
 import sys
+from collections.abc import Sequence
 
 import structlog
 from mcp.server import MCPServer
 
 from . import __version__
 from .config.settings import settings
+from .di.discovery import DiscoveryRuntime, build_discovery_runtime
+from .domain.ports.source_adapter import SourceAdapter
 from .infrastructure.persistence import SQLiteDiscoveryRepository
 from .utils.stars_client import StarsClient
 
@@ -57,6 +60,7 @@ mcp = MCPServer(
 )
 stars_client: StarsClient | None = None
 discovery_repository: SQLiteDiscoveryRepository | None = None
+discovery_runtime: DiscoveryRuntime | None = None
 
 
 def initialize_discovery_repository() -> SQLiteDiscoveryRepository:
@@ -66,6 +70,21 @@ def initialize_discovery_repository() -> SQLiteDiscoveryRepository:
     if discovery_repository is None:
         discovery_repository = SQLiteDiscoveryRepository(settings.discovery_db_path)
     return discovery_repository
+
+
+def initialize_discovery_runtime(
+    *, adapters: Sequence[SourceAdapter] = ()
+) -> DiscoveryRuntime:
+    """Create discovery composition lazily without registering MCP tools."""
+
+    global discovery_runtime
+    if discovery_runtime is None:
+        discovery_runtime = build_discovery_runtime(
+            settings=settings,
+            repository=initialize_discovery_repository(),
+            adapters=adapters,
+        )
+    return discovery_runtime
 
 
 async def initialize_stars_client() -> None:
