@@ -62,9 +62,8 @@ def classify_source_type(host: str, path: str = "") -> SourceType:
         return SourceType.X
     if host == "linkedin.com" or host.endswith(".linkedin.com"):
         return SourceType.LINKEDIN
-    if (
-        normalized_path.endswith((".rss", ".xml", ".atom"))
-        or normalized_path.endswith(("/feed", "/rss", "/atom"))
+    if normalized_path.endswith((".rss", ".xml", ".atom")) or normalized_path.endswith(
+        ("/feed", "/rss", "/atom")
     ):
         return SourceType.RSS
     return SourceType.WEBSITE

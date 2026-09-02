@@ -42,7 +42,9 @@ def test_origin_removes_contribution_path_and_query() -> None:
     assert origin.source_id == "website:https://blog.example.com"
 
 
-@pytest.mark.parametrize("url", ["", "ftp://example.com/file", "http://example.com:bad"])
+@pytest.mark.parametrize(
+    "url", ["", "ftp://example.com/file", "http://example.com:bad"]
+)
 def test_rejects_invalid_source_urls(url: str) -> None:
     with pytest.raises(ValueError):
         canonicalize_source_url(url)

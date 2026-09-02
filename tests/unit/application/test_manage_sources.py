@@ -4,7 +4,9 @@ import pytest
 
 from github_stars_contrib_mcp.application.use_cases.manage_sources import ManageSources
 from github_stars_contrib_mcp.domain.discovery import OwnershipStatus
-from github_stars_contrib_mcp.infrastructure.persistence import SQLiteDiscoveryRepository
+from github_stars_contrib_mcp.infrastructure.persistence import (
+    SQLiteDiscoveryRepository,
+)
 
 
 def test_add_verify_disable_preserves_cursor(tmp_path) -> None:
