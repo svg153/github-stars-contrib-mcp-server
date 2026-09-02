@@ -13,10 +13,10 @@
 - [x] **IDENT-04** — Inferred ownership never silently becomes verified.
 
 ## Safe fetch
-- [ ] **SAFE-01** — Private/link-local/loopback targets and unsafe redirects are blocked.
-- [ ] **SAFE-02** — Requests enforce timeout, byte, redirect and content-type limits.
-- [ ] **SAFE-03** — Fetched content is untrusted evidence and cannot alter agent control flow.
-- [ ] **SAFE-04** — Secrets/tokens never enter fetched-content prompts, evidence or ordinary logs.
+- [x] **SAFE-01** — Private/link-local/loopback targets and unsafe redirects are blocked.
+- [x] **SAFE-02** — Requests enforce timeout, byte, redirect and content-type limits.
+- [x] **SAFE-03** — Fetched content is untrusted evidence and cannot alter agent control flow.
+- [x] **SAFE-04** — Secrets/tokens never enter fetched-content prompts, evidence or ordinary logs.
 
 ## Discovery orchestration
 - [ ] **DISC-01** — Provider-neutral adapters emit source items without Stars API coupling.
