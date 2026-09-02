@@ -52,6 +52,15 @@ class Settings(BaseSettings):
             "Local SQLite database used for discovery sources, candidates, and runs"
         ),
     )
+    discovery_fetch_connect_timeout_s: float = Field(default=3.0, gt=0, le=30)
+    discovery_fetch_read_timeout_s: float = Field(default=10.0, gt=0, le=60)
+    discovery_fetch_max_bytes: int = Field(
+        default=1_000_000, ge=1_024, le=10_000_000
+    )
+    discovery_fetch_max_redirects: int = Field(default=3, ge=0, le=10)
+    discovery_untrusted_excerpt_max_chars: int = Field(
+        default=6_000, ge=256, le=50_000
+    )
     log_level: str = Field(default="INFO", description="Python logging level")
     dangerously_omit_auth: bool = Field(
         default=False,
