@@ -76,7 +76,11 @@ def redact_url(url: str) -> str:
     hostname = parsed.hostname or ""
     if not hostname:
         return "<invalid-url>"
-    host = f"[{hostname}]" if ":" in hostname and not hostname.startswith("[") else hostname
+    host = (
+        f"[{hostname}]"
+        if ":" in hostname and not hostname.startswith("[")
+        else hostname
+    )
     try:
         port = parsed.port
     except ValueError:
@@ -136,7 +140,9 @@ class SafeFetchRequest(BaseModel):
     @field_validator("allowed_media_types")
     @classmethod
     def normalize_media_types(cls, values: tuple[str, ...]) -> tuple[str, ...]:
-        normalized = tuple(sorted({value.strip().lower() for value in values if value.strip()}))
+        normalized = tuple(
+            sorted({value.strip().lower() for value in values if value.strip()})
+        )
         if not normalized:
             raise ValueError("allowed_media_types must not be empty")
         return normalized
