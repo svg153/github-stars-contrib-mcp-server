@@ -6,7 +6,9 @@ from collections.abc import Sequence
 from typing import Protocol
 from uuid import uuid4
 
-from github_stars_contrib_mcp.application.discovery.normalizer import normalize_candidate
+from github_stars_contrib_mcp.application.discovery.normalizer import (
+    normalize_candidate,
+)
 from github_stars_contrib_mcp.domain.discovery import (
     DiscoveryRun,
     DiscoveryRunStatus,
@@ -159,9 +161,9 @@ class DiscoveryOrchestrator:
                                 )
 
                     source_summary["batches"] = int(source_summary["batches"]) + 1
-                    source_summary["candidates"] = (
-                        int(source_summary["candidates"]) + len(prepared)
-                    )
+                    source_summary["candidates"] = int(
+                        source_summary["candidates"]
+                    ) + len(prepared)
                     run.summary["batches_seen"] += 1
                     run.summary["candidates_seen"] += len(prepared)
 

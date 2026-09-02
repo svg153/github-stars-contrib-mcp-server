@@ -25,7 +25,9 @@ from github_stars_contrib_mcp.domain.ports.source_adapter import (
     SourceBatch,
     SourceCapability,
 )
-from github_stars_contrib_mcp.infrastructure.persistence import SQLiteDiscoveryRepository
+from github_stars_contrib_mcp.infrastructure.persistence import (
+    SQLiteDiscoveryRepository,
+)
 
 
 class FakeFetcher:
