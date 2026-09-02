@@ -7,10 +7,10 @@
 - [x] **DOMAIN-04** — Domain/application code depends on repository ports, not SQLite or MCP.
 
 ## Identity and source registry
-- [ ] **IDENT-01** — Existing Stars links/contributions can bootstrap likely sources without arbitrary crawling.
-- [ ] **IDENT-02** — Ownership states distinguish explicit, verified, inferred, rejected and disabled sources.
-- [ ] **IDENT-03** — URL/source canonicalization prevents duplicate registrations.
-- [ ] **IDENT-04** — Inferred ownership never silently becomes verified.
+- [x] **IDENT-01** — Existing Stars links/contributions can bootstrap likely sources without arbitrary crawling.
+- [x] **IDENT-02** — Ownership states distinguish explicit, verified, inferred, rejected and disabled sources.
+- [x] **IDENT-03** — URL/source canonicalization prevents duplicate registrations.
+- [x] **IDENT-04** — Inferred ownership never silently becomes verified.
 
 ## Safe fetch
 - [ ] **SAFE-01** — Private/link-local/loopback targets and unsafe redirects are blocked.
