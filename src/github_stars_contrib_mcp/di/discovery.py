@@ -13,7 +13,9 @@ from github_stars_contrib_mcp.config.settings import Settings
 from github_stars_contrib_mcp.domain.ports.content_fetcher import ContentFetcher
 from github_stars_contrib_mcp.domain.ports.source_adapter import SourceAdapter
 from github_stars_contrib_mcp.infrastructure.http import SafeHTTPFetcher
-from github_stars_contrib_mcp.infrastructure.persistence import SQLiteDiscoveryRepository
+from github_stars_contrib_mcp.infrastructure.persistence import (
+    SQLiteDiscoveryRepository,
+)
 
 
 @dataclass(slots=True)
