@@ -19,10 +19,10 @@
 - [x] **SAFE-04** — Secrets/tokens never enter fetched-content prompts, evidence or ordinary logs.
 
 ## Discovery orchestration
-- [ ] **DISC-01** — Provider-neutral adapters emit source items without Stars API coupling.
-- [ ] **DISC-02** — Discovery runs isolate adapter failures and persist deterministic summaries.
-- [ ] **DISC-03** — Source items normalize into validated candidates plus evidence/provenance.
-- [ ] **DISC-04** — Incremental cursors resume idempotently.
+- [x] **DISC-01** — Provider-neutral adapters emit source items without Stars API coupling.
+- [x] **DISC-02** — Discovery runs isolate adapter failures and persist deterministic summaries.
+- [x] **DISC-03** — Source items normalize into validated candidates plus evidence/provenance.
+- [x] **DISC-04** — Incremental cursors resume idempotently.
 
 ## Source adapters
 - [ ] **RSS-01** — RSS/Atom produces article/blog candidates.
