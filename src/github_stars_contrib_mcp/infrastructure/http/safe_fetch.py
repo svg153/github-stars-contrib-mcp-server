@@ -103,7 +103,7 @@ class SafeHTTPFetcher:
         if parsed.username is not None or parsed.password is not None:
             return "userinfo_not_allowed"
         try:
-            parsed.port
+            _port = parsed.port
         except ValueError:
             return "invalid_port"
         if has_sensitive_query(url):
@@ -330,7 +330,9 @@ class SafeHTTPFetcher:
 
                     body = b"".join(chunks)
                     try:
-                        decoded = body.decode(_charset(raw_content_type), errors="replace")
+                        decoded = body.decode(
+                            _charset(raw_content_type), errors="replace"
+                        )
                     except LookupError:
                         decoded = body.decode("utf-8", errors="replace")
                     return self._result(
