@@ -102,9 +102,13 @@ async def test_bootstrap_is_state_idempotent(stars_payload: dict[str, Any]) -> N
     use_case = BootstrapSources(FakeStarsAPI(stars_payload), repository)
 
     await use_case()
-    first = {key: item.model_dump(mode="json") for key, item in repository.items.items()}
+    first = {
+        key: item.model_dump(mode="json") for key, item in repository.items.items()
+    }
     second = await use_case()
-    after = {key: item.model_dump(mode="json") for key, item in repository.items.items()}
+    after = {
+        key: item.model_dump(mode="json") for key, item in repository.items.items()
+    }
 
     assert after == first
     assert second.created == 0

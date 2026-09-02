@@ -49,7 +49,9 @@ class BootstrapSources:
 
     @staticmethod
     def _nominee(payload: dict[str, Any]) -> dict[str, Any]:
-        current = payload.get("data") if isinstance(payload.get("data"), dict) else payload
+        current = (
+            payload.get("data") if isinstance(payload.get("data"), dict) else payload
+        )
         logged_user = current.get("loggedUser") if isinstance(current, dict) else None
         if not isinstance(logged_user, dict):
             return {}
@@ -150,13 +152,15 @@ class BootstrapSources:
                 metadata={
                     "bootstrap": {
                         "profile_link_ids": sorted(
-                            set(existing_bootstrap.get("profile_link_ids", []))
-                            .union({link_id})
+                            set(existing_bootstrap.get("profile_link_ids", [])).union(
+                                {link_id}
+                            )
                             - {""}
                         ),
                         "platforms": sorted(
-                            set(existing_bootstrap.get("platforms", []))
-                            .union({platform})
+                            set(existing_bootstrap.get("platforms", [])).union(
+                                {platform}
+                            )
                             - {""}
                         ),
                     }
