@@ -122,7 +122,10 @@ def build_feed_batch(
     ids_at_watermark = {
         str(value) for value in (cursor or {}).get("ids_at_watermark", []) if value
     }
-    recent_ids = {str(value) for value in (cursor or {}).get("recent_ids", []) if value}
+    prior_recent_ids = [
+        str(value) for value in (cursor or {}).get("recent_ids", []) if value
+    ]
+    recent_ids = set(prior_recent_ids)
 
     emissions: list[AdapterEmission] = []
     for entry in entries:
@@ -184,7 +187,7 @@ def build_feed_batch(
         dict.fromkeys(
             [
                 *(emission.item.external_id for emission in emissions),
-                *recent_ids,
+                *prior_recent_ids,
             ]
         )
     )[:_RECENT_ID_LIMIT]
