@@ -56,7 +56,9 @@ FEED = """\
 """
 
 
-async def test_website_adapter_discovers_structured_article_and_trusted_feed_only() -> None:
+async def test_website_adapter_discovers_structured_article_and_trusted_feed_only() -> (
+    None
+):
     fetcher = FakeFetcher(
         {
             "https://example.com": ("text/html", PAGE),
@@ -80,9 +82,9 @@ async def test_website_adapter_discovers_structured_article_and_trusted_feed_onl
         "https://example.com",
         "https://example.com/feed.xml",
     ]
-    assert batch.emissions[0].evidence[0].data[
-        "blocked_cross_origin_feed_links"
-    ] == ["https://evil.example/feed.xml"]
+    assert batch.emissions[0].evidence[0].data["blocked_cross_origin_feed_links"] == [
+        "https://evil.example/feed.xml"
+    ]
 
 
 def test_website_adapter_requires_explicit_or_verified_ownership() -> None:

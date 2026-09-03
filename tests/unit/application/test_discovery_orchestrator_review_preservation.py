@@ -58,7 +58,9 @@ class StableAdapter:
         )
 
 
-async def test_rediscovery_preserves_rejected_candidate_and_human_edits(tmp_path) -> None:
+async def test_rediscovery_preserves_rejected_candidate_and_human_edits(
+    tmp_path,
+) -> None:
     repository = SQLiteDiscoveryRepository(tmp_path / "discovery.db")
     source = SourceRecord(
         id="rss:https://example.com/feed.xml",
