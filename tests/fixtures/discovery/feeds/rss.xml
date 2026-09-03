@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>Example feed</title>
+    <link>https://example.com</link>
+    <item>
+      <guid>post-1</guid>
+      <title>First &amp; useful post</title>
+      <link>https://example.com/posts/1</link>
+      <pubDate>Tue, 01 Sep 2026 10:00:00 GMT</pubDate>
+      <dc:creator>Sergio</dc:creator>
+      <description><![CDATA[<p>First <strong>summary</strong>.</p>]]></description>
+    </item>
+    <item>
+      <guid>post-2</guid>
+      <title>Second post</title>
+      <link>https://example.com/posts/2</link>
+      <pubDate>Tue, 01 Sep 2026 10:00:00 GMT</pubDate>
+      <description>Second summary.</description>
+    </item>
+    <item>
+      <guid>broken</guid>
+      <link>https://example.com/posts/broken</link>
+    </item>
+    <item>
+      <guid>post-1</guid>
+      <title>Duplicate</title>
+      <link>https://example.com/posts/duplicate</link>
+    </item>
+  </channel>
+</rss>
