@@ -77,7 +77,9 @@ def _classify_fetch_failure(result: SafeFetchResult) -> SourceAdapterError:
             result.error_code or "safe fetch blocked the feed URL",
         )
     if result.status_code in {401, 403}:
-        return SourceAdapterError(AdapterErrorKind.AUTH, "feed request was unauthorized")
+        return SourceAdapterError(
+            AdapterErrorKind.AUTH, "feed request was unauthorized"
+        )
     if result.status_code == 429:
         return SourceAdapterError(
             AdapterErrorKind.RATE_LIMIT, "feed request was rate limited"
@@ -120,9 +122,7 @@ def build_feed_batch(
     ids_at_watermark = {
         str(value) for value in (cursor or {}).get("ids_at_watermark", []) if value
     }
-    recent_ids = {
-        str(value) for value in (cursor or {}).get("recent_ids", []) if value
-    }
+    recent_ids = {str(value) for value in (cursor or {}).get("recent_ids", []) if value}
 
     emissions: list[AdapterEmission] = []
     for entry in entries:

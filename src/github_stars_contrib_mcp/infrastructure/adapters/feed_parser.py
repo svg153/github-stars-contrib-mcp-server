@@ -6,7 +6,6 @@ import re
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
 from html.parser import HTMLParser
-from typing import Any
 from xml.etree import ElementTree
 
 from pydantic import BaseModel, ConfigDict
@@ -190,9 +189,15 @@ def _atom_entry(entry: ElementTree.Element) -> FeedEntry:
 def parse_feed(payload: bytes | str) -> FeedParseResult:
     """Parse RSS 2.0 or Atom without network access or entity expansion."""
 
-    raw = payload.decode("utf-8", errors="replace") if isinstance(payload, bytes) else payload
+    raw = (
+        payload.decode("utf-8", errors="replace")
+        if isinstance(payload, bytes)
+        else payload
+    )
     if _UNSAFE_XML_RE.search(raw):
-        raise FeedParseError("DTD/entity declarations are not allowed in discovery feeds")
+        raise FeedParseError(
+            "DTD/entity declarations are not allowed in discovery feeds"
+        )
     try:
         root = ElementTree.fromstring(raw)
     except ElementTree.ParseError as exc:

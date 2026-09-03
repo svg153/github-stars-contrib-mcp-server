@@ -96,9 +96,7 @@ class _WebsiteMetadataParser(HTMLParser):
         self._in_json_ld = False
         self._json_ld_parts: list[str] = []
 
-    def handle_starttag(
-        self, tag: str, attrs: list[tuple[str, str | None]]
-    ) -> None:
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         values = {key.lower(): value for key, value in attrs if value is not None}
         lowered = tag.lower()
         if lowered == "link":
@@ -176,11 +174,7 @@ def _article_from_metadata(
 ) -> AdapterEmission | None:
     structured = parser.json_ld[0] if parser.json_ld else {}
     title = structured.get("headline") or parser.og.get("og:title")
-    article_url = (
-        structured.get("url")
-        or parser.og.get("og:url")
-        or final_url
-    )
+    article_url = structured.get("url") or parser.og.get("og:url") or final_url
     if not isinstance(title, str) or not title.strip():
         return None
     if not isinstance(article_url, str):
