@@ -64,8 +64,10 @@ async def test_rss_adapter_uses_safe_fetch_and_same_timestamp_cursor() -> None:
     assert [emission.item.external_id for emission in first.emissions] == ["a", "b"]
     assert first.next_cursor is not None
     assert first.next_cursor["ids_at_watermark"] == ["a", "b"]
+    assert first.next_cursor["recent_ids"] == ["a", "b"]
     assert fetcher.requests[0].url == source.url
 
     second = (await _batches(adapter, source, first.next_cursor))[0]
     assert second.emissions == ()
+    assert second.next_cursor == first.next_cursor
     assert len(fetcher.requests) == 2
