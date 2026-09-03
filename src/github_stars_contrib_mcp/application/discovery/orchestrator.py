@@ -10,6 +10,8 @@ from github_stars_contrib_mcp.application.discovery.normalizer import (
     normalize_candidate,
 )
 from github_stars_contrib_mcp.domain.discovery import (
+    CandidateContribution,
+    CandidateState,
     DiscoveryRun,
     DiscoveryRunStatus,
     SourceRecord,
@@ -44,6 +46,21 @@ def _classify_error(exc: Exception) -> tuple[str, str]:
     if isinstance(exc, SourceAdapterError):
         return exc.kind.value, str(exc)
     return AdapterErrorKind.UNKNOWN.value, str(exc)
+
+
+def _preserve_reviewed_candidate(
+    repository: CandidateRepository,
+    candidate: CandidateContribution,
+) -> CandidateContribution:
+    """Never let rediscovery undo a human/lifecycle decision."""
+
+    existing = repository.get_candidate(candidate.id)
+    if existing is None:
+        return candidate
+    if existing.state is not CandidateState.DISCOVERED:
+        return existing
+    candidate.created_at = existing.created_at
+    return candidate
 
 
 class DiscoveryOrchestrator:
@@ -140,11 +157,14 @@ class DiscoveryOrchestrator:
                     self._validate_batch(source, batch)
                     prepared = [
                         (
-                            normalize_candidate(
-                                source,
-                                emission.item,
-                                adapter_name=adapter.name,
-                                adapter_version=adapter.version,
+                            _preserve_reviewed_candidate(
+                                self._repository,
+                                normalize_candidate(
+                                    source,
+                                    emission.item,
+                                    adapter_name=adapter.name,
+                                    adapter_version=adapter.version,
+                                ),
                             ),
                             emission.evidence,
                         )
