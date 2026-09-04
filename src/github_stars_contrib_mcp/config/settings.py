@@ -52,6 +52,13 @@ class Settings(BaseSettings):
             "Local SQLite database used for discovery sources, candidates, and runs"
         ),
     )
+    github_discovery_token: str | None = Field(
+        default=None,
+        description=(
+            "Optional dedicated GitHub REST token for discovery; never reuses "
+            "STARS_API_TOKEN implicitly"
+        ),
+    )
     discovery_fetch_connect_timeout_s: float = Field(default=3.0, gt=0, le=30)
     discovery_fetch_read_timeout_s: float = Field(default=10.0, gt=0, le=60)
     discovery_fetch_max_bytes: int = Field(default=1_000_000, ge=1_024, le=10_000_000)
