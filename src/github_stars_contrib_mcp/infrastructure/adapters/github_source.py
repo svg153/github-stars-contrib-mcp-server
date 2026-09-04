@@ -117,7 +117,9 @@ class GitHubSourceAdapter:
         max_repositories: int = 50,
         transport: httpx.AsyncBaseTransport | None = None,
     ) -> None:
-        self._token = token.strip() if isinstance(token, str) and token.strip() else None
+        self._token = (
+            token.strip() if isinstance(token, str) and token.strip() else None
+        )
         self._api_base_url = api_base_url.rstrip("/")
         self._user_agent = user_agent
         self._timeout_s = timeout_s
@@ -240,7 +242,8 @@ class GitHubSourceAdapter:
                 ) from exc
             if not isinstance(payload, list):
                 raise SourceAdapterError(
-                    AdapterErrorKind.PARSE, "GitHub REST list endpoint returned an object"
+                    AdapterErrorKind.PARSE,
+                    "GitHub REST list endpoint returned an object",
                 )
             items.extend(item for item in payload if isinstance(item, dict))
             next_link = response.links.get("next", {}).get("url")
@@ -289,7 +292,9 @@ class GitHubSourceAdapter:
         )
         body = payload.get("body")
         description = str(body)[:4000] if isinstance(body, str) and body else None
-        published_at = _parse_datetime(payload.get("published_at") or payload.get("created_at"))
+        published_at = _parse_datetime(
+            payload.get("published_at") or payload.get("created_at")
+        )
         item = SourceItem(
             source_id=source.id,
             external_id=external_id,
@@ -331,7 +336,11 @@ class GitHubSourceAdapter:
     ) -> AdapterEmission | None:
         full_name = payload.get("full_name")
         raw_url = payload.get("html_url")
-        if not isinstance(full_name, str) or "/" not in full_name or not isinstance(raw_url, str):
+        if (
+            not isinstance(full_name, str)
+            or "/" not in full_name
+            or not isinstance(raw_url, str)
+        ):
             return None
         url = _canonical_github_url(raw_url)
         if url is None:
@@ -379,7 +388,11 @@ class GitHubSourceAdapter:
     ) -> AdapterEmission | None:
         raw_url = payload.get("html_url")
         title = payload.get("title")
-        if not isinstance(raw_url, str) or not isinstance(title, str) or not title.strip():
+        if (
+            not isinstance(raw_url, str)
+            or not isinstance(title, str)
+            or not title.strip()
+        ):
             return None
         url = _canonical_github_url(raw_url)
         if url is None:
@@ -446,10 +459,7 @@ class GitHubSourceAdapter:
                 "GitHub source does not identify one trusted username",
             )
 
-        prior_recent_ids = [
-            value
-            for value in _metadata_values((cursor or {}).get("recent_ids"))
-        ]
+        prior_recent_ids = list(_metadata_values((cursor or {}).get("recent_ids")))
         seen_ids = set(prior_recent_ids)
         prior_etags = (cursor or {}).get("release_etags")
         release_etags = (
@@ -458,7 +468,9 @@ class GitHubSourceAdapter:
             else {}
         )
 
-        configured_repositories = set(_metadata_values(source.metadata.get("repositories")))
+        configured_repositories = set(
+            _metadata_values(source.metadata.get("repositories"))
+        )
         candidate_repositories = set(
             _metadata_values(source.metadata.get("candidate_repositories"))
         )
