@@ -37,8 +37,8 @@ flowchart TD
 | 03 | Build safe fetch and untrusted-content boundary | SAFE-01..04 | #19 | 01 | verified; PR #27 |
 | 04 | Orchestrate adapters into persisted candidates | DISC-01..04 | #20 | 01,02,03 | verified; PR #28 |
 | 05 | Ship RSS/Atom + trusted website adapters | RSS-01..03 | #21 | 04 | verified; PR #29 |
-| 06 | Ship GitHub discovery adapter | GH-01..04 | #22 | 04 | ready after #29 |
-| 07 | Ship YouTube discovery adapter | YT-01..03 | #23 | 04 | planned |
+| 06 | Ship GitHub discovery adapter | GH-01..04 | #22 | 04 | verified; PR #30 |
+| 07 | Ship YouTube discovery adapter | YT-01..03 | #23 | 04 | ready after #30 |
 | 08 | Ship public speaker/event adapters | SPEAK-01..03 | JIT | 03,04 | planned |
 | 09 | Add compliant restricted-social ingestion | SOCIAL-01..03 | JIT | 03,04 | planned |
 | 10 | Add dedupe, confidence and conflict resolution | DEDUPE-01..04 | JIT | 05-09 | planned |
@@ -64,7 +64,7 @@ A fake adapter can run end-to-end into persisted candidates/evidence; one adapte
 Feeds and trusted personal sites create normalized article/blog candidates, including malformed/duplicate/incremental cases. **Verified in PR #29.**
 
 ### 06 — GitHub
-Supported APIs yield explainable, non-spammy candidates with stable URLs and tested pagination/rate-limit behavior.
+Supported APIs yield explainable, non-spammy candidates with stable URLs and tested pagination/rate-limit behavior. **Verified in PR #30.**
 
 ### 07 — YouTube
 Trusted channels sync through API/feed paths, preserve evidence and report credential/quota limits explicitly.
