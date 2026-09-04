@@ -28,10 +28,10 @@
 - [x] **RSS-01** — RSS/Atom produces article/blog candidates.
 - [x] **RSS-02** — Trusted personal sites can discover feeds/bounded content through safe fetch.
 - [x] **RSS-03** — Feed IDs/timestamps support incremental sync and duplicate suppression.
-- [ ] **GH-01** — GitHub discovery uses supported APIs and trusted account identity.
-- [ ] **GH-02** — Eligibility rules avoid treating routine activity as Stars contributions.
-- [ ] **GH-03** — GitHub candidates carry canonical evidence and explainable eligibility.
-- [ ] **GH-04** — Pagination/rate limits do not create duplicates.
+- [x] **GH-01** — GitHub discovery uses supported APIs and trusted account identity.
+- [x] **GH-02** — Eligibility rules avoid treating routine activity as Stars contributions.
+- [x] **GH-03** — GitHub candidates carry canonical evidence and explainable eligibility.
+- [x] **GH-04** — Pagination/rate limits do not create duplicates.
 - [ ] **YT-01** — Trusted YouTube channels sync via supported API/feed mechanisms.
 - [ ] **YT-02** — Videos normalize with canonical channel/video evidence.
 - [ ] **YT-03** — Missing credentials/quota produces explicit limited capability, never scraping.
