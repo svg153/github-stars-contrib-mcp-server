@@ -64,7 +64,10 @@ async def test_paginates_owned_repositories_and_uses_current_api_headers() -> No
 
     def handler(request: httpx.Request) -> httpx.Response:
         requests.append(request)
-        if request.url.path == "/users/alice/repos" and request.url.params.get("page") == "2":
+        if (
+            request.url.path == "/users/alice/repos"
+            and request.url.params.get("page") == "2"
+        ):
             return httpx.Response(200, json=[_repo("two", 2)])
         if request.url.path == "/users/alice/repos":
             return httpx.Response(
@@ -143,9 +146,7 @@ async def test_release_uses_etag_cursor_and_replay_emits_no_duplicate() -> None:
     assert emission.item.external_id == "github:release:alice/project:77"
     assert emission.item.url == "https://github.com/alice/project/releases/tag/v1.0.0"
     assert emission.evidence[0].data["reason_code"] == "owned_release"
-    assert first.next_cursor["release_etags"] == {
-        "alice/project": '"release-v1"'
-    }
+    assert first.next_cursor["release_etags"] == {"alice/project": '"release-v1"'}
     assert second.emissions == ()
     assert release_requests[-1].headers["if-none-match"] == '"release-v1"'
 

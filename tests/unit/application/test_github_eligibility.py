@@ -56,9 +56,7 @@ def test_routine_activity_is_always_rejected() -> None:
 
 
 def test_repository_requires_explicit_opt_in() -> None:
-    default = evaluate_github_item(
-        "repository", _repo(), trusted_username="alice"
-    )
+    default = evaluate_github_item("repository", _repo(), trusted_username="alice")
     explicit = evaluate_github_item(
         "repository",
         _repo(),
@@ -118,10 +116,7 @@ def test_notable_activity_requires_explicit_configuration_and_authorship() -> No
         trusted_username="alice",
         explicitly_configured=True,
     )
-    assert (
-        not_explicit.reason_code
-        is GitHubEligibilityReason.NOT_EXPLICITLY_CONFIGURED
-    )
+    assert not_explicit.reason_code is GitHubEligibilityReason.NOT_EXPLICITLY_CONFIGURED
     assert foreign.reason_code is GitHubEligibilityReason.NOT_AUTHOR
     assert accepted.eligible is True
     assert accepted.reason_code is GitHubEligibilityReason.CONFIGURED_NOTABLE_ACTIVITY
