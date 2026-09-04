@@ -14,6 +14,7 @@ class TestSettings:
     def test_default_settings(self):
         settings = Settings()
         assert settings.stars_api_token is None
+        assert settings.github_discovery_token is None
         assert settings.stars_auth_mode == "both"
         assert settings.stars_user_agent == "github-stars-contrib-mcp-server/0.3.1"
         assert Path(settings.discovery_db_path).parts[-2:] == (
@@ -55,13 +56,25 @@ class TestSettings:
     def test_with_token(self):
         settings = Settings(
             stars_api_token="test_token",
+            github_discovery_token="github_token",
             log_level="DEBUG",
             dangerously_omit_auth=True,
             stars_auth_mode="bearer",
             stars_user_agent="custom-agent/1.0",
         )
         assert settings.stars_api_token == "test_token"
+        assert settings.github_discovery_token == "github_token"
         assert settings.log_level == "DEBUG"
         assert settings.dangerously_omit_auth is True
         assert settings.stars_auth_mode == "bearer"
         assert settings.stars_user_agent == "custom-agent/1.0"
+
+    @patch.dict(
+        "os.environ",
+        {"GITHUB_DISCOVERY_TOKEN": "github-env-token"},
+        clear=True,
+    )
+    def test_github_discovery_token_uses_its_own_environment_variable(self):
+        settings = Settings()
+        assert settings.github_discovery_token == "github-env-token"
+        assert settings.stars_api_token is None

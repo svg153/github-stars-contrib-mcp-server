@@ -12,6 +12,9 @@ from github_stars_contrib_mcp.application.discovery.orchestrator import (
 from github_stars_contrib_mcp.config.settings import Settings
 from github_stars_contrib_mcp.domain.ports.content_fetcher import ContentFetcher
 from github_stars_contrib_mcp.domain.ports.source_adapter import SourceAdapter
+from github_stars_contrib_mcp.infrastructure.adapters.github_source import (
+    GitHubSourceAdapter,
+)
 from github_stars_contrib_mcp.infrastructure.adapters.rss_source import RSSSourceAdapter
 from github_stars_contrib_mcp.infrastructure.adapters.website_source import (
     WebsiteSourceAdapter,
@@ -40,9 +43,9 @@ def build_discovery_runtime(
 ) -> DiscoveryRuntime:
     """Build discovery services without registering any MCP tools."""
 
+    resolved_settings = settings or Settings()
     resolved_repository = repository
     if resolved_repository is None:
-        resolved_settings = settings or Settings()
         resolved_repository = SQLiteDiscoveryRepository(
             db_path or resolved_settings.discovery_db_path
         )
@@ -53,6 +56,7 @@ def build_discovery_runtime(
         else (
             RSSSourceAdapter(resolved_fetcher),
             WebsiteSourceAdapter(resolved_fetcher),
+            GitHubSourceAdapter(token=resolved_settings.github_discovery_token),
         )
     )
     return DiscoveryRuntime(

@@ -5,6 +5,7 @@ from typing import Any
 
 import pytest
 
+from github_stars_contrib_mcp.config import Settings
 from github_stars_contrib_mcp.di.discovery import build_discovery_runtime
 from github_stars_contrib_mcp.domain.discovery import (
     Evidence,
@@ -97,3 +98,39 @@ async def test_runtime_runs_fake_adapter_end_to_end(tmp_path) -> None:
     assert run.summary["sources_succeeded"] == 1
     assert len(repository.list_candidates()) == 1
     assert repository.get_cursor(source.id) == {"after": "one"}
+
+
+def test_default_runtime_registers_github_without_reusing_stars_token(tmp_path) -> None:
+    repository = SQLiteDiscoveryRepository(tmp_path / "discovery.db")
+    runtime = build_discovery_runtime(
+        settings=Settings(stars_api_token="stars-only"),
+        repository=repository,
+        fetcher=FakeFetcher(),
+    )
+    github = next(adapter for adapter in runtime.adapters if adapter.name == "github")
+    source = SourceRecord(
+        id="github:https://github.com/alice",
+        source_type=SourceType.GITHUB,
+        url="https://github.com/alice",
+        ownership=OwnershipStatus.EXPLICIT,
+    )
+
+    assert github.capabilities(source).status is CapabilityStatus.LIMITED
+
+
+def test_default_runtime_uses_dedicated_github_discovery_token(tmp_path) -> None:
+    repository = SQLiteDiscoveryRepository(tmp_path / "discovery.db")
+    runtime = build_discovery_runtime(
+        settings=Settings(github_discovery_token="github-token"),
+        repository=repository,
+        fetcher=FakeFetcher(),
+    )
+    github = next(adapter for adapter in runtime.adapters if adapter.name == "github")
+    source = SourceRecord(
+        id="github:https://github.com/alice",
+        source_type=SourceType.GITHUB,
+        url="https://github.com/alice",
+        ownership=OwnershipStatus.EXPLICIT,
+    )
+
+    assert github.capabilities(source).status is CapabilityStatus.AVAILABLE
