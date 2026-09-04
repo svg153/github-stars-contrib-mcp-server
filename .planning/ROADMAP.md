@@ -33,11 +33,11 @@ flowchart TD
 | Phase | Goal | Requirements | Issue | Blocked by | Status |
 | --- | --- | --- | --- | --- | --- |
 | 01 | Define discovery domain, lifecycle and SQLite persistence | DOMAIN-01..04 | #17 | — | verified; PR #25 |
-| 02 | Bootstrap/manage trusted source identity | IDENT-01..04 | #18 | 01 | ready after #25 |
-| 03 | Build safe fetch and untrusted-content boundary | SAFE-01..04 | #19 | 01 | planned |
-| 04 | Orchestrate adapters into persisted candidates | DISC-01..04 | #20 | 01,02,03 | planned |
-| 05 | Ship RSS/Atom + trusted website adapters | RSS-01..03 | #21 | 04 | planned |
-| 06 | Ship GitHub discovery adapter | GH-01..04 | #22 | 04 | planned |
+| 02 | Bootstrap/manage trusted source identity | IDENT-01..04 | #18 | 01 | verified; PR #26 |
+| 03 | Build safe fetch and untrusted-content boundary | SAFE-01..04 | #19 | 01 | verified; PR #27 |
+| 04 | Orchestrate adapters into persisted candidates | DISC-01..04 | #20 | 01,02,03 | verified; PR #28 |
+| 05 | Ship RSS/Atom + trusted website adapters | RSS-01..03 | #21 | 04 | verified; PR #29 |
+| 06 | Ship GitHub discovery adapter | GH-01..04 | #22 | 04 | ready after #29 |
 | 07 | Ship YouTube discovery adapter | YT-01..03 | #23 | 04 | planned |
 | 08 | Ship public speaker/event adapters | SPEAK-01..03 | JIT | 03,04 | planned |
 | 09 | Add compliant restricted-social ingestion | SOCIAL-01..03 | JIT | 03,04 | planned |
@@ -52,16 +52,16 @@ flowchart TD
 Provider-neutral models, lifecycle rules, repository ports and SQLite round-trip are deterministic and tested. **Verified in PR #25.**
 
 ### 02 — Identity and source registry
-Profile/link bootstrap creates canonical sources with explicit ownership confidence; inferred sources cannot silently become trusted.
+Profile/link bootstrap creates canonical sources with explicit ownership confidence; inferred sources cannot silently become trusted. **Verified in PR #26.**
 
 ### 03 — Safe fetch
-SSRF/redirect/size/content-type controls pass hostile fixtures; fetched data cannot override agent instructions or leak secrets.
+SSRF/redirect/size/content-type controls pass hostile fixtures; fetched data cannot override agent instructions or leak secrets. **Verified in PR #27.**
 
 ### 04 — Orchestration
-A fake adapter can run end-to-end into persisted candidates/evidence; one adapter failure does not corrupt others; cursors resume idempotently.
+A fake adapter can run end-to-end into persisted candidates/evidence; one adapter failure does not corrupt others; cursors resume idempotently. **Verified in PR #28.**
 
 ### 05 — RSS/web
-Feeds and trusted personal sites create normalized article/blog candidates, including malformed/duplicate/incremental cases.
+Feeds and trusted personal sites create normalized article/blog candidates, including malformed/duplicate/incremental cases. **Verified in PR #29.**
 
 ### 06 — GitHub
 Supported APIs yield explainable, non-spammy candidates with stable URLs and tested pagination/rate-limit behavior.
