@@ -79,8 +79,7 @@ async def test_feed_fallback_is_limited_safe_fetch_and_incremental() -> None:
     assert fetcher.requests[0].url.endswith(f"channel_id={CHANNEL_ID}")
 
     second = [
-        batch
-        async for batch in adapter.iter_items(_source(), first[0].next_cursor)
+        batch async for batch in adapter.iter_items(_source(), first[0].next_cursor)
     ]
     assert second[0].emissions == ()
 

@@ -7,7 +7,9 @@ from collections.abc import AsyncIterator
 from typing import Any
 from urllib.parse import parse_qs, urlsplit
 
-from github_stars_contrib_mcp.application.discovery.youtube_identity import source_channel_id
+from github_stars_contrib_mcp.application.discovery.youtube_identity import (
+    source_channel_id,
+)
 from github_stars_contrib_mcp.domain.discovery import (
     Evidence,
     OwnershipStatus,
@@ -65,11 +67,13 @@ def _fetch_error(result: SafeFetchResult) -> SourceAdapterError:
         )
     if result.status_code in {401, 403}:
         return SourceAdapterError(
-            AdapterErrorKind.AUTH, "YouTube channel feed request was unauthorized"
+            AdapterErrorKind.AUTH,
+            "YouTube channel feed request was unauthorized",
         )
     if result.status_code == 429:
         return SourceAdapterError(
-            AdapterErrorKind.RATE_LIMIT, "YouTube channel feed was rate limited"
+            AdapterErrorKind.RATE_LIMIT,
+            "YouTube channel feed was rate limited",
         )
     return SourceAdapterError(
         AdapterErrorKind.UNAVAILABLE,
@@ -120,9 +124,8 @@ class YouTubeFeedSourceAdapter:
                 AdapterErrorKind.UNAVAILABLE,
                 "credential-free YouTube fallback requires a canonical channel ID",
             )
-        feed_url = (
-            "https://www.youtube.com/feeds/videos.xml" f"?channel_id={channel_id}"
-        )
+
+        feed_url = f"https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}"
         result = await self._fetcher.fetch(
             SafeFetchRequest(
                 url=feed_url,
@@ -131,6 +134,7 @@ class YouTubeFeedSourceAdapter:
         )
         if result.outcome is not FetchOutcome.SUCCESS or result.text is None:
             raise _fetch_error(result)
+
         try:
             parsed = parse_feed(result.text)
         except ValueError as exc:
@@ -144,11 +148,13 @@ class YouTubeFeedSourceAdapter:
         recent_set = set(prior_recent)
         seen_video_ids: list[str] = []
         emissions: list[AdapterEmission] = []
+
         for entry in parsed.entries:
             video_id = _video_id(entry)
             seen_video_ids.append(video_id)
             if video_id in recent_set:
                 continue
+
             url = f"https://www.youtube.com/watch?v={video_id}"
             external_id = f"youtube:video:{video_id}"
             item = SourceItem(

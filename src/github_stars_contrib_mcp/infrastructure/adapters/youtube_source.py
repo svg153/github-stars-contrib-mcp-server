@@ -69,6 +69,7 @@ def _error_reasons(payload: Any) -> set[str]:
     error = payload.get("error")
     if not isinstance(error, dict):
         return set()
+
     reasons: set[str] = set()
     values = error.get("errors")
     if isinstance(values, list):
@@ -111,6 +112,7 @@ class YouTubeSourceAdapter:
         channel_id = source_channel_id(source.url, source.metadata)
         if channel_id:
             return "id", channel_id
+
         try:
             identity = normalize_youtube_channel(source.url)
         except ValueError:
@@ -160,23 +162,28 @@ class YouTubeSourceAdapter:
         params: dict[str, str],
     ) -> dict[str, Any]:
         request_params = {**params, "key": self._api_key or ""}
-        response = await client.get(f"{self.api_base_url}/{path}", params=request_params)
+        response = await client.get(
+            f"{self.api_base_url}/{path}", params=request_params
+        )
         try:
             payload = response.json()
         except ValueError as exc:
             raise SourceAdapterError(
-                AdapterErrorKind.PARSE, "YouTube API returned invalid JSON"
+                AdapterErrorKind.PARSE,
+                "YouTube API returned invalid JSON",
             ) from exc
 
         reasons = _error_reasons(payload)
         if response.status_code == 429 or reasons & _QUOTA_REASONS:
             raise SourceAdapterError(
-                AdapterErrorKind.RATE_LIMIT, "YouTube Data API quota was exhausted"
+                AdapterErrorKind.RATE_LIMIT,
+                "YouTube Data API quota was exhausted",
             )
         if response.status_code == 401 or reasons & _AUTH_REASONS:
             self._auth_failed = True
             raise SourceAdapterError(
-                AdapterErrorKind.AUTH, "YouTube Data API credentials were rejected"
+                AdapterErrorKind.AUTH,
+                "YouTube Data API credentials were rejected",
             )
         if response.status_code >= 400:
             raise SourceAdapterError(
@@ -185,7 +192,8 @@ class YouTubeSourceAdapter:
             )
         if not isinstance(payload, dict):
             raise SourceAdapterError(
-                AdapterErrorKind.PARSE, "YouTube Data API returned a non-object payload"
+                AdapterErrorKind.PARSE,
+                "YouTube Data API returned a non-object payload",
             )
         return payload
 
@@ -197,8 +205,10 @@ class YouTubeSourceAdapter:
         query = self._identity_query(source)
         if query is None:
             raise SourceAdapterError(
-                AdapterErrorKind.UNAVAILABLE, "YouTube channel identity is unresolved"
+                AdapterErrorKind.UNAVAILABLE,
+                "YouTube channel identity is unresolved",
             )
+
         key, value = query
         payload = await self._get(
             client,
@@ -212,8 +222,10 @@ class YouTubeSourceAdapter:
         items = payload.get("items")
         if not isinstance(items, list) or not items or not isinstance(items[0], dict):
             raise SourceAdapterError(
-                AdapterErrorKind.UNAVAILABLE, "YouTube channel was not found"
+                AdapterErrorKind.UNAVAILABLE,
+                "YouTube channel was not found",
             )
+
         channel = items[0]
         channel_id = channel.get("id")
         details = channel.get("contentDetails")
@@ -228,6 +240,7 @@ class YouTubeSourceAdapter:
                 AdapterErrorKind.PARSE,
                 "YouTube channel payload lacked uploads playlist metadata",
             )
+
         title = snippet.get("title") if isinstance(snippet, dict) else None
         return (
             channel_id,
@@ -254,7 +267,8 @@ class YouTubeSourceAdapter:
         items = payload.get("items")
         if not isinstance(items, list):
             raise SourceAdapterError(
-                AdapterErrorKind.PARSE, "YouTube videos payload lacked items"
+                AdapterErrorKind.PARSE,
+                "YouTube videos payload lacked items",
             )
         return {
             item["id"]: item
@@ -275,11 +289,16 @@ class YouTubeSourceAdapter:
         status = payload.get("status")
         if not isinstance(snippet, dict):
             return None
-        if isinstance(status, dict) and status.get("privacyStatus") not in {None, "public"}:
+        if isinstance(status, dict) and status.get("privacyStatus") not in {
+            None,
+            "public",
+        }:
             return None
+
         title = snippet.get("title")
         if not isinstance(title, str) or not title.strip():
             return None
+
         url = f"https://www.youtube.com/watch?v={video_id}"
         description = snippet.get("description")
         description = (
@@ -328,8 +347,10 @@ class YouTubeSourceAdapter:
     ) -> AsyncIterator[SourceBatch]:
         if self._api_key is None:
             raise SourceAdapterError(
-                AdapterErrorKind.AUTH, "YouTube Data API key is not configured"
+                AdapterErrorKind.AUTH,
+                "YouTube Data API key is not configured",
             )
+
         timeout = httpx.Timeout(self._timeout_s)
         async with httpx.AsyncClient(
             timeout=timeout,
@@ -355,6 +376,7 @@ class YouTubeSourceAdapter:
                 }
                 if page_token:
                     params["pageToken"] = page_token
+
                 page = await self._get(client, "playlistItems", params)
                 items = page.get("items")
                 if not isinstance(items, list):
@@ -362,6 +384,7 @@ class YouTubeSourceAdapter:
                         AdapterErrorKind.PARSE,
                         "YouTube uploads playlist payload lacked items",
                     )
+
                 page_video_ids = [
                     video_id
                     for item in items
@@ -372,9 +395,12 @@ class YouTubeSourceAdapter:
                     )
                 ]
                 new_video_ids = [
-                    video_id for video_id in page_video_ids if video_id not in recent_set
+                    video_id
+                    for video_id in page_video_ids
+                    if video_id not in recent_set
                 ]
                 metadata = await self._video_metadata(client, new_video_ids)
+
                 emissions: list[AdapterEmission] = []
                 for video_id in new_video_ids:
                     payload = metadata.get(video_id)

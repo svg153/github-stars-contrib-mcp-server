@@ -8,9 +8,7 @@ from github_stars_contrib_mcp.application.discovery.youtube_identity import (
 
 def test_channel_url_is_canonical_and_stable() -> None:
     channel_id = "UC" + "a" * 22
-    identity = normalize_youtube_channel(
-        f"https://m.youtube.com/channel/{channel_id}/"
-    )
+    identity = normalize_youtube_channel(f"https://m.youtube.com/channel/{channel_id}/")
     assert identity.channel_id == channel_id
     assert identity.registry_key == f"channel:{channel_id}"
     assert identity.canonical_url == f"https://www.youtube.com/channel/{channel_id}"
@@ -45,7 +43,10 @@ def test_video_url_is_not_a_channel_identity() -> None:
 
 def test_source_channel_id_accepts_only_trusted_metadata_shape() -> None:
     channel_id = "UC" + "c" * 22
-    assert source_channel_id(
-        "https://www.youtube.com/@github",
-        {"youtube_channel_id": channel_id},
-    ) == channel_id
+    assert (
+        source_channel_id(
+            "https://www.youtube.com/@github",
+            {"youtube_channel_id": channel_id},
+        )
+        == channel_id
+    )
