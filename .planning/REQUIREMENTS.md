@@ -32,9 +32,9 @@
 - [x] **GH-02** — Eligibility rules avoid treating routine activity as Stars contributions.
 - [x] **GH-03** — GitHub candidates carry canonical evidence and explainable eligibility.
 - [x] **GH-04** — Pagination/rate limits do not create duplicates.
-- [ ] **YT-01** — Trusted YouTube channels sync via supported API/feed mechanisms.
-- [ ] **YT-02** — Videos normalize with canonical channel/video evidence.
-- [ ] **YT-03** — Missing credentials/quota produces explicit limited capability, never scraping.
+- [x] **YT-01** — Trusted YouTube channels sync via supported API/feed mechanisms.
+- [x] **YT-02** — Videos normalize with canonical channel/video evidence.
+- [x] **YT-03** — Missing credentials/quota produces explicit limited capability, never scraping.
 - [ ] **SPEAK-01** — A provider-neutral session/event contract supports public speaker platforms.
 - [ ] **SPEAK-02** — Sessionize/Pretalx-style public sources can produce talk/workshop candidates.
 - [ ] **SPEAK-03** — Generic event-page extraction is limited to trusted URLs and reviewable evidence.
