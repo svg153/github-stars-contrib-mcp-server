@@ -59,6 +59,13 @@ class Settings(BaseSettings):
             "STARS_API_TOKEN implicitly"
         ),
     )
+    youtube_api_key: str | None = Field(
+        default=None,
+        description=(
+            "Optional YouTube Data API v3 key for full channel discovery; when absent "
+            "only the limited public Atom feed is available for canonical channel IDs"
+        ),
+    )
     discovery_fetch_connect_timeout_s: float = Field(default=3.0, gt=0, le=30)
     discovery_fetch_read_timeout_s: float = Field(default=10.0, gt=0, le=60)
     discovery_fetch_max_bytes: int = Field(default=1_000_000, ge=1_024, le=10_000_000)
