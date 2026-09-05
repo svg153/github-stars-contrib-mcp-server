@@ -1,17 +1,17 @@
 # State — v0.3.0
 
 ## Current position
-- **Phase:** 07 — YouTube discovery adapter
+- **Phase:** 08 — Speaker and event discovery
 - **Plan:** 01
-- **Status:** ready after Phase 06 PR #30 merges
+- **Status:** ready after Phase 07 PR #31 merges
 - **Epic:** #16
-- **Phase issue:** #23
-- **Next branch:** `gsd/phase-07-youtube-adapter`
+- **Phase issue:** #32
+- **Next branch:** `gsd/phase-08-speaker-event-adapters`
 
 ## Progress
-- Requirements complete: 23
-- Phases complete: 6/13 after PR #30 merges
-- Seeded issues: #16-#23
+- Requirements complete: 26
+- Phases complete: 7/13 after PR #31 merges
+- Seeded issues: #16-#23, #32
 
 ## Phase 01 evidence
 - Implementation PR: #25
@@ -40,8 +40,13 @@
 
 ## Phase 06 evidence
 - Implementation PR: #30
-- CI: GitHub Actions `tests` run #51 succeeded on `afff707e3d40f2aceb94bfa2ccb37de95d46c47a`.
+- CI: GitHub Actions `tests` run #53 succeeded on `4bd53fbcc7d15869838d585368cfd2ad6adb3d6c` before rebase merge.
 - Verification: `.planning/phases/06-github-adapter/VERIFICATION.md`.
+
+## Phase 07 evidence
+- Implementation PR: #31
+- CI: GitHub Actions `tests` run #56 succeeded on `9342ca2921b997d3d88414cc94219aaaf85d0530` before GSD closeout.
+- Verification: `.planning/phases/07-youtube-adapter/VERIFICATION.md`.
 
 ## Decisions
 - MCP/Stars REST is the publication boundary.
@@ -59,10 +64,13 @@
 - GitHub discovery uses supported REST endpoints with API version `2026-03-10`; raw public-event scraping is not a discovery path.
 - Routine GitHub activity is default-denied; repositories/notable PR/issue activity require explicit opt-in while owned non-draft releases are accepted.
 - `GITHUB_DISCOVERY_TOKEN` is isolated from Stars credentials; anonymous access is an explicit limited capability.
+- YouTube discovery prefers Data API v3 uploads playlists plus batched video metadata rather than search/list scraping.
+- `YOUTUBE_API_KEY` is optional and isolated from Stars credentials; missing credentials fall back only to the public Atom channel feed when a canonical channel ID is known.
+- YouTube HTML scraping and ownership inference from individual video URLs are explicitly excluded.
 - Small-model execution is a first-class constraint: no phase plan should leave architecture/product decisions to the executor.
 
 ## Blockers
-None for Phase 07 after PR #30 merges.
+None for Phase 08 after PR #31 merges.
 
 ## Handoff
-Execute `.planning/phases/07-youtube-adapter/07-01-PLAN.md` from the merged Phase 06 main. Prefer YouTube Data API v3 channel uploads playlists (`contentDetails.relatedPlaylists.uploads` + `playlistItems.list`) over `search.list`; batch video metadata, classify quota/auth failures explicitly, and use only the public channel Atom feed through safe fetch as the credential-free limited fallback when a canonical channel ID is known. Do not scrape YouTube HTML.
+Execute `.planning/phases/08-speaker-event-adapters/08-01-PLAN.md` from the merged Phase 07 main. Normalize speaker/session evidence first, then add Sessionize-style and Pretalx-style public adapters. Speaker ownership requires verified identity evidence rather than fuzzy-name-only matching. Generic event pages are explicit/verified URLs only, pass through safe fetch/untrusted-content handling, and never recurse into a crawl.
