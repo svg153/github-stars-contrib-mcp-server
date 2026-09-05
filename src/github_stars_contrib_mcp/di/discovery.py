@@ -19,6 +19,12 @@ from github_stars_contrib_mcp.infrastructure.adapters.rss_source import RSSSourc
 from github_stars_contrib_mcp.infrastructure.adapters.website_source import (
     WebsiteSourceAdapter,
 )
+from github_stars_contrib_mcp.infrastructure.adapters.youtube_feed_source import (
+    YouTubeFeedSourceAdapter,
+)
+from github_stars_contrib_mcp.infrastructure.adapters.youtube_source import (
+    YouTubeSourceAdapter,
+)
 from github_stars_contrib_mcp.infrastructure.http import SafeHTTPFetcher
 from github_stars_contrib_mcp.infrastructure.persistence import (
     SQLiteDiscoveryRepository,
@@ -50,6 +56,12 @@ def build_discovery_runtime(
             db_path or resolved_settings.discovery_db_path
         )
     resolved_fetcher = fetcher or SafeHTTPFetcher()
+    youtube_key = resolved_settings.youtube_api_key
+    youtube_adapter: SourceAdapter
+    if isinstance(youtube_key, str) and youtube_key.strip():
+        youtube_adapter = YouTubeSourceAdapter(api_key=youtube_key)
+    else:
+        youtube_adapter = YouTubeFeedSourceAdapter(resolved_fetcher)
     resolved_adapters = (
         tuple(adapters)
         if adapters is not None
@@ -57,6 +69,7 @@ def build_discovery_runtime(
             RSSSourceAdapter(resolved_fetcher),
             WebsiteSourceAdapter(resolved_fetcher),
             GitHubSourceAdapter(token=resolved_settings.github_discovery_token),
+            youtube_adapter,
         )
     )
     return DiscoveryRuntime(
