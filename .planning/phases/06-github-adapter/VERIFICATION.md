@@ -1,8 +1,8 @@
 # Phase 06 Verification — GitHub discovery adapter
 
-**Issue:** #22  
-**PR:** #30  
-**Verified head:** `afff707e3d40f2aceb94bfa2ccb37de95d46c47a`  
+**Issue:** #22
+**PR:** #30
+**Verified head:** `afff707e3d40f2aceb94bfa2ccb37de95d46c47a`
 **GitHub Actions:** `tests` run #51 — success
 
 ## Requirement evidence
