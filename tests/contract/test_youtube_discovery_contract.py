@@ -65,13 +65,15 @@ async def test_data_api_path_persists_canonical_video_evidence(tmp_path) -> None
             return httpx.Response(
                 200,
                 json={
-                    "items": [{
-                        "id": CHANNEL_ID,
-                        "snippet": {"title": "Example"},
-                        "contentDetails": {
-                            "relatedPlaylists": {"uploads": "UUuploads"}
-                        },
-                    }]
+                    "items": [
+                        {
+                            "id": CHANNEL_ID,
+                            "snippet": {"title": "Example"},
+                            "contentDetails": {
+                                "relatedPlaylists": {"uploads": "UUuploads"}
+                            },
+                        }
+                    ]
                 },
             )
         if request.url.path.endswith("/playlistItems"):
@@ -82,14 +84,18 @@ async def test_data_api_path_persists_canonical_video_evidence(tmp_path) -> None
         if request.url.path.endswith("/videos"):
             return httpx.Response(
                 200,
-                json={"items": [{
-                    "id": "api1",
-                    "snippet": {
-                        "title": "API video",
-                        "publishedAt": "2026-09-02T10:00:00Z",
-                    },
-                    "status": {"privacyStatus": "public"},
-                }]},
+                json={
+                    "items": [
+                        {
+                            "id": "api1",
+                            "snippet": {
+                                "title": "API video",
+                                "publishedAt": "2026-09-02T10:00:00Z",
+                            },
+                            "status": {"privacyStatus": "public"},
+                        }
+                    ]
+                },
             )
         raise AssertionError(request.url)
 
