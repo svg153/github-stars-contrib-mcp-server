@@ -12,10 +12,19 @@ from github_stars_contrib_mcp.application.discovery.orchestrator import (
 from github_stars_contrib_mcp.config.settings import Settings
 from github_stars_contrib_mcp.domain.ports.content_fetcher import ContentFetcher
 from github_stars_contrib_mcp.domain.ports.source_adapter import SourceAdapter
+from github_stars_contrib_mcp.infrastructure.adapters.event_page_source import (
+    EventPageSourceAdapter,
+)
 from github_stars_contrib_mcp.infrastructure.adapters.github_source import (
     GitHubSourceAdapter,
 )
+from github_stars_contrib_mcp.infrastructure.adapters.pretalx_source import (
+    PretalxSourceAdapter,
+)
 from github_stars_contrib_mcp.infrastructure.adapters.rss_source import RSSSourceAdapter
+from github_stars_contrib_mcp.infrastructure.adapters.sessionize_source import (
+    SessionizeSourceAdapter,
+)
 from github_stars_contrib_mcp.infrastructure.adapters.website_source import (
     WebsiteSourceAdapter,
 )
@@ -70,6 +79,9 @@ def build_discovery_runtime(
             WebsiteSourceAdapter(resolved_fetcher),
             GitHubSourceAdapter(token=resolved_settings.github_discovery_token),
             youtube_adapter,
+            SessionizeSourceAdapter(resolved_fetcher),
+            PretalxSourceAdapter(resolved_fetcher),
+            EventPageSourceAdapter(resolved_fetcher),
         )
     )
     return DiscoveryRuntime(
