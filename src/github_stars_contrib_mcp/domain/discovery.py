@@ -30,6 +30,7 @@ class SourceType(StrEnum):
     YOUTUBE = "youtube"
     SESSIONIZE = "sessionize"
     PRETALX = "pretalx"
+    EVENT_PAGE = "event_page"
     X = "x"
     LINKEDIN = "linkedin"
     UNKNOWN = "unknown"

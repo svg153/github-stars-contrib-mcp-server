@@ -10,6 +10,7 @@ from github_stars_contrib_mcp.application.discovery.source_identity import (
 from github_stars_contrib_mcp.domain.discovery import (
     OwnershipStatus,
     SourceRecord,
+    SourceType,
     utc_now,
 )
 from github_stars_contrib_mcp.domain.ports.discovery_repository import SourceRepository
@@ -29,13 +30,23 @@ class ManageSources:
         url: str,
         *,
         metadata: dict[str, Any] | None = None,
+        source_type: SourceType | None = None,
     ) -> SourceRecord:
         canonical = canonicalize_source_url(url)
-        existing = self._repository.get_source(canonical.source_id)
+        resolved_type = source_type or canonical.source_type
+        if source_type is not None and source_type not in {
+            canonical.source_type,
+            SourceType.EVENT_PAGE,
+        }:
+            raise ValueError(
+                "source_type override is only supported for explicit event pages"
+            )
+        source_id = f"{resolved_type.value}:{canonical.canonical_url}"
+        existing = self._repository.get_source(source_id)
         if existing is None:
             source = SourceRecord(
-                id=canonical.source_id,
-                source_type=canonical.source_type,
+                id=source_id,
+                source_type=resolved_type,
                 url=canonical.canonical_url,
                 ownership=OwnershipStatus.EXPLICIT,
                 evidence=[f"user-added:{canonical.canonical_url}"],
@@ -54,7 +65,7 @@ class ManageSources:
             if source.ownership is not OwnershipStatus.VERIFIED:
                 source.ownership = OwnershipStatus.EXPLICIT
             source.url = canonical.canonical_url
-            source.source_type = canonical.source_type
+            source.source_type = resolved_type
             source.enabled = True
             source.evidence = sorted(
                 set(source.evidence).union({f"user-added:{canonical.canonical_url}"})
