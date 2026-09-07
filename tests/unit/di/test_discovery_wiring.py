@@ -41,6 +41,15 @@ class FakeFetcher:
         )
 
 
+class FakeStars:
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def list_contributions(self, page: int = 1) -> dict[str, Any]:
+        self.calls += 1
+        return {"data": [], "pagination": {"totalPages": 1}}
+
+
 class FakeAdapter:
     name = "fake"
     version = "1"
@@ -78,6 +87,7 @@ class FakeAdapter:
 async def test_runtime_runs_fake_adapter_end_to_end(tmp_path) -> None:
     repository = SQLiteDiscoveryRepository(tmp_path / "discovery.db")
     fetcher = FakeFetcher()
+    stars = FakeStars()
     source = SourceRecord(
         id="website:https://example.com",
         source_type=SourceType.WEBSITE,
@@ -90,11 +100,14 @@ async def test_runtime_runs_fake_adapter_end_to_end(tmp_path) -> None:
         repository=repository,
         fetcher=fetcher,
         adapters=(FakeAdapter(),),
+        stars_api=stars,
     )
     run = await runtime.orchestrator.run()
 
     assert runtime.repository is repository
     assert runtime.fetcher is fetcher
+    assert runtime.stars_api is stars
+    assert stars.calls == 1
     assert run.summary["sources_succeeded"] == 1
     assert len(repository.list_candidates()) == 1
     assert repository.get_cursor(source.id) == {"after": "one"}

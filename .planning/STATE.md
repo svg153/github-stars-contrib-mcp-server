@@ -1,17 +1,17 @@
 # State — v0.3.0
 
 ## Current position
-- **Phase:** 10 — Deduplication, confidence and conflict handling
+- **Phase:** 11 — Review and publish MCP workflows
 - **Plan:** 01
-- **Status:** Phase 09 verified; ready after PR #36 merges
+- **Status:** Phase 10 verified; ready after PR #38 merges
 - **Epic:** #16
-- **Phase issue:** #37
-- **Next branch:** `gsd/phase-10-dedupe-confidence`
+- **Phase issue:** #39
+- **Next branch:** `gsd/phase-11-review-publish-mcp`
 
 ## Progress
-- Requirements complete: 32
-- Phases complete: 9/13 after PR #36 merges
-- Seeded/JIT issues: #16-#23, #32, #35, #37
+- Requirements complete: 36
+- Phases complete: 10/13 after PR #38 merges
+- Seeded/JIT issues: #16-#23, #32, #35, #37, #39
 
 ## Phase 01 evidence
 - Implementation PR: #25
@@ -58,6 +58,11 @@
 - CI: GitHub Actions `tests` run #71 succeeded on `ea80b706ff43529cdd4a2e9c42b8dfa82cd1422c` before GSD closeout.
 - Verification: `.planning/phases/09-restricted-social-sources/VERIFICATION.md`.
 
+## Phase 10 evidence
+- Implementation PR: #38
+- CI: GitHub Actions `tests` run #77 succeeded on `a91dee0fcda44df255561fbb0ee95610a9a2f414` before GSD closeout.
+- Verification: `.planning/phases/10-dedupe-confidence/VERIFICATION.md`.
+
 ## Decisions
 - MCP/Stars REST is the publication boundary.
 - SQLite is the local discovery store.
@@ -84,10 +89,13 @@
 - Restricted social capability modelling contains no scrape/browser mode; unsupported access remains explicit.
 - Social profile URLs are not contributions. Exact post URLs, local neutral exports or a deployment-supplied compliant API adapter are required.
 - Social exports remain local; official API/OAuth secrets are runtime-only and never persisted as discovery metadata/evidence/cursors.
+- Duplicate identity uses separate provider/source, canonical-URL and structured-content fingerprints; free-text descriptions are not identity keys.
+- Current Stars contributions are snapshotted once per discovery run; exact matches block review, likely matches remain visible conflicts, and Stars lookup failure leaves duplicate state `UNKNOWN` rather than assuming clear.
+- Ownership confidence and contribution confidence are separate deterministic signals with inspectable reasons and no publication authority.
 - Small-model execution is a first-class constraint: no phase plan should leave architecture/product decisions to the executor.
 
 ## Blockers
-None for Phase 10 after PR #36 merges.
+None for Phase 11 after PR #38 merges.
 
 ## Handoff
-Execute `.planning/phases/10-dedupe-confidence/10-01-PLAN.md` from merged Phase 09 main using issue #37. Implement inspectable fingerprints first, then duplicate matching against current Stars entries and the local queue, then separate ownership/contribution confidence. Integrate those deterministic results into orchestration before `review_ready`; exact duplicates must be blocked and ambiguous matches must stay reviewable conflicts rather than being silently merged.
+Execute `.planning/phases/11-review-publish-mcp/11-01-PLAN.md` from merged Phase 10 main using issue #39. Implement auditable review application services first, then publication with a fresh Stars duplicate/policy recheck and persisted provenance, then expose thin MCP tools. Keep `dry_run=true` as the publish-tool default and never combine approval and real publication in one MCP call.

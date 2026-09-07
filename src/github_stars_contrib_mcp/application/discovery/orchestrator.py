@@ -6,6 +6,11 @@ from collections.abc import Sequence
 from typing import Protocol
 from uuid import uuid4
 
+from github_stars_contrib_mcp.application.discovery.confidence import assess_confidence
+from github_stars_contrib_mcp.application.discovery.deduplicator import (
+    Deduplicator,
+    load_stars_snapshot,
+)
 from github_stars_contrib_mcp.application.discovery.normalizer import (
     normalize_candidate,
 )
@@ -14,6 +19,7 @@ from github_stars_contrib_mcp.domain.discovery import (
     CandidateState,
     DiscoveryRun,
     DiscoveryRunStatus,
+    DuplicateState,
     SourceRecord,
     utc_now,
 )
@@ -30,6 +36,7 @@ from github_stars_contrib_mcp.domain.ports.source_adapter import (
     SourceAdapterError,
     SourceBatch,
 )
+from github_stars_contrib_mcp.domain.ports.stars_api import StarsAPIPort
 
 
 class DiscoveryRepository(
@@ -70,9 +77,11 @@ class DiscoveryOrchestrator:
         self,
         repository: DiscoveryRepository,
         adapters: Sequence[SourceAdapter] = (),
+        stars_api: StarsAPIPort | None = None,
     ) -> None:
         self._repository = repository
         self._adapters = tuple(adapters)
+        self._stars_api = stars_api
 
     def _resolve_adapter(self, source: SourceRecord) -> SourceAdapter:
         matches = [adapter for adapter in self._adapters if adapter.supports(source)]
@@ -103,6 +112,60 @@ class DiscoveryOrchestrator:
                     "adapter emitted evidence for a different source",
                 )
 
+    @staticmethod
+    def _apply_assessment(
+        source: SourceRecord,
+        candidate: CandidateContribution,
+        evidence: tuple | list,
+        deduplicator: Deduplicator,
+        local_candidates: list[CandidateContribution],
+    ) -> CandidateContribution:
+        if candidate.state is not CandidateState.DISCOVERED:
+            return candidate
+
+        match, fingerprints = deduplicator.assess(candidate, local_candidates)
+        confidence = assess_confidence(
+            source,
+            candidate,
+            evidence,
+            duplicate_state=match.state,
+        )
+        candidate.duplicate_state = match.state
+        candidate.ownership_confidence = confidence.ownership
+        candidate.contribution_confidence = confidence.contribution
+        metadata = candidate.provenance.metadata
+        metadata["fingerprints"] = {
+            "source": fingerprints.source,
+            "url": fingerprints.url,
+            "content": fingerprints.content,
+            "canonical_url": fingerprints.canonical_url,
+        }
+        metadata["duplicate"] = {
+            "state": match.state.value,
+            "method": match.method,
+            "reason": match.reason,
+            "target": match.target,
+        }
+        metadata["confidence"] = {
+            "ownership": {
+                "score": confidence.ownership,
+                "band": confidence.ownership_band,
+                "reasons": list(confidence.ownership_reasons),
+            },
+            "contribution": {
+                "score": confidence.contribution,
+                "band": confidence.contribution_band,
+                "reasons": list(confidence.contribution_reasons),
+            },
+        }
+
+        if match.state is DuplicateState.EXACT:
+            candidate.transition_to(CandidateState.BLOCKED_DUPLICATE)
+        elif match.state in {DuplicateState.CLEAR, DuplicateState.LIKELY}:
+            candidate.transition_to(CandidateState.REVIEW_READY)
+        # UNKNOWN deliberately stays DISCOVERED: without Stars we cannot prove dedupe safety.
+        return candidate
+
     async def run(
         self,
         *,
@@ -128,6 +191,15 @@ class DiscoveryOrchestrator:
             },
         )
         self._repository.save_run(run)
+
+        snapshot = await load_stars_snapshot(self._stars_api)
+        deduplicator = Deduplicator(snapshot)
+        local_candidates = self._repository.list_candidates()
+        run.summary["stars_dedupe"] = {
+            "available": snapshot.available,
+            "contributions_loaded": len(snapshot.contributions),
+            "error": snapshot.error,
+        }
 
         succeeded = 0
         for source in enabled:
@@ -155,29 +227,37 @@ class DiscoveryOrchestrator:
                 cursor = self._repository.get_cursor(source.id)
                 async for batch in adapter.iter_items(source, cursor):
                     self._validate_batch(source, batch)
-                    prepared = [
-                        (
-                            _preserve_reviewed_candidate(
-                                self._repository,
-                                normalize_candidate(
-                                    source,
-                                    emission.item,
-                                    adapter_name=adapter.name,
-                                    adapter_version=adapter.version,
-                                ),
+                    prepared = []
+                    for emission in batch.emissions:
+                        candidate = _preserve_reviewed_candidate(
+                            self._repository,
+                            normalize_candidate(
+                                source,
+                                emission.item,
+                                adapter_name=adapter.name,
+                                adapter_version=adapter.version,
                             ),
-                            emission.evidence,
                         )
-                        for emission in batch.emissions
-                    ]
+                        candidate = self._apply_assessment(
+                            source,
+                            candidate,
+                            emission.evidence,
+                            deduplicator,
+                            local_candidates,
+                        )
+                        prepared.append((candidate, emission.evidence))
+                        if not any(
+                            item.id == candidate.id for item in local_candidates
+                        ):
+                            local_candidates.append(candidate)
+
                     if not dry_run:
                         with self._repository.transaction():
                             for candidate, evidence in prepared:
                                 self._repository.save_candidate(candidate, evidence)
                             if batch.next_cursor is not None:
                                 self._repository.save_cursor(
-                                    source.id,
-                                    batch.next_cursor,
+                                    source.id, batch.next_cursor
                                 )
 
                     source_summary["batches"] = int(source_summary["batches"]) + 1
@@ -194,11 +274,7 @@ class DiscoveryOrchestrator:
                 source_summary["status"] = "failed"
                 source_summary["error_kind"] = kind
                 run.errors.append(
-                    {
-                        "source_id": source.id,
-                        "kind": kind,
-                        "message": message,
-                    }
+                    {"source_id": source.id, "kind": kind, "message": message}
                 )
 
         failed = len(enabled) - succeeded

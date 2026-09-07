@@ -43,10 +43,10 @@
 - [x] **SOCIAL-03** — Unsupported access returns actionable capability status rather than bypass behavior.
 
 ## Deduplication and confidence
-- [ ] **DEDUPE-01** — Candidates are compared with existing Stars entries before review and publish.
-- [ ] **DEDUPE-02** — Stable source IDs, canonical URL and normalized title/date/type create deterministic fingerprints.
-- [ ] **DEDUPE-03** — Similarity/confidence is explainable and advisory rather than sole publish authority.
-- [ ] **DEDUPE-04** — Ambiguous matches remain reviewable conflicts instead of silent merges.
+- [x] **DEDUPE-01** — Candidates are compared with existing Stars entries before review and publish.
+- [x] **DEDUPE-02** — Stable source IDs, canonical URL and normalized title/date/type create deterministic fingerprints.
+- [x] **DEDUPE-03** — Similarity/confidence is explainable and advisory rather than sole publish authority.
+- [x] **DEDUPE-04** — Ambiguous matches remain reviewable conflicts instead of silent merges.
 
 ## Review and publication
 - [ ] **REVIEW-01** — MCP/application tools list candidates with source, evidence, confidence and duplicate state.

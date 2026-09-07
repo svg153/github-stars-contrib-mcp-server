@@ -41,8 +41,8 @@ flowchart TD
 | 07 | Ship YouTube discovery adapter | YT-01..03 | #23 | 04 | verified; PR #31 |
 | 08 | Ship public speaker/event adapters | SPEAK-01..03 | #32 | 03,04 | verified; PR #33 |
 | 09 | Add compliant restricted-social ingestion | SOCIAL-01..03 | #35 | 03,04 | verified; PR #36 |
-| 10 | Add dedupe, confidence and conflict resolution | DEDUPE-01..04 | #37 | 05-09 | ready after #36 |
-| 11 | Expose review and publish MCP workflows | REVIEW-01..02, PUB-01..03 | JIT | 10 | planned |
+| 10 | Add dedupe, confidence and conflict resolution | DEDUPE-01..04 | #37 | 05-09 | verified; PR #38 |
+| 11 | Expose review and publish MCP workflows | REVIEW-01..02, PUB-01..03 | #39 | 10 | ready after #38 |
 | 12 | Package reusable skills/agent workflows | AGENT-01..05 | JIT | 11 | planned |
 | 13 | Add evals, observability, docs and release proof | QUAL-01..02, OBS-01, DOC-01, REL-01 | JIT | 12 | planned |
 
@@ -76,7 +76,7 @@ At least Sessionize/Pretalx-style public session sources are supported; generic 
 No core scraping path exists. Explicit URLs/exports/supported APIs feed the common pipeline and unsupported capabilities are clear. **Verified in PR #36.**
 
 ### 10 — Dedupe/confidence
-Every candidate is matched against Stars and queue state with inspectable fingerprints/reasons; ambiguous matches remain conflicts.
+Every candidate is matched against Stars and queue state with inspectable fingerprints/reasons; exact duplicates are blocked, ambiguous matches stay reviewable and Stars-unavailable runs cannot infer a clear duplicate state. **Verified in PR #38.**
 
 ### 11 — Review/publish MCP
 Users can list, edit, approve/reject/defer and publish; publish rechecks duplicates/policy and persists provenance.
