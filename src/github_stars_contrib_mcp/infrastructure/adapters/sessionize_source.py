@@ -51,9 +51,13 @@ def _fetch_error(result: SafeFetchResult) -> SourceAdapterError:
             result.error_code or "safe fetch blocked Sessionize source",
         )
     if result.status_code in {401, 403}:
-        return SourceAdapterError(AdapterErrorKind.AUTH, "Sessionize source was unauthorized")
+        return SourceAdapterError(
+            AdapterErrorKind.AUTH, "Sessionize source was unauthorized"
+        )
     if result.status_code == 429:
-        return SourceAdapterError(AdapterErrorKind.RATE_LIMIT, "Sessionize source was rate limited")
+        return SourceAdapterError(
+            AdapterErrorKind.RATE_LIMIT, "Sessionize source was rate limited"
+        )
     return SourceAdapterError(
         AdapterErrorKind.UNAVAILABLE,
         result.error_code or f"Sessionize fetch failed: {result.outcome.value}",
@@ -108,7 +112,9 @@ def _format_from_categories(
     return _string(session.get("format"))
 
 
-def _session_url(source: SourceRecord, session: dict[str, Any], session_id: str) -> str | None:
+def _session_url(
+    source: SourceRecord, session: dict[str, Any], session_id: str
+) -> str | None:
     for key in ("url", "sessionUrl"):
         value = session.get(key)
         if isinstance(value, str) and value.strip():
@@ -117,7 +123,9 @@ def _session_url(source: SourceRecord, session: dict[str, Any], session_id: str)
     if isinstance(template, str) and "{id}" in template:
         return template.replace("{id}", session_id)
     event_url = source.metadata.get("public_event_url")
-    return event_url.strip() if isinstance(event_url, str) and event_url.strip() else None
+    return (
+        event_url.strip() if isinstance(event_url, str) and event_url.strip() else None
+    )
 
 
 def _fingerprint(session: dict[str, Any], descriptor: SessionDescriptor) -> str:
@@ -125,14 +133,18 @@ def _fingerprint(session: dict[str, Any], descriptor: SessionDescriptor) -> str:
         "session": session,
         "normalized": {
             "title": descriptor.title,
-            "starts_at": descriptor.starts_at.isoformat() if descriptor.starts_at else None,
+            "starts_at": descriptor.starts_at.isoformat()
+            if descriptor.starts_at
+            else None,
             "ends_at": descriptor.ends_at.isoformat() if descriptor.ends_at else None,
             "url": descriptor.session_url,
             "recording_url": descriptor.recording_url,
             "format": descriptor.format_hint,
         },
     }
-    payload = json.dumps(material, sort_keys=True, ensure_ascii=False, default=str).encode()
+    payload = json.dumps(
+        material, sort_keys=True, ensure_ascii=False, default=str
+    ).encode()
     return hashlib.sha256(payload).hexdigest()
 
 
@@ -179,9 +191,13 @@ class SessionizeSourceAdapter:
         try:
             payload = json.loads(result.text)
         except json.JSONDecodeError as exc:
-            raise SourceAdapterError(AdapterErrorKind.PARSE, "invalid Sessionize JSON") from exc
+            raise SourceAdapterError(
+                AdapterErrorKind.PARSE, "invalid Sessionize JSON"
+            ) from exc
         if not isinstance(payload, dict):
-            raise SourceAdapterError(AdapterErrorKind.PARSE, "Sessionize payload must be an object")
+            raise SourceAdapterError(
+                AdapterErrorKind.PARSE, "Sessionize payload must be an object"
+            )
 
         sessions = payload.get("sessions")
         speakers = payload.get("speakers")
@@ -220,7 +236,9 @@ class SessionizeSourceAdapter:
                 for value in raw_speaker_ids or []
                 if isinstance(value, (str, int))
             )
-            speaker_records = [speaker_map[value] for value in speaker_ids if value in speaker_map]
+            speaker_records = [
+                speaker_map[value] for value in speaker_ids if value in speaker_map
+            ]
             speaker_names = tuple(
                 name
                 for speaker in speaker_records
