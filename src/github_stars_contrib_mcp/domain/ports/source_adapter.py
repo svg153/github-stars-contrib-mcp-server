@@ -33,6 +33,7 @@ class SourceCapability(BaseModel):
 
     status: CapabilityStatus
     reason: str | None = None
+    user_action: str | None = None
     requires_credentials: bool = False
     permissions: tuple[str, ...] = ()
 
@@ -65,6 +66,15 @@ class SourceAdapterError(RuntimeError):
 
 @runtime_checkable
 class SourceAdapter(Protocol):
+    """Provider adapter boundary.
+
+    Official OAuth/API implementations receive credentials through constructor/DI,
+    never through SourceRecord, evidence or fetched content. Capabilities expose
+    required scopes/credentials and failures explicitly. An adapter must not fall
+    back from a supported API to browser automation, authenticated session cookies
+    or scraping when provider access is unavailable.
+    """
+
     @property
     def name(self) -> str: ...
 

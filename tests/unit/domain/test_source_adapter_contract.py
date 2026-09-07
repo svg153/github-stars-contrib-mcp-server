@@ -27,7 +27,10 @@ class FakeAdapter:
         return source.source_type is SourceType.WEBSITE
 
     def capabilities(self, source: SourceRecord) -> SourceCapability:
-        return SourceCapability(status=CapabilityStatus.AVAILABLE)
+        return SourceCapability(
+            status=CapabilityStatus.AVAILABLE,
+            user_action="optional next step",
+        )
 
     async def iter_items(
         self,
@@ -52,7 +55,7 @@ class FakeAdapter:
         )
 
 
-def test_contract_is_runtime_fakeable() -> None:
+def test_contract_is_runtime_fakeable_and_capabilities_can_be_actionable() -> None:
     source = SourceRecord(
         id="website:https://example.com",
         source_type=SourceType.WEBSITE,
@@ -62,4 +65,6 @@ def test_contract_is_runtime_fakeable() -> None:
     adapter = FakeAdapter()
     assert isinstance(adapter, SourceAdapter)
     assert adapter.supports(source)
-    assert adapter.capabilities(source).status is CapabilityStatus.AVAILABLE
+    capability = adapter.capabilities(source)
+    assert capability.status is CapabilityStatus.AVAILABLE
+    assert capability.user_action == "optional next step"

@@ -25,6 +25,12 @@ from github_stars_contrib_mcp.infrastructure.adapters.rss_source import RSSSourc
 from github_stars_contrib_mcp.infrastructure.adapters.sessionize_source import (
     SessionizeSourceAdapter,
 )
+from github_stars_contrib_mcp.infrastructure.adapters.social_export_source import (
+    SocialExportSourceAdapter,
+)
+from github_stars_contrib_mcp.infrastructure.adapters.social_url_source import (
+    SocialURLSourceAdapter,
+)
 from github_stars_contrib_mcp.infrastructure.adapters.website_source import (
     WebsiteSourceAdapter,
 )
@@ -82,6 +88,8 @@ def build_discovery_runtime(
             SessionizeSourceAdapter(resolved_fetcher),
             PretalxSourceAdapter(resolved_fetcher),
             EventPageSourceAdapter(resolved_fetcher),
+            SocialURLSourceAdapter(),
+            SocialExportSourceAdapter(),
         )
     )
     return DiscoveryRuntime(
