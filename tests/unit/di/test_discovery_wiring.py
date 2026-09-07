@@ -134,3 +134,31 @@ def test_default_runtime_uses_dedicated_github_discovery_token(tmp_path) -> None
     )
 
     assert github.capabilities(source).status is CapabilityStatus.AVAILABLE
+
+
+def test_default_runtime_social_adapters_are_mutually_exclusive(tmp_path) -> None:
+    runtime = build_discovery_runtime(
+        repository=SQLiteDiscoveryRepository(tmp_path / "discovery.db"),
+        fetcher=FakeFetcher(),
+    )
+    social = [adapter for adapter in runtime.adapters if adapter.name.startswith("social-")]
+    explicit = SourceRecord(
+        id="x:https://x.com/alice/status/123",
+        source_type=SourceType.X,
+        url="https://x.com/alice/status/123",
+        ownership=OwnershipStatus.EXPLICIT,
+    )
+    imported = SourceRecord(
+        id="x:https://x.com/alice",
+        source_type=SourceType.X,
+        url="https://x.com/alice",
+        ownership=OwnershipStatus.EXPLICIT,
+        metadata={"social_mode": "export_import", "import_path": "/tmp/posts.json"},
+    )
+
+    assert [adapter.name for adapter in social if adapter.supports(explicit)] == [
+        "social-url"
+    ]
+    assert [adapter.name for adapter in social if adapter.supports(imported)] == [
+        "social-export"
+    ]
