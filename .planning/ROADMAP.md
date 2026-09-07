@@ -38,9 +38,9 @@ flowchart TD
 | 04 | Orchestrate adapters into persisted candidates | DISC-01..04 | #20 | 01,02,03 | verified; PR #28 |
 | 05 | Ship RSS/Atom + trusted website adapters | RSS-01..03 | #21 | 04 | verified; PR #29 |
 | 06 | Ship GitHub discovery adapter | GH-01..04 | #22 | 04 | verified; PR #30 |
-| 07 | Ship YouTube discovery adapter | YT-01..03 | #23 | 04 | ready after #30 |
-| 08 | Ship public speaker/event adapters | SPEAK-01..03 | JIT | 03,04 | planned |
-| 09 | Add compliant restricted-social ingestion | SOCIAL-01..03 | JIT | 03,04 | planned |
+| 07 | Ship YouTube discovery adapter | YT-01..03 | #23 | 04 | verified; PR #31 |
+| 08 | Ship public speaker/event adapters | SPEAK-01..03 | #32 | 03,04 | verified; PR #33 |
+| 09 | Add compliant restricted-social ingestion | SOCIAL-01..03 | #35 | 03,04 | ready after #33 |
 | 10 | Add dedupe, confidence and conflict resolution | DEDUPE-01..04 | JIT | 05-09 | planned |
 | 11 | Expose review and publish MCP workflows | REVIEW-01..02, PUB-01..03 | JIT | 10 | planned |
 | 12 | Package reusable skills/agent workflows | AGENT-01..05 | JIT | 11 | planned |
@@ -67,10 +67,10 @@ Feeds and trusted personal sites create normalized article/blog candidates, incl
 Supported APIs yield explainable, non-spammy candidates with stable URLs and tested pagination/rate-limit behavior. **Verified in PR #30.**
 
 ### 07 — YouTube
-Trusted channels sync through API/feed paths, preserve evidence and report credential/quota limits explicitly.
+Trusted channels sync through API/feed paths, preserve evidence and report credential/quota limits explicitly. **Verified in PR #31.**
 
 ### 08 — Speaker/events
-At least Sessionize/Pretalx-style public session sources are supported; generic event pages remain bounded to trusted URLs.
+At least Sessionize/Pretalx-style public session sources are supported; generic event pages remain bounded to trusted URLs. **Verified in PR #33.**
 
 ### 09 — Restricted social
 No core scraping path exists. Explicit URLs/exports/supported APIs feed the common pipeline and unsupported capabilities are clear.
