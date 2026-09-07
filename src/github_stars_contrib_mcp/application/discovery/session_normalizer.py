@@ -93,7 +93,9 @@ def _normalize_identity_url(value: str) -> str:
         port = parsed.port
     except ValueError:
         port = None
-    default_port = (scheme == "https" and port == 443) or (scheme == "http" and port == 80)
+    default_port = (scheme == "https" and port == 443) or (
+        scheme == "http" and port == 80
+    )
     netloc = host if port is None or default_port else f"{host}:{port}"
     path = parsed.path.rstrip("/")
     return urlunsplit((scheme, netloc, path, parsed.query, ""))
