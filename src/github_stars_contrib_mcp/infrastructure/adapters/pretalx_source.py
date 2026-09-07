@@ -58,9 +58,13 @@ def _fetch_error(result: SafeFetchResult, provider: str) -> SourceAdapterError:
             result.error_code or f"safe fetch blocked {provider} source",
         )
     if result.status_code in {401, 403}:
-        return SourceAdapterError(AdapterErrorKind.AUTH, f"{provider} source was unauthorized")
+        return SourceAdapterError(
+            AdapterErrorKind.AUTH, f"{provider} source was unauthorized"
+        )
     if result.status_code == 429:
-        return SourceAdapterError(AdapterErrorKind.RATE_LIMIT, f"{provider} source was rate limited")
+        return SourceAdapterError(
+            AdapterErrorKind.RATE_LIMIT, f"{provider} source was rate limited"
+        )
     return SourceAdapterError(
         AdapterErrorKind.UNAVAILABLE,
         result.error_code or f"{provider} fetch failed: {result.outcome.value}",
@@ -78,7 +82,9 @@ def _results(payload: Any, *, label: str) -> list[dict[str, Any]]:
     raise SourceAdapterError(AdapterErrorKind.PARSE, f"invalid Pretalx {label} payload")
 
 
-def _speaker_values(submission: dict[str, Any]) -> tuple[tuple[str, ...], tuple[str, ...], tuple[str, ...]]:
+def _speaker_values(
+    submission: dict[str, Any],
+) -> tuple[tuple[str, ...], tuple[str, ...], tuple[str, ...]]:
     ids: list[str] = []
     names: list[str] = []
     urls: list[str] = []
@@ -139,7 +145,9 @@ def _slot_map(slots: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
     return result
 
 
-def _session_url(source: SourceRecord, submission: dict[str, Any], submission_id: str) -> str | None:
+def _session_url(
+    source: SourceRecord, submission: dict[str, Any], submission_id: str
+) -> str | None:
     value = submission.get("url")
     if isinstance(value, str) and value.strip():
         return value.strip()
@@ -156,13 +164,19 @@ def _format_hint(submission: dict[str, Any]) -> str | None:
     return _string(value)
 
 
-def _fingerprint(submission: dict[str, Any], slot: dict[str, Any] | None, descriptor: SessionDescriptor) -> str:
+def _fingerprint(
+    submission: dict[str, Any],
+    slot: dict[str, Any] | None,
+    descriptor: SessionDescriptor,
+) -> str:
     material = {
         "submission": submission,
         "slot": slot,
         "normalized": {
             "title": descriptor.title,
-            "starts_at": descriptor.starts_at.isoformat() if descriptor.starts_at else None,
+            "starts_at": descriptor.starts_at.isoformat()
+            if descriptor.starts_at
+            else None,
             "ends_at": descriptor.ends_at.isoformat() if descriptor.ends_at else None,
             "url": descriptor.session_url,
             "format": descriptor.format_hint,
@@ -233,7 +247,9 @@ class PretalxSourceAdapter:
         schedule_url = source.metadata.get("schedule_url")
         slots: list[dict[str, Any]] = []
         if isinstance(schedule_url, str) and schedule_url.strip():
-            schedule_payload = await self._fetch_json(schedule_url.strip(), label="schedule")
+            schedule_payload = await self._fetch_json(
+                schedule_url.strip(), label="schedule"
+            )
             slots = _results(schedule_payload, label="schedule")
         slots_by_submission = _slot_map(slots)
 
