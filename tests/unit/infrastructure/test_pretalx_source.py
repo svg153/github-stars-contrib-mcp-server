@@ -67,7 +67,9 @@ SCHEDULE = {
 }
 
 
-async def test_pretalx_matches_stable_speaker_id_and_preserves_schedule_updates() -> None:
+async def test_pretalx_matches_stable_speaker_id_and_preserves_schedule_updates() -> (
+    None
+):
     submissions_url = "https://pretalx.example/api/events/conf/submissions/"
     schedule_url = "https://pretalx.example/api/events/conf/schedule/"
     fetcher = FakeFetcher({submissions_url: SUBMISSIONS, schedule_url: SCHEDULE})
@@ -105,6 +107,8 @@ async def test_pretalx_matches_stable_speaker_id_and_preserves_schedule_updates(
             }
         ]
     }
-    updated = [batch async for batch in adapter.iter_items(source, first.next_cursor)][0]
+    updated = [batch async for batch in adapter.iter_items(source, first.next_cursor)][
+        0
+    ]
     assert len(updated.emissions) == 1
     assert updated.emissions[0].item.published_at.hour == 10
