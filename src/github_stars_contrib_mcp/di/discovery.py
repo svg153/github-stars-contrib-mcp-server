@@ -10,8 +10,10 @@ from github_stars_contrib_mcp.application.discovery.orchestrator import (
     DiscoveryOrchestrator,
 )
 from github_stars_contrib_mcp.config.settings import Settings
+from github_stars_contrib_mcp.di.container import get_stars_api
 from github_stars_contrib_mcp.domain.ports.content_fetcher import ContentFetcher
 from github_stars_contrib_mcp.domain.ports.source_adapter import SourceAdapter
+from github_stars_contrib_mcp.domain.ports.stars_api import StarsAPIPort
 from github_stars_contrib_mcp.infrastructure.adapters.event_page_source import (
     EventPageSourceAdapter,
 )
@@ -51,6 +53,7 @@ class DiscoveryRuntime:
     repository: SQLiteDiscoveryRepository
     fetcher: ContentFetcher
     adapters: tuple[SourceAdapter, ...]
+    stars_api: StarsAPIPort
     orchestrator: DiscoveryOrchestrator
 
 
@@ -60,6 +63,7 @@ def build_discovery_runtime(
     repository: SQLiteDiscoveryRepository | None = None,
     fetcher: ContentFetcher | None = None,
     adapters: Sequence[SourceAdapter] | None = None,
+    stars_api: StarsAPIPort | None = None,
     db_path: str | Path | None = None,
 ) -> DiscoveryRuntime:
     """Build discovery services without registering any MCP tools."""
@@ -71,6 +75,7 @@ def build_discovery_runtime(
             db_path or resolved_settings.discovery_db_path
         )
     resolved_fetcher = fetcher or SafeHTTPFetcher()
+    resolved_stars_api = stars_api or get_stars_api(resolved_settings)
     youtube_key = resolved_settings.youtube_api_key
     youtube_adapter: SourceAdapter
     if isinstance(youtube_key, str) and youtube_key.strip():
@@ -96,8 +101,10 @@ def build_discovery_runtime(
         repository=resolved_repository,
         fetcher=resolved_fetcher,
         adapters=resolved_adapters,
+        stars_api=resolved_stars_api,
         orchestrator=DiscoveryOrchestrator(
             resolved_repository,
             resolved_adapters,
+            resolved_stars_api,
         ),
     )
