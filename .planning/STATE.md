@@ -1,17 +1,17 @@
 # State — v0.3.0
 
 ## Current position
-- **Phase:** 09 — Restricted social sources
+- **Phase:** 10 — Deduplication, confidence and conflict handling
 - **Plan:** 01
-- **Status:** ready after Phase 08 PR #33 merges
+- **Status:** Phase 09 verified; ready after PR #36 merges
 - **Epic:** #16
-- **Phase issue:** #35
-- **Next branch:** `gsd/phase-09-restricted-social-sources`
+- **Phase issue:** #37
+- **Next branch:** `gsd/phase-10-dedupe-confidence`
 
 ## Progress
-- Requirements complete: 29
-- Phases complete: 8/13 after PR #33 merges
-- Seeded issues: #16-#23, #32, #35
+- Requirements complete: 32
+- Phases complete: 9/13 after PR #36 merges
+- Seeded/JIT issues: #16-#23, #32, #35, #37
 
 ## Phase 01 evidence
 - Implementation PR: #25
@@ -53,6 +53,11 @@
 - CI: GitHub Actions `tests` run #66 succeeded on `75472bc99148a891f4cc9c9ae7361546aade22a4` before GSD closeout.
 - Verification: `.planning/phases/08-speaker-event-adapters/VERIFICATION.md`.
 
+## Phase 09 evidence
+- Implementation PR: #36
+- CI: GitHub Actions `tests` run #71 succeeded on `ea80b706ff43529cdd4a2e9c42b8dfa82cd1422c` before GSD closeout.
+- Verification: `.planning/phases/09-restricted-social-sources/VERIFICATION.md`.
+
 ## Decisions
 - MCP/Stars REST is the publication boundary.
 - SQLite is the local discovery store.
@@ -76,10 +81,13 @@
 - Sessionize/Pretalx discovery uses public event data only; unavailable public APIs do not trigger scraping fallbacks.
 - Generic event-page discovery requires an explicit/verified `EVENT_PAGE`, performs one bounded safe fetch and treats JSON-LD/OpenGraph/visible text as untrusted evidence.
 - GitHub Stars uses `SPEAKING` as the contribution type; talk/workshop/keynote detail remains evidence-backed metadata.
+- Restricted social capability modelling contains no scrape/browser mode; unsupported access remains explicit.
+- Social profile URLs are not contributions. Exact post URLs, local neutral exports or a deployment-supplied compliant API adapter are required.
+- Social exports remain local; official API/OAuth secrets are runtime-only and never persisted as discovery metadata/evidence/cursors.
 - Small-model execution is a first-class constraint: no phase plan should leave architecture/product decisions to the executor.
 
 ## Blockers
-None for Phase 09 after PR #33 merges.
+None for Phase 10 after PR #36 merges.
 
 ## Handoff
-Execute `.planning/phases/09-restricted-social-sources/09-01-PLAN.md` from the merged Phase 08 main. Model provider capabilities first, with no scrape mode. Add explicit social URL ingestion and local-only export/import paths through the existing provider-neutral pipeline. Unsupported X/LinkedIn access must remain explicit and actionable; never fall back to browser automation, authenticated session cookies or bypass scraping.
+Execute `.planning/phases/10-dedupe-confidence/10-01-PLAN.md` from merged Phase 09 main using issue #37. Implement inspectable fingerprints first, then duplicate matching against current Stars entries and the local queue, then separate ownership/contribution confidence. Integrate those deterministic results into orchestration before `review_ready`; exact duplicates must be blocked and ambiguous matches must stay reviewable conflicts rather than being silently merged.
