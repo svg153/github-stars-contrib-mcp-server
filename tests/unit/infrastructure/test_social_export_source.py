@@ -4,7 +4,11 @@ import json
 
 import pytest
 
-from github_stars_contrib_mcp.domain.discovery import OwnershipStatus, SourceRecord, SourceType
+from github_stars_contrib_mcp.domain.discovery import (
+    OwnershipStatus,
+    SourceRecord,
+    SourceType,
+)
 from github_stars_contrib_mcp.domain.ports.source_adapter import SourceAdapterError
 from github_stars_contrib_mcp.infrastructure.adapters.social_export_source import (
     SocialExportSourceAdapter,
@@ -60,9 +64,7 @@ async def test_json_import_is_local_only_and_idempotent(tmp_path) -> None:
     assert emission.evidence[0].data["network_fetch"] is False
     assert emission.evidence[0].data["uploaded"] is False
 
-    replay = [
-        batch async for batch in adapter.iter_items(source, first.next_cursor)
-    ][0]
+    replay = [batch async for batch in adapter.iter_items(source, first.next_cursor)][0]
     assert replay.emissions == ()
 
 

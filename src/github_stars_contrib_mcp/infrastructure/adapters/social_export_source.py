@@ -25,7 +25,12 @@ from github_stars_contrib_mcp.application.discovery.untrusted_content import (
     UNTRUSTED_LABEL,
     sanitize_untrusted_content,
 )
-from github_stars_contrib_mcp.domain.discovery import Evidence, SourceItem, SourceRecord, SourceType
+from github_stars_contrib_mcp.domain.discovery import (
+    Evidence,
+    SourceItem,
+    SourceRecord,
+    SourceType,
+)
 from github_stars_contrib_mcp.domain.ports.source_adapter import (
     AdapterEmission,
     AdapterErrorKind,
@@ -79,37 +84,61 @@ def _load_records(path: Path, expected_provider: SourceType) -> list[dict[str, A
     try:
         raw = path.read_bytes()
     except OSError as exc:
-        raise SourceAdapterError(AdapterErrorKind.UNAVAILABLE, f"cannot read import file: {exc}") from exc
+        raise SourceAdapterError(
+            AdapterErrorKind.UNAVAILABLE, f"cannot read import file: {exc}"
+        ) from exc
     if len(raw) > _MAX_IMPORT_BYTES:
-        raise SourceAdapterError(AdapterErrorKind.SECURITY, "social import exceeds 10 MiB limit")
+        raise SourceAdapterError(
+            AdapterErrorKind.SECURITY, "social import exceeds 10 MiB limit"
+        )
     try:
         text = raw.decode("utf-8-sig")
     except UnicodeDecodeError as exc:
-        raise SourceAdapterError(AdapterErrorKind.PARSE, "social import must be UTF-8") from exc
+        raise SourceAdapterError(
+            AdapterErrorKind.PARSE, "social import must be UTF-8"
+        ) from exc
 
     suffix = path.suffix.lower()
     if suffix == ".json":
         try:
             payload = json.loads(text)
         except json.JSONDecodeError as exc:
-            raise SourceAdapterError(AdapterErrorKind.PARSE, "invalid social import JSON") from exc
+            raise SourceAdapterError(
+                AdapterErrorKind.PARSE, "invalid social import JSON"
+            ) from exc
         if not isinstance(payload, dict) or payload.get("schema_version") != 1:
-            raise SourceAdapterError(AdapterErrorKind.PARSE, "JSON social import requires schema_version 1")
+            raise SourceAdapterError(
+                AdapterErrorKind.PARSE, "JSON social import requires schema_version 1"
+            )
         if _provider(payload.get("provider")) is not expected_provider:
-            raise SourceAdapterError(AdapterErrorKind.PARSE, "social import provider does not match source")
+            raise SourceAdapterError(
+                AdapterErrorKind.PARSE, "social import provider does not match source"
+            )
         records = payload.get("posts")
-        if not isinstance(records, list) or not all(isinstance(row, dict) for row in records):
-            raise SourceAdapterError(AdapterErrorKind.PARSE, "JSON social import posts must be objects")
+        if not isinstance(records, list) or not all(
+            isinstance(row, dict) for row in records
+        ):
+            raise SourceAdapterError(
+                AdapterErrorKind.PARSE, "JSON social import posts must be objects"
+            )
         return list(records)
     if suffix == ".csv":
         rows = list(csv.DictReader(io.StringIO(text)))
         for row in rows:
             if str(row.get("schema_version", "")).strip() != "1":
-                raise SourceAdapterError(AdapterErrorKind.PARSE, "CSV social import requires schema_version 1")
+                raise SourceAdapterError(
+                    AdapterErrorKind.PARSE,
+                    "CSV social import requires schema_version 1",
+                )
             if _provider(row.get("provider")) is not expected_provider:
-                raise SourceAdapterError(AdapterErrorKind.PARSE, "social import provider does not match source")
+                raise SourceAdapterError(
+                    AdapterErrorKind.PARSE,
+                    "social import provider does not match source",
+                )
         return [dict(row) for row in rows]
-    raise SourceAdapterError(AdapterErrorKind.PARSE, "social import must use .json or .csv")
+    raise SourceAdapterError(
+        AdapterErrorKind.PARSE, "social import must use .json or .csv"
+    )
 
 
 def _fingerprint(record: dict[str, Any], canonical_url: str) -> str:
@@ -172,14 +201,21 @@ class SocialExportSourceAdapter:
 
         for record in records:
             raw_url = _string(record.get("url"))
-            if raw_url is None or not is_supported_social_post_url(source.source_type, raw_url):
-                raise SourceAdapterError(AdapterErrorKind.PARSE, "social import contains a non-post or invalid URL")
+            if raw_url is None or not is_supported_social_post_url(
+                source.source_type, raw_url
+            ):
+                raise SourceAdapterError(
+                    AdapterErrorKind.PARSE,
+                    "social import contains a non-post or invalid URL",
+                )
             canonical = canonicalize_source_url(raw_url)
             supplied_id = _string(record.get("id"))
             external_id = (
                 f"{source.source_type.value}:{supplied_id}"
                 if supplied_id
-                else social_post_external_id(source.source_type, canonical.canonical_url)
+                else social_post_external_id(
+                    source.source_type, canonical.canonical_url
+                )
             )
             fingerprint = _fingerprint(record, canonical.canonical_url)
             next_fingerprints[external_id] = fingerprint

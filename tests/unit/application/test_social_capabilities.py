@@ -6,7 +6,11 @@ from github_stars_contrib_mcp.application.discovery.social_capabilities import (
     is_supported_social_post_url,
     social_access_mode,
 )
-from github_stars_contrib_mcp.domain.discovery import OwnershipStatus, SourceRecord, SourceType
+from github_stars_contrib_mcp.domain.discovery import (
+    OwnershipStatus,
+    SourceRecord,
+    SourceType,
+)
 from github_stars_contrib_mcp.domain.ports.source_adapter import CapabilityStatus
 
 
