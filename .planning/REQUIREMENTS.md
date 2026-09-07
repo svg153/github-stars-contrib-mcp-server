@@ -35,9 +35,9 @@
 - [x] **YT-01** — Trusted YouTube channels sync via supported API/feed mechanisms.
 - [x] **YT-02** — Videos normalize with canonical channel/video evidence.
 - [x] **YT-03** — Missing credentials/quota produces explicit limited capability, never scraping.
-- [ ] **SPEAK-01** — A provider-neutral session/event contract supports public speaker platforms.
-- [ ] **SPEAK-02** — Sessionize/Pretalx-style public sources can produce talk/workshop candidates.
-- [ ] **SPEAK-03** — Generic event-page extraction is limited to trusted URLs and reviewable evidence.
+- [x] **SPEAK-01** — A provider-neutral session/event contract supports public speaker platforms.
+- [x] **SPEAK-02** — Sessionize/Pretalx-style public sources can produce talk/workshop candidates.
+- [x] **SPEAK-03** — Generic event-page extraction is limited to trusted URLs and reviewable evidence.
 - [ ] **SOCIAL-01** — X/LinkedIn are optional restricted providers, not scraper targets.
 - [ ] **SOCIAL-02** — Explicit URLs, exports or supported APIs feed the common source-item contract.
 - [ ] **SOCIAL-03** — Unsupported access returns actionable capability status rather than bypass behavior.

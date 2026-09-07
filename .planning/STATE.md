@@ -1,17 +1,17 @@
 # State — v0.3.0
 
 ## Current position
-- **Phase:** 08 — Speaker and event discovery
+- **Phase:** 09 — Restricted social sources
 - **Plan:** 01
-- **Status:** ready after Phase 07 PR #31 merges
+- **Status:** ready after Phase 08 PR #33 merges
 - **Epic:** #16
-- **Phase issue:** #32
-- **Next branch:** `gsd/phase-08-speaker-event-adapters`
+- **Phase issue:** #35
+- **Next branch:** `gsd/phase-09-restricted-social-sources`
 
 ## Progress
-- Requirements complete: 26
-- Phases complete: 7/13 after PR #31 merges
-- Seeded issues: #16-#23, #32
+- Requirements complete: 29
+- Phases complete: 8/13 after PR #33 merges
+- Seeded issues: #16-#23, #32, #35
 
 ## Phase 01 evidence
 - Implementation PR: #25
@@ -48,6 +48,11 @@
 - CI: GitHub Actions `tests` run #56 succeeded on `9342ca2921b997d3d88414cc94219aaaf85d0530` before GSD closeout.
 - Verification: `.planning/phases/07-youtube-adapter/VERIFICATION.md`.
 
+## Phase 08 evidence
+- Implementation PR: #33
+- CI: GitHub Actions `tests` run #66 succeeded on `75472bc99148a891f4cc9c9ae7361546aade22a4` before GSD closeout.
+- Verification: `.planning/phases/08-speaker-event-adapters/VERIFICATION.md`.
+
 ## Decisions
 - MCP/Stars REST is the publication boundary.
 - SQLite is the local discovery store.
@@ -67,10 +72,14 @@
 - YouTube discovery prefers Data API v3 uploads playlists plus batched video metadata rather than search/list scraping.
 - `YOUTUBE_API_KEY` is optional and isolated from Stars credentials; missing credentials fall back only to the public Atom channel feed when a canonical channel ID is known.
 - YouTube HTML scraping and ownership inference from individual video URLs are explicitly excluded.
+- Speaker/session ownership requires exact verified identity or provider/profile identifiers; fuzzy-name-only matching cannot establish ownership.
+- Sessionize/Pretalx discovery uses public event data only; unavailable public APIs do not trigger scraping fallbacks.
+- Generic event-page discovery requires an explicit/verified `EVENT_PAGE`, performs one bounded safe fetch and treats JSON-LD/OpenGraph/visible text as untrusted evidence.
+- GitHub Stars uses `SPEAKING` as the contribution type; talk/workshop/keynote detail remains evidence-backed metadata.
 - Small-model execution is a first-class constraint: no phase plan should leave architecture/product decisions to the executor.
 
 ## Blockers
-None for Phase 08 after PR #31 merges.
+None for Phase 09 after PR #33 merges.
 
 ## Handoff
-Execute `.planning/phases/08-speaker-event-adapters/08-01-PLAN.md` from the merged Phase 07 main. Normalize speaker/session evidence first, then add Sessionize-style and Pretalx-style public adapters. Speaker ownership requires verified identity evidence rather than fuzzy-name-only matching. Generic event pages are explicit/verified URLs only, pass through safe fetch/untrusted-content handling, and never recurse into a crawl.
+Execute `.planning/phases/09-restricted-social-sources/09-01-PLAN.md` from the merged Phase 08 main. Model provider capabilities first, with no scrape mode. Add explicit social URL ingestion and local-only export/import paths through the existing provider-neutral pipeline. Unsupported X/LinkedIn access must remain explicit and actionable; never fall back to browser automation, authenticated session cookies or bypass scraping.
