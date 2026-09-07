@@ -117,7 +117,10 @@ class _EventPageParser(HTMLParser):
             content = (values.get("content") or "").strip()
             if key.startswith("og:") and content:
                 self.og[key] = content
-        elif lowered == "script" and (values.get("type") or "").lower() == "application/ld+json":
+        elif (
+            lowered == "script"
+            and (values.get("type") or "").lower() == "application/ld+json"
+        ):
             self._in_json_ld = True
             self._json_ld_parts = []
 
@@ -262,7 +265,9 @@ class EventPageSourceAdapter:
                 continue
             session_url = _event_url(source.url, result.final_url, event)
             raw_id = event.get("@id") or event.get("identifier") or session_url
-            external_id = f"event-page:{hashlib.sha256(str(raw_id).encode()).hexdigest()[:24]}"
+            external_id = (
+                f"event-page:{hashlib.sha256(str(raw_id).encode()).hexdigest()[:24]}"
+            )
             speaker_names, speaker_urls = _identity_values(
                 event.get("speaker") or event.get("performer")
             )
@@ -271,7 +276,9 @@ class EventPageSourceAdapter:
                 speaker_names=speaker_names,
                 speaker_urls=speaker_urls,
             )
-            description = _string(event.get("description")) or parser.og.get("og:description")
+            description = _string(event.get("description")) or parser.og.get(
+                "og:description"
+            )
             if description:
                 description = sanitize_untrusted_content(
                     description,
@@ -295,7 +302,8 @@ class EventPageSourceAdapter:
                 speaker_names=speaker_names,
                 speaker_urls=speaker_urls,
                 session_url=session_url,
-                recording_url=_string(event.get("recordedIn")) or _string(event.get("video")),
+                recording_url=_string(event.get("recordedIn"))
+                or _string(event.get("video")),
                 slides_url=_string(event.get("workFeatured")),
                 format_hint=_string(event.get("eventStatus")),
                 metadata={
