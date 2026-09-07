@@ -38,9 +38,9 @@
 - [x] **SPEAK-01** — A provider-neutral session/event contract supports public speaker platforms.
 - [x] **SPEAK-02** — Sessionize/Pretalx-style public sources can produce talk/workshop candidates.
 - [x] **SPEAK-03** — Generic event-page extraction is limited to trusted URLs and reviewable evidence.
-- [ ] **SOCIAL-01** — X/LinkedIn are optional restricted providers, not scraper targets.
-- [ ] **SOCIAL-02** — Explicit URLs, exports or supported APIs feed the common source-item contract.
-- [ ] **SOCIAL-03** — Unsupported access returns actionable capability status rather than bypass behavior.
+- [x] **SOCIAL-01** — X/LinkedIn are optional restricted providers, not scraper targets.
+- [x] **SOCIAL-02** — Explicit URLs, exports or supported APIs feed the common source-item contract.
+- [x] **SOCIAL-03** — Unsupported access returns actionable capability status rather than bypass behavior.
 
 ## Deduplication and confidence
 - [ ] **DEDUPE-01** — Candidates are compared with existing Stars entries before review and publish.
