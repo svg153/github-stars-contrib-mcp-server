@@ -77,7 +77,9 @@ PAYLOAD = {
 }
 
 
-async def test_sessionize_emits_only_verified_speaker_sessions_and_is_incremental() -> None:
+async def test_sessionize_emits_only_verified_speaker_sessions_and_is_incremental() -> (
+    None
+):
     fetcher = FakeFetcher(PAYLOAD)
     adapter = SessionizeSourceAdapter(fetcher)
     source = SourceRecord(
