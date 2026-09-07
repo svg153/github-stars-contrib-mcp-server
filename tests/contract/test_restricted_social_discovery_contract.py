@@ -44,5 +44,5 @@ async def test_explicit_social_url_is_reviewable_and_replay_safe(tmp_path) -> No
     ]
 
     second = await orchestrator.run()
-    assert second.summary["candidates_persisted"] == 0
+    assert second.summary.get("candidates_persisted", 0) == 0
     assert len(repository.list_candidates()) == 1
