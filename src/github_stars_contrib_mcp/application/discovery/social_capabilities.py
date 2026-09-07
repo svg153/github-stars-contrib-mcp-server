@@ -90,11 +90,7 @@ def is_supported_social_post_url(source_type: SourceType, url: str) -> bool:
     if source_type is SourceType.X:
         return _X_STATUS_RE.search(path) is not None
     lowered = path.lower()
-    return (
-        "/posts/" in lowered
-        or "/feed/update/" in lowered
-        or "/pulse/" in lowered
-    )
+    return "/posts/" in lowered or "/feed/update/" in lowered or "/pulse/" in lowered
 
 
 def social_post_external_id(source_type: SourceType, url: str) -> str:
@@ -152,9 +148,10 @@ def assess_social_capability(source: SourceRecord) -> RestrictedSocialCapability
             user_action="register the exact X or LinkedIn post URL",
         )
     if mode is SocialAccessMode.EXPORT_IMPORT:
-        if isinstance(source.metadata.get("import_path"), str) and str(
-            source.metadata["import_path"]
-        ).strip():
+        if (
+            isinstance(source.metadata.get("import_path"), str)
+            and str(source.metadata["import_path"]).strip()
+        ):
             return RestrictedSocialCapability(
                 provider=provider,
                 mode=mode,

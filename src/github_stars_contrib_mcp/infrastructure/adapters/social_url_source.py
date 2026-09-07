@@ -21,7 +21,12 @@ from github_stars_contrib_mcp.application.discovery.untrusted_content import (
     UNTRUSTED_LABEL,
     sanitize_untrusted_content,
 )
-from github_stars_contrib_mcp.domain.discovery import Evidence, SourceItem, SourceRecord, SourceType
+from github_stars_contrib_mcp.domain.discovery import (
+    Evidence,
+    SourceItem,
+    SourceRecord,
+    SourceType,
+)
 from github_stars_contrib_mcp.domain.ports.source_adapter import (
     AdapterEmission,
     AdapterErrorKind,
@@ -109,7 +114,9 @@ class SocialURLSourceAdapter:
             )
 
         canonical = canonicalize_source_url(source.url)
-        external_id = social_post_external_id(source.source_type, canonical.canonical_url)
+        external_id = social_post_external_id(
+            source.source_type, canonical.canonical_url
+        )
         fingerprint = _fingerprint(source, canonical.canonical_url)
         if (cursor or {}).get("fingerprint") == fingerprint:
             yield SourceBatch(next_cursor={"fingerprint": fingerprint})

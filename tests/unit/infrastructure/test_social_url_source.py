@@ -2,7 +2,11 @@
 
 import pytest
 
-from github_stars_contrib_mcp.domain.discovery import OwnershipStatus, SourceRecord, SourceType
+from github_stars_contrib_mcp.domain.discovery import (
+    OwnershipStatus,
+    SourceRecord,
+    SourceType,
+)
 from github_stars_contrib_mcp.domain.ports.source_adapter import (
     CapabilityStatus,
     SourceAdapterError,
@@ -60,9 +64,7 @@ async def test_user_metadata_is_preserved_and_replay_is_idempotent() -> None:
     assert item.published_at is not None
     assert first.emissions[0].evidence[0].data["security_label"]
 
-    replay = [
-        batch async for batch in adapter.iter_items(source, first.next_cursor)
-    ][0]
+    replay = [batch async for batch in adapter.iter_items(source, first.next_cursor)][0]
     assert replay.emissions == ()
 
 

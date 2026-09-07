@@ -2,12 +2,20 @@
 
 import pytest
 
-from github_stars_contrib_mcp.application.discovery.orchestrator import DiscoveryOrchestrator
-from github_stars_contrib_mcp.domain.discovery import OwnershipStatus, SourceRecord, SourceType
+from github_stars_contrib_mcp.application.discovery.orchestrator import (
+    DiscoveryOrchestrator,
+)
+from github_stars_contrib_mcp.domain.discovery import (
+    OwnershipStatus,
+    SourceRecord,
+    SourceType,
+)
 from github_stars_contrib_mcp.infrastructure.adapters.social_url_source import (
     SocialURLSourceAdapter,
 )
-from github_stars_contrib_mcp.infrastructure.persistence import SQLiteDiscoveryRepository
+from github_stars_contrib_mcp.infrastructure.persistence import (
+    SQLiteDiscoveryRepository,
+)
 
 
 @pytest.mark.asyncio

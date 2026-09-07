@@ -141,7 +141,9 @@ def test_default_runtime_social_adapters_are_mutually_exclusive(tmp_path) -> Non
         repository=SQLiteDiscoveryRepository(tmp_path / "discovery.db"),
         fetcher=FakeFetcher(),
     )
-    social = [adapter for adapter in runtime.adapters if adapter.name.startswith("social-")]
+    social = [
+        adapter for adapter in runtime.adapters if adapter.name.startswith("social-")
+    ]
     explicit = SourceRecord(
         id="x:https://x.com/alice/status/123",
         source_type=SourceType.X,
