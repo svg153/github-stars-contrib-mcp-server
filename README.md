@@ -48,6 +48,33 @@ The old GraphQL `update_contribution(server_id, partial_data)` contract is inten
 
 Choose stable IDs such as `talk:commit-conf-2026` or `post:my-article-slug` for repeatable idempotent writes.
 
+## Autonomous discovery and review
+
+v0.3 adds a deterministic discovery/review pipeline behind MCP tools. The reusable orchestration layer lives in `skills/` and `agents/`; it does not duplicate provider or publication logic.
+
+Discovery/review tools:
+
+- `bootstrap_sources()`
+- `list_sources(enabled_only=false)`
+- `add_source(url, metadata, source_type)`
+- `sync_source(source_id, dry_run=false)`
+- `discover_contributions(source_ids, dry_run=false)`
+- `list_candidates(states)`
+- `get_candidate(candidate_id)`
+- `review_candidate(candidate_id, decision, reason, edits)`
+- `publish_approved_candidates(candidate_ids, dry_run=true)`
+
+Included skills:
+
+- `discover-my-contributions` — bootstrap/sync trusted sources and build a review queue.
+- `sync-source` — diagnose or refresh one source without provider bypasses.
+- `review-candidates` — inspect evidence/provenance/conflicts and record explicit human decisions.
+- `publish-approved` — mandatory dry-run first, then real publish only after explicit current user intent.
+
+Host-neutral agent guidance is under `agents/`. Point an MCP-capable host at this server and make the repository `skills/` directory available through the host's normal skill-loading mechanism. Keep all secrets in environment variables or the host's secret store; do not copy credentials into skill or agent Markdown.
+
+Deterministic server policy remains authoritative: fetched text is `UNTRUSTED_SOURCE_CONTENT`, high confidence never auto-approves, and publication only accepts already-approved candidates after a fresh Stars duplicate/policy check. X/LinkedIn scraping/browser bypasses are not part of the workflow.
+
 ## Running
 
 ```bash
@@ -72,6 +99,12 @@ Unit tests run on every PR/push:
 
 ```bash
 pytest -q tests/unit
+```
+
+Skill contracts:
+
+```bash
+pytest -q tests/skills/test_skill_contracts.py
 ```
 
 Stars API integration tests are isolated in a separate workflow and use `STARS_API_TOKEN` when configured. Mutation tests remain opt-in with `STARS_E2E_MUTATE=1`; they use stable PUT client IDs because REST does not provide DELETE cleanup.
