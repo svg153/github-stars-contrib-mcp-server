@@ -17,6 +17,8 @@ from .tools import (  # noqa: F401,E402
     create_contributions,
     create_link,
     delete_link,
+    discovery_candidates,
+    discovery_sources,
     export_contributions,
     get_contributions_stats,
     get_stars,
@@ -24,6 +26,7 @@ from .tools import (  # noqa: F401,E402
     get_user_data,
     list_contributions,
     metrics,
+    publish_candidates,
     search_contributions,
     update_contributions,
     update_link,
@@ -64,7 +67,8 @@ def main() -> None:
                 await asyncio.wait_for(initialize_server(), timeout=2)
             except TimeoutError:
                 logger.warning(
-                    "Stars client initialization timed out; continuing without validation"
+                    "Stars client initialization timed out; "
+                    "continuing without validation"
                 )
 
         asyncio.run(_init_with_timeout())
