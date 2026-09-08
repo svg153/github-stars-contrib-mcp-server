@@ -42,9 +42,9 @@ flowchart TD
 | 08 | Ship public speaker/event adapters | SPEAK-01..03 | #32 | 03,04 | verified; PR #33 |
 | 09 | Add compliant restricted-social ingestion | SOCIAL-01..03 | #35 | 03,04 | verified; PR #36 |
 | 10 | Add dedupe, confidence and conflict resolution | DEDUPE-01..04 | #37 | 05-09 | verified; PR #38 |
-| 11 | Expose review and publish MCP workflows | REVIEW-01..02, PUB-01..03 | #39 | 10 | ready after #38 |
-| 12 | Package reusable skills/agent workflows | AGENT-01..05 | JIT | 11 | planned |
-| 13 | Add evals, observability, docs and release proof | QUAL-01..02, OBS-01, DOC-01, REL-01 | JIT | 12 | planned |
+| 11 | Expose review and publish MCP workflows | REVIEW-01..02, PUB-01..03 | #39 | 10 | verified; PR #40 |
+| 12 | Package reusable skills/agent workflows | AGENT-01..05 | #41 | 11 | verified; PR #42 |
+| 13 | Add evals, observability, docs and release proof | QUAL-01..02, OBS-01, DOC-01, REL-01 | #43 | 12 | ready after #42 |
 
 ## Phase exit criteria
 
@@ -79,10 +79,10 @@ No core scraping path exists. Explicit URLs/exports/supported APIs feed the comm
 Every candidate is matched against Stars and queue state with inspectable fingerprints/reasons; exact duplicates are blocked, ambiguous matches stay reviewable and Stars-unavailable runs cannot infer a clear duplicate state. **Verified in PR #38.**
 
 ### 11 — Review/publish MCP
-Users can list, edit, approve/reject/defer and publish; publish rechecks duplicates/policy and persists provenance.
+Users can list, edit, approve/reject/defer and publish; publish rechecks duplicates/policy and persists provenance. **Verified in PR #40.**
 
 ### 12 — Skills/agents
-Four thin workflows compose MCP/application tools instead of duplicating business rules, and untrusted text has no policy/write authority.
+Four thin workflows compose MCP/application tools instead of duplicating business rules, and untrusted text has no policy/write authority. **Verified in PR #42; implementation gate run #86.**
 
 ### 13 — Quality/release
 Offline gates, labeled eval corpus, privacy-safe telemetry, docs and release evidence support a truthful v0.3.0 release.

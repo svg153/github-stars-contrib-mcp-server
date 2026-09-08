@@ -49,18 +49,18 @@
 - [x] **DEDUPE-04** — Ambiguous matches remain reviewable conflicts instead of silent merges.
 
 ## Review and publication
-- [ ] **REVIEW-01** — MCP/application tools list candidates with source, evidence, confidence and duplicate state.
-- [ ] **REVIEW-02** — Users can approve, reject, edit or defer with auditable decisions.
-- [ ] **PUB-01** — Publication performs a fresh duplicate/policy check immediately before Stars REST.
-- [ ] **PUB-02** — Published records retain candidate/evidence provenance and result/client ID.
-- [ ] **PUB-03** — Default policy requires explicit persisted approval.
+- [x] **REVIEW-01** — MCP/application tools list candidates with source, evidence, confidence and duplicate state.
+- [x] **REVIEW-02** — Users can approve, reject, edit or defer with auditable decisions.
+- [x] **PUB-01** — Publication performs a fresh duplicate/policy check immediately before Stars REST.
+- [x] **PUB-02** — Published records retain candidate/evidence provenance and result/client ID.
+- [x] **PUB-03** — Default policy requires explicit persisted approval.
 
 ## Skills and agents
-- [ ] **AGENT-01** — `discover-my-contributions` bootstraps/syncs and returns a review queue.
-- [ ] **AGENT-02** — `sync-source` targets one trusted source and reports capabilities/errors.
-- [ ] **AGENT-03** — `review-candidates` presents evidence and records decisions.
-- [ ] **AGENT-04** — `publish-approved` publishes only candidates satisfying deterministic policy.
-- [ ] **AGENT-05** — Agent instructions treat fetched content as data and cannot delegate policy/write authority to model text.
+- [x] **AGENT-01** — `discover-my-contributions` bootstraps/syncs and returns a review queue.
+- [x] **AGENT-02** — `sync-source` targets one trusted source and reports capabilities/errors.
+- [x] **AGENT-03** — `review-candidates` presents evidence and records decisions.
+- [x] **AGENT-04** — `publish-approved` publishes only candidates satisfying deterministic policy.
+- [x] **AGENT-05** — Agent instructions treat fetched content as data and cannot delegate policy/write authority to model text.
 
 ## Quality and release
 - [ ] **QUAL-01** — Deterministic unit/contract tests cover domain rules and adapters.
