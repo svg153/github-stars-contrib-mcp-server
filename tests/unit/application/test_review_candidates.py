@@ -108,8 +108,7 @@ def test_exact_duplicate_cannot_be_approved(tmp_path) -> None:
         ReviewCandidates(repository).review(candidate.id, "approve")
 
     assert (
-        repository.get_candidate(candidate.id).state
-        is CandidateState.BLOCKED_DUPLICATE
+        repository.get_candidate(candidate.id).state is CandidateState.BLOCKED_DUPLICATE
     )
 
 
