@@ -35,3 +35,9 @@ def test_http_alias_runs_streamable_http(mock_logger, mock_mcp, mock_getenv):
         streamable_http_path="/mcp",
         stateless_http=True,
     )
+
+
+def test_discovery_review_and_publish_modules_register_on_import() -> None:
+    assert hasattr(server.discovery_sources, "discover_contributions")
+    assert hasattr(server.discovery_candidates, "review_candidate")
+    assert hasattr(server.publish_candidates, "publish_approved_candidates")
