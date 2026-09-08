@@ -88,10 +88,12 @@ async def test_dry_run_returns_exact_payload_without_write_or_mutation(
     repository, candidate = _seed(tmp_path)
     stars = FakeStarsAPI()
 
-    result = (await PublishCandidates(repository, stars)(
-        [candidate.id],
-        dry_run=True,
-    ))[0]
+    result = (
+        await PublishCandidates(repository, stars)(
+            [candidate.id],
+            dry_run=True,
+        )
+    )[0]
 
     assert result.status == "dry_run"
     assert result.client_id == stable_client_id(candidate.id)
@@ -148,10 +150,12 @@ async def test_fresh_exact_duplicate_blocks_without_stars_write(tmp_path) -> Non
         ]
     )
 
-    result = (await PublishCandidates(repository, stars)(
-        [candidate.id],
-        dry_run=False,
-    ))[0]
+    result = (
+        await PublishCandidates(repository, stars)(
+            [candidate.id],
+            dry_run=False,
+        )
+    )[0]
 
     assert result.status == "blocked"
     assert result.duplicate_state is DuplicateState.EXACT
@@ -175,10 +179,12 @@ async def test_fresh_likely_conflict_returns_candidate_to_review(tmp_path) -> No
         ]
     )
 
-    result = (await PublishCandidates(repository, stars)(
-        [candidate.id],
-        dry_run=False,
-    ))[0]
+    result = (
+        await PublishCandidates(repository, stars)(
+            [candidate.id],
+            dry_run=False,
+        )
+    )[0]
 
     assert result.status == "blocked"
     assert result.duplicate_state is DuplicateState.LIKELY
@@ -190,10 +196,12 @@ async def test_unavailable_fresh_snapshot_never_publishes(tmp_path) -> None:
     repository, candidate = _seed(tmp_path)
     stars = FakeStarsAPI(fail_list=True)
 
-    result = (await PublishCandidates(repository, stars)(
-        [candidate.id],
-        dry_run=False,
-    ))[0]
+    result = (
+        await PublishCandidates(repository, stars)(
+            [candidate.id],
+            dry_run=False,
+        )
+    )[0]
 
     assert result.status == "blocked"
     assert result.duplicate_state is DuplicateState.UNKNOWN
