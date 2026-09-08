@@ -73,7 +73,8 @@ def initialize_discovery_repository() -> SQLiteDiscoveryRepository:
 
 
 def initialize_discovery_runtime(
-    *, adapters: Sequence[SourceAdapter] = ()
+    *,
+    adapters: Sequence[SourceAdapter] | None = None,
 ) -> DiscoveryRuntime:
     """Create discovery composition lazily without registering MCP tools."""
 
