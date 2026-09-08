@@ -98,9 +98,7 @@ class ReviewCandidates:
             candidate_id=candidate.id,
             decision=resolved_decision,
             reason=(
-                reason.strip()
-                if isinstance(reason, str) and reason.strip()
-                else None
+                reason.strip() if isinstance(reason, str) and reason.strip() else None
             ),
             edited_fields=changed,
         )
