@@ -39,4 +39,7 @@ jobs:
       - name: Run offline tests
         env:
           LOG_LEVEL: INFO
-        run: pytest -q tests/unit tests/contract
+        run: pytest -q tests/unit tests/contract tests/skills
+
+      - name: Run repository quality check
+        run: python scripts/quality_check.py
