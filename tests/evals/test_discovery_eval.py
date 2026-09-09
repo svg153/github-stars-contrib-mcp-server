@@ -39,7 +39,9 @@ def _candidate(payload: dict[str, Any], *, suffix: str = "") -> CandidateContrib
         title=payload["title"],
         url=payload["url"],
         contribution_type=(
-            ContributionType(contribution_type) if contribution_type is not None else None
+            ContributionType(contribution_type)
+            if contribution_type is not None
+            else None
         ),
         date=_dt(payload.get("date")),
         provenance=Provenance(
@@ -108,7 +110,9 @@ def test_labeled_discovery_decisions(case: dict[str, Any]) -> None:
         else None
     )
     assert actual_type == expected["type"]
-    assert expected["ownership_min"] <= confidence.ownership <= expected["ownership_max"]
+    assert (
+        expected["ownership_min"] <= confidence.ownership <= expected["ownership_max"]
+    )
     assert (
         expected["contribution_min"]
         <= confidence.contribution
