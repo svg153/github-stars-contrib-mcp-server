@@ -1,5 +1,33 @@
 # Changelog
 
+## Unreleased — autonomous contribution discovery milestone
+
+The internal GSD roadmap for this work is named **v0.3.0 autonomous contribution discovery**. The package had already advanced to `0.3.1` for Stars API/auth hardening, so this milestone does not downgrade or rewrite the published package version.
+
+### Added
+
+- Provider-neutral discovery domain, explicit candidate lifecycle and local SQLite source/candidate/evidence/review/run persistence.
+- Trusted source bootstrap/registry with ownership states and deterministic URL canonicalization.
+- SSRF-safe bounded fetching and fixed `UNTRUSTED_SOURCE_CONTENT` handling for remote material.
+- Incremental adapters for RSS/Atom, trusted websites, GitHub, YouTube, Sessionize/Pretalx-style speaker sources and explicitly trusted event pages.
+- Restricted-social ingestion through explicit X/LinkedIn URLs, neutral user exports or supplied compliant API adapters; no scraping/browser-session bypass path.
+- Explainable deduplication/confidence with fresh Stars comparisons, exact-duplicate blocking and reviewable ambiguous conflicts.
+- MCP review/publish workflows with persisted human approve/reject/defer decisions, mandatory dry-run-first guidance and a fresh pre-write duplicate/policy check.
+- Four reusable skills (`discover-my-contributions`, `sync-source`, `review-candidates`, `publish-approved`) plus host-neutral agent guidance.
+- Labeled discovery regression corpus, privacy-safe discovery telemetry and an offline release-flow gate covering source → candidate → review → publish dry-run.
+
+### Security and privacy
+
+- Fetched source text cannot grant tool, policy or write authority and is never treated as instructions.
+- Safe fetch revalidates redirects and blocks loopback/private/link-local/metadata-style targets while enforcing bounded bytes, timeouts, redirects and media types.
+- Discovery telemetry excludes contribution titles/descriptions, page bodies, prompts, tokens and unnecessary URLs.
+- Real publication remains impossible without persisted approval and explicit non-dry-run invocation; model confidence never auto-approves.
+
+### Documentation
+
+- Added source capability/credential matrix and explicit X/LinkedIn limitations.
+- Added discovery threat model, local SQLite/privacy guidance and reproducible release-quality commands.
+
 ## 0.3.1 — 2026-09-01
 
 ### Added
