@@ -110,7 +110,9 @@ class DiscoveryTelemetry:
     ) -> None:
         status_label = _bounded(status)
         _DISCOVERY_RUNS.labels(status=status_label).inc()
-        _DISCOVERY_RUN_DURATION.labels(status=status_label).observe(max(0.0, duration_s))
+        _DISCOVERY_RUN_DURATION.labels(status=status_label).observe(
+            max(0.0, duration_s)
+        )
         self._logger.info(
             "discovery_run",
             **self._emit_fields(
