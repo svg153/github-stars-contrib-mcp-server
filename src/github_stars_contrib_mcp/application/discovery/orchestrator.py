@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+from collections import Counter
 from collections.abc import Sequence
+from time import monotonic
 from typing import Protocol
 from uuid import uuid4
 
@@ -37,6 +39,7 @@ from github_stars_contrib_mcp.domain.ports.source_adapter import (
     SourceBatch,
 )
 from github_stars_contrib_mcp.domain.ports.stars_api import StarsAPIPort
+from github_stars_contrib_mcp.observability.discovery import DiscoveryTelemetry
 
 
 class DiscoveryRepository(
@@ -78,10 +81,12 @@ class DiscoveryOrchestrator:
         repository: DiscoveryRepository,
         adapters: Sequence[SourceAdapter] = (),
         stars_api: StarsAPIPort | None = None,
+        telemetry: DiscoveryTelemetry | None = None,
     ) -> None:
         self._repository = repository
         self._adapters = tuple(adapters)
         self._stars_api = stars_api
+        self._telemetry = telemetry or DiscoveryTelemetry()
 
     def _resolve_adapter(self, source: SourceRecord) -> SourceAdapter:
         matches = [adapter for adapter in self._adapters if adapter.supports(source)]
@@ -172,6 +177,7 @@ class DiscoveryOrchestrator:
         source_ids: set[str] | None = None,
         dry_run: bool = False,
     ) -> DiscoveryRun:
+        run_started = monotonic()
         enabled = self._repository.list_sources(enabled_only=True)
         if source_ids is not None:
             enabled = [source for source in enabled if source.id in source_ids]
@@ -203,6 +209,9 @@ class DiscoveryOrchestrator:
 
         succeeded = 0
         for source in enabled:
+            source_started = monotonic()
+            capability_label = "unknown"
+            error_kind: str | None = None
             source_summary: dict[str, object] = {
                 "status": "running",
                 "adapter": None,
@@ -216,7 +225,8 @@ class DiscoveryOrchestrator:
                 adapter = self._resolve_adapter(source)
                 source_summary["adapter"] = adapter.name
                 capability = adapter.capabilities(source)
-                source_summary["capability"] = capability.status.value
+                capability_label = capability.status.value
+                source_summary["capability"] = capability_label
                 source_summary["capability_reason"] = capability.reason
                 if capability.status is CapabilityStatus.UNAVAILABLE:
                     raise SourceAdapterError(
@@ -260,6 +270,20 @@ class DiscoveryOrchestrator:
                                     source.id, batch.next_cursor
                                 )
 
+                    duplicate_counts = Counter(
+                        candidate.duplicate_state.value
+                        for candidate, _evidence in prepared
+                    )
+                    for duplicate_class, count in sorted(duplicate_counts.items()):
+                        self._telemetry.record_candidate_batch(
+                            run_id=run.id,
+                            source_type=source.source_type.value,
+                            capability=capability_label,
+                            duplicate_class=duplicate_class,
+                            item_count=count,
+                            candidate_count=count,
+                        )
+
                     source_summary["batches"] = int(source_summary["batches"]) + 1
                     source_summary["candidates"] = int(
                         source_summary["candidates"]
@@ -270,11 +294,22 @@ class DiscoveryOrchestrator:
                 source_summary["status"] = "completed"
                 succeeded += 1
             except Exception as exc:
-                kind, message = _classify_error(exc)
+                error_kind, message = _classify_error(exc)
                 source_summary["status"] = "failed"
-                source_summary["error_kind"] = kind
+                source_summary["error_kind"] = error_kind
                 run.errors.append(
-                    {"source_id": source.id, "kind": kind, "message": message}
+                    {"source_id": source.id, "kind": error_kind, "message": message}
+                )
+            finally:
+                self._telemetry.record_source(
+                    run_id=run.id,
+                    source_type=source.source_type.value,
+                    capability=capability_label,
+                    status=str(source_summary["status"]),
+                    item_count=int(source_summary["candidates"]),
+                    candidate_count=int(source_summary["candidates"]),
+                    duration_s=monotonic() - source_started,
+                    error_class=error_kind,
                 )
 
         failed = len(enabled) - succeeded
@@ -288,4 +323,12 @@ class DiscoveryOrchestrator:
             run.status = DiscoveryRunStatus.FAILED
         run.finished_at = utc_now()
         self._repository.save_run(run)
+        self._telemetry.record_run(
+            run_id=run.id,
+            status=run.status.value,
+            source_count=len(enabled),
+            candidate_count=int(run.summary["candidates_seen"]),
+            duration_s=monotonic() - run_started,
+            error_class="source_failure" if failed else None,
+        )
         return run
