@@ -44,7 +44,7 @@ flowchart TD
 | 10 | Add dedupe, confidence and conflict resolution | DEDUPE-01..04 | #37 | 05-09 | verified; PR #38 |
 | 11 | Expose review and publish MCP workflows | REVIEW-01..02, PUB-01..03 | #39 | 10 | verified; PR #40 |
 | 12 | Package reusable skills/agent workflows | AGENT-01..05 | #41 | 11 | verified; PR #42 |
-| 13 | Add evals, observability, docs and release proof | QUAL-01..02, OBS-01, DOC-01, REL-01 | #43 | 12 | ready after #42 |
+| 13 | Add evals, observability, docs and release proof | QUAL-01..02, OBS-01, DOC-01, REL-01 | #43 | 12 | verified; PR #45; gate run #91 |
 
 ## Phase exit criteria
 
@@ -85,8 +85,8 @@ Users can list, edit, approve/reject/defer and publish; publish rechecks duplica
 Four thin workflows compose MCP/application tools instead of duplicating business rules, and untrusted text has no policy/write authority. **Verified in PR #42; implementation gate run #86.**
 
 ### 13 — Quality/release
-Offline gates, labeled eval corpus, privacy-safe telemetry, docs and release evidence support a truthful v0.3.0 release.
+Offline gates, labeled eval corpus, privacy-safe telemetry, docs and release evidence support a truthful autonomous-discovery milestone. **Verified in PR #45; implementation/release gate run #91.**
 
 ## Milestone exit
 
-A user can bootstrap trusted sources, discover candidates from supported open/official adapters, inspect evidence and duplicate/confidence reasons, record review decisions and publish approved contributions through Stars REST/MCP. The milestone does not exit if it depends on X/LinkedIn scraping, if model text can directly publish, or if provenance is lost.
+A user can bootstrap trusted sources, discover candidates from supported open/official adapters, inspect evidence and duplicate/confidence reasons, record review decisions and publish approved contributions through Stars REST/MCP. The milestone does not depend on X/LinkedIn scraping, model text cannot directly publish, and provenance is retained. The GSD milestone name remains v0.3.0 while the package line is already 0.3.1; no package-version downgrade is implied.

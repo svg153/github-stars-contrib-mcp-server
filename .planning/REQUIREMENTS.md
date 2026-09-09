@@ -63,11 +63,11 @@
 - [x] **AGENT-05** — Agent instructions treat fetched content as data and cannot delegate policy/write authority to model text.
 
 ## Quality and release
-- [ ] **QUAL-01** — Deterministic unit/contract tests cover domain rules and adapters.
-- [ ] **QUAL-02** — A labeled evaluation corpus measures extraction, eligibility, duplicate and confidence behavior.
-- [ ] **OBS-01** — Privacy-safe telemetry reports run/source/candidate counts, latency and failure classes.
-- [ ] **DOC-01** — Docs state setup, source support, credentials, privacy and unsupported automation.
-- [ ] **REL-01** — v0.3.0 has offline tests, MCP smoke evidence and an end-to-end dry-run/publish-path verification.
+- [x] **QUAL-01** — Deterministic unit/contract tests cover domain rules and adapters.
+- [x] **QUAL-02** — A labeled evaluation corpus measures extraction, eligibility, duplicate and confidence behavior.
+- [x] **OBS-01** — Privacy-safe telemetry reports run/source/candidate counts, latency and failure classes.
+- [x] **DOC-01** — Docs state setup, source support, credentials, privacy and unsupported automation.
+- [x] **REL-01** — v0.3.0 milestone has offline tests, MCP smoke evidence and an end-to-end dry-run/publish-path verification.
 
 ## Traceability
 | Phase | Requirements |

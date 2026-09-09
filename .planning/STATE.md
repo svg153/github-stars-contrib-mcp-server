@@ -1,16 +1,16 @@
-# State — v0.3.0
+# State — v0.3.0 autonomous discovery milestone
 
 ## Current position
 - **Phase:** 13 — Evaluation, observability, docs and release
 - **Plan:** 01
-- **Status:** Phase 12 verified on PR #42; ready after merge
+- **Status:** Phase 13 verified in PR #45; milestone implementation complete
 - **Epic:** #16
 - **Phase issue:** #43
-- **Next branch:** `gsd/phase-13-quality-release`
+- **Next branch:** none — roadmap complete
 
 ## Progress
-- Requirements complete: 46/51
-- Phases complete: 12/13 after PR #42 merges
+- Requirements complete: 51/51
+- Phases verified: 13/13
 - Seeded/JIT issues: #16-#23, #32, #35, #37, #39, #41, #43
 
 ## Phase evidence
@@ -24,13 +24,14 @@
 - Phase 08: PR #33; tests run #66; verification `.planning/phases/08-speaker-event-adapters/VERIFICATION.md`.
 - Phase 09: PR #36; tests run #71; verification `.planning/phases/09-restricted-social-sources/VERIFICATION.md`.
 - Phase 10: PR #38; tests run #77; verification `.planning/phases/10-dedupe-confidence/VERIFICATION.md`.
-- Phase 11: PR #40; implementation head `150f5e1ab03d111f1ae8ccdfceb6edcf5eb5888b`; tests run #83; verification `.planning/phases/11-review-publish-mcp/VERIFICATION.md`.
-- Phase 12: PR #42; implementation/gate head `c0b7f5dd79096fec2afeecbcf35c9bf1e095e58e`; tests run #86 includes `tests/skills` and `scripts/quality_check.py`; verification `.planning/phases/12-agent-skills/VERIFICATION.md`.
+- Phase 11: PR #40; tests run #83; verification `.planning/phases/11-review-publish-mcp/VERIFICATION.md`.
+- Phase 12: PR #42; tests run #86; verification `.planning/phases/12-agent-skills/VERIFICATION.md`.
+- Phase 13: PR #45; release implementation head `f8dd62791259f0fa9f690cb607bcd80c7c3b9526`; tests run #91; verification `.planning/phases/13-quality-release/VERIFICATION.md`.
 
 ## Locked decisions
 - MCP/Stars REST is the publication boundary; adapters never write Stars directly.
 - SQLite is the local discovery store.
-- Review-before-publish is mandatory in v0.3.0.
+- Review-before-publish is mandatory for this milestone.
 - Publication requires persisted approval and a fresh Stars duplicate/policy recheck immediately before write.
 - `publish_approved_candidates` defaults to `dry_run=true`; approval and real publication are separate calls.
 - X/LinkedIn scraping, browser-session reuse, cookie extraction and anti-bot bypasses are not core or fallback paths.
@@ -55,10 +56,11 @@
 - Ownership confidence and contribution confidence are separate deterministic signals with inspectable reasons and no publication authority.
 - Reusable skills are thin MCP orchestration only. They do not duplicate provider HTTP or publication business rules.
 - The `publish-approved` skill mandates dry-run first and explicit current-interaction intent before a real publish.
-- Small-model execution is first-class: phase plans must not leave unresolved architecture/product decisions to the executor.
+- Discovery telemetry is privacy-safe and excludes contribution/page content, prompts, secrets and unnecessary URLs.
+- The internal GSD milestone is named v0.3.0, but the package had already advanced to 0.3.1; release docs do not downgrade package version.
 
 ## Blockers
-None for Phase 13 once PR #42 merges.
+None for the offline milestone exit. Credentialed Stars mutation integration was not executed in this environment because no explicit authorized `STARS_API_TOKEN` was available; this limitation is recorded rather than represented as passing evidence.
 
 ## Handoff
-Merge verified PR #42, then execute `.planning/phases/13-quality-release/13-01-PLAN.md` using issue #43 on branch `gsd/phase-13-quality-release`. Add the labeled public-safe evaluation corpus, privacy-safe discovery telemetry, truthful capability/security docs and reproducible release gates. Do not claim credentialed Stars mutation evidence unless an explicit usable token is available; offline publish dry-run evidence is mandatory regardless.
+The 13-phase autonomous-discovery roadmap is complete. PR #45 contains the final quality/release slice. After merge, normal follow-up is release/tag/distribution work on the current package line, plus optional credentialed Stars integration verification in an explicitly authorized environment. No additional GSD implementation phase remains in this milestone.
