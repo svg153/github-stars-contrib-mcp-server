@@ -6,7 +6,11 @@ from pathlib import Path
 
 import pytest
 
-from github_stars_contrib_mcp.skills import SkillCatalog, SkillCatalogError, SkillsExtension
+from github_stars_contrib_mcp.skills import (
+    SkillCatalog,
+    SkillCatalogError,
+    SkillsExtension,
+)
 
 
 def _write_skill(
@@ -105,7 +109,9 @@ def test_skill_manifest_resource_uses_frontmatter_metadata(tmp_path: Path) -> No
     _write_skill(tmp_path, "demo-skill", description=description)
     extension = SkillsExtension(SkillCatalog(tmp_path))
 
-    resources = {binding.resource.uri: binding.resource for binding in extension.resources()}
+    resources = {
+        binding.resource.uri: binding.resource for binding in extension.resources()
+    }
     manifest = resources["skill://demo-skill/SKILL.md"]
 
     assert manifest.name == "demo-skill"
