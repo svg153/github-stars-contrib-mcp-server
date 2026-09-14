@@ -1,0 +1,21 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "github-stars-contributions",
+  "version": "0.3.1",
+  "description": "Portable Agent Skills for discovering, reviewing, synchronizing, and publishing GitHub Stars contributions.",
+  "author": {
+    "name": "svg153",
+    "url": "https://github.com/svg153"
+  },
+  "homepage": "https://github.com/svg153/github-stars-contrib-mcp-server",
+  "repository": "https://github.com/svg153/github-stars-contrib-mcp-server",
+  "keywords": [
+    "agent-skills",
+    "github-stars",
+    "mcp",
+    "discover-my-contributions",
+    "sync-source",
+    "review-candidates",
+    "publish-approved"
+  ]
+}
