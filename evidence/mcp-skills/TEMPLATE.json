@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "recorded_at": "YYYY-MM-DDTHH:MM:SSZ",
+  "host": {
+    "name": "example-host",
+    "version": "0.0.0",
+    "model": "example-model"
+  },
+  "server": {
+    "repository": "https://github.com/svg153/github-stars-contrib-mcp-server",
+    "commit": "0000000000000000000000000000000000000000",
+    "version": "0.3.1",
+    "transport": "streamable-http"
+  },
+  "skill": {
+    "name": "discover-my-contributions",
+    "uri": "skill://discover-my-contributions/SKILL.md"
+  },
+  "observations": {
+    "extension_discovered": false,
+    "skills_list_observed": false,
+    "skills_get_observed": false,
+    "resource_read_observed": false,
+    "skill_entered_model_context": false,
+    "native_skill_selected_automatically": false,
+    "filesystem_copy_absent": true,
+    "standalone_plugin_copy_absent": true,
+    "server_tool_used_after_activation": false
+  },
+  "evidence": {
+    "level5_proven": false,
+    "strongest_level": 0,
+    "artifacts": [],
+    "notes": "Template only. Replace placeholder values and record only sanitized evidence."
+  }
+}

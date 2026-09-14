@@ -6,6 +6,7 @@ agent/host activation claims.
 
 Parent initiative: #48
 Conformance/security issue: #51
+Host-activation follow-up: #58
 
 ## Reuse-first baseline
 
@@ -103,15 +104,44 @@ Skills delivery path.
 
 ## Compatibility landscape
 
-Upstream `ext-skills` research currently identifies `fast-agent` as the first surveyed
-client to ship SEP-2640 registry/install support and documents generic resource-read
-support in clients such as Codex, VS Code/GitHub Copilot, Goose, Claude Code and others.
-Generic `resources/read` support is useful but is **not** sufficient evidence that a host
-supports Skills discovery or automatic activation.
+Upstream `ext-skills` research documents model-facing MCP resource access in clients such
+as Codex, Goose, Claude Code, Cline and VS Code/GitHub Copilot. It also documents
+fast-agent as a shipped SEP-2640 registry/install implementation. Generic
+`resources/read` support and registry/install support are useful, but neither is
+sufficient evidence that a host natively discovers and activates a served Agent Skill in
+model context.
 
-For this repository, the official conformance runner is the reproducible compatible
-inspection path and CI gate. A later host-specific experiment may add level-5 evidence,
-but it must be recorded separately with the exact host/version and activation behavior.
+A recent independent implementation gives a useful negative boundary. Cua Driver 0.28.0
+reports that Codex 0.154.0 and Claude Code 2.1.268 can discover/read its MCP-served skill
+resources and then use server tools. The same report explicitly does **not** classify
+those runs as native skill activation; Claude Code did not add the remote skill to its
+native startup skill catalog. That distinction matches this repository's evidence model.
+
+The Stars repository therefore keeps level 5 open rather than manufacturing a stronger
+claim from client resource access. Candidate-host evidence and the exact reproduction /
+sanitation contract are tracked in
+[`mcp-skills-host-evidence.md`](mcp-skills-host-evidence.md) and #58.
+
+## Host-specific level-5 gate
+
+A future level-5 record must identify the exact host, host version, model and Stars
+server commit. It must also show that:
+
+- the host discovered the Skills extension and a served skill;
+- the served `SKILL.md` entered the host's native skill/model-context path;
+- the skill was selected automatically for a matching task;
+- no filesystem skill copy or standalone Agent Plugin copy supplied the same behavior;
+- a Stars MCP tool was used after the activation path was observed.
+
+Committed evidence must pass:
+
+```bash
+python scripts/validate_mcp_skills_host_evidence.py evidence/mcp-skills/<file>.json
+```
+
+The validator also rejects common credential-bearing fields and token-shaped values. Raw
+host transcripts remain out of the repository when they contain user/account/provider
+content.
 
 ## Exit criteria for #51
 
@@ -125,4 +155,6 @@ but it must be recorded separately with the exact host/version and activation be
 - this document reflects the actual evidence and does not claim level 5.
 
 Once those conditions hold, this implementation is suitable as the reference pilot for
-`svg153/skills#64` and the no-duplicate distribution work in #52.
+`svg153/skills#64` and the no-duplicate distribution work in #52. Level 5 is deliberately
+tracked as the independent #58 follow-up rather than retroactively weakening #51's
+completed server-side evidence criteria.
