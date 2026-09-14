@@ -105,7 +105,7 @@ Skills delivery path.
 
 Upstream `ext-skills` research currently identifies `fast-agent` as the first surveyed
 client to ship SEP-2640 registry/install support and documents generic resource-read
-support in clients such as Codex, VS Code/GGitHub Copilot, Goose, Claude Code and others.
+support in clients such as Codex, VS Code/GitHub Copilot, Goose, Claude Code and others.
 Generic `resources/read` support is useful but is **not** sufficient evidence that a host
 supports Skills discovery or automatic activation.
 
