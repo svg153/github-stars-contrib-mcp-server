@@ -42,7 +42,9 @@ def test_repository_catalog_discovers_the_four_canonical_skills() -> None:
         "review-candidates",
         "sync-source",
     ]
-    assert all(entry.uri == f"skill://{entry.name}/SKILL.md" for entry in catalog.list())
+    assert all(
+        entry.uri == f"skill://{entry.name}/SKILL.md" for entry in catalog.list()
+    )
     assert all(
         any(resource.relative_path == "SKILL.md" for resource in entry.resources)
         for entry in catalog.list()
@@ -79,8 +81,12 @@ def test_nested_resources_receive_stable_percent_encoded_uris(tmp_path: Path) ->
 
     first_entry = first.get("skill://demo-skill/SKILL.md")
     second_entry = second.get("skill://demo-skill/SKILL.md")
-    first_manifest = [(item.uri, item.digest, item.size) for item in first_entry.resources]
-    second_manifest = [(item.uri, item.digest, item.size) for item in second_entry.resources]
+    first_manifest = [
+        (item.uri, item.digest, item.size) for item in first_entry.resources
+    ]
+    second_manifest = [
+        (item.uri, item.digest, item.size) for item in second_entry.resources
+    ]
 
     assert first_manifest == second_manifest
     assert "skill://demo-skill/references/with%20space.md" in {
