@@ -1,0 +1,101 @@
+name: MCP Skills Conformance
+
+on:
+  pull_request:
+    paths:
+      - "skills/**"
+      - "src/github_stars_contrib_mcp/skills/**"
+      - "src/github_stars_contrib_mcp/shared.py"
+      - "tests/unit/skills/**"
+      - "docs/mcp-skills-evidence.md"
+      - ".github/workflows/mcp-skills-conformance.yml"
+  push:
+    branches: [main]
+    paths:
+      - "skills/**"
+      - "src/github_stars_contrib_mcp/skills/**"
+      - "src/github_stars_contrib_mcp/shared.py"
+      - "tests/unit/skills/**"
+      - "docs/mcp-skills-evidence.md"
+      - ".github/workflows/mcp-skills-conformance.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  sep-2640:
+    name: SEP-2640 / ${{ matrix.scenario }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        scenario:
+          - sep-2640-skills-enumeration
+          - sep-2640-skills-manifest
+          - sep-2640-skills-directory
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install server
+        run: pip install -e .
+
+      - name: Start stateless Streamable HTTP server
+        env:
+          DANGEROUSLY_OMIT_AUTH: "true"
+          MCP_TRANSPORT: streamable-http
+          MCP_HOST: 127.0.0.1
+          MCP_PORT: "8766"
+          MCP_PATH: /mcp
+          LOG_LEVEL: INFO
+        run: |
+          nohup github-stars-contrib-mcp-server > /tmp/stars-mcp.log 2>&1 &
+          echo $! > /tmp/stars-mcp.pid
+          python - <<'PY'
+          import socket
+          import time
+
+          deadline = time.time() + 15
+          while time.time() < deadline:
+              try:
+                  with socket.create_connection(("127.0.0.1", 8766), timeout=0.5):
+                      break
+              except OSError:
+                  time.sleep(0.25)
+          else:
+              raise SystemExit("MCP server did not become ready on port 8766")
+          PY
+
+      # Pinned to the official conformance repository revision that contains
+      # the SEP-2640 server scenarios used by this reference implementation.
+      - name: Run official MCP conformance scenario
+        uses: modelcontextprotocol/conformance@7169291ec0b68eb370fddcd9947313ab0d5e4156
+        with:
+          mode: server
+          url: http://127.0.0.1:8766/mcp
+          scenario: ${{ matrix.scenario }}
+          verbose: "true"
+
+      - name: Upload sanitized conformance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcp-skills-${{ matrix.scenario }}
+          if-no-files-found: ignore
+          path: |
+            results/**
+            /tmp/stars-mcp.log
+          retention-days: 30
+
+      - name: Stop server
+        if: always()
+        run: |
+          if [ -f /tmp/stars-mcp.pid ]; then
+            kill "$(cat /tmp/stars-mcp.pid)" || true
+          fi
