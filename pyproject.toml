@@ -5,6 +5,9 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/github_stars_contrib_mcp"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"skills" = "github_stars_contrib_mcp/_skills"
+
 [project]
 name = "github-stars-contrib-mcp-server"
 version = "0.3.1"
@@ -33,6 +36,7 @@ dependencies = [
     "opentelemetry-api>=1.44.0,<2",
     "opentelemetry-sdk>=1.44.0,<2",
     "opentelemetry-exporter-otlp-proto-http>=1.44.0,<2",
+    "PyYAML>=6.0.2,<7",
 ]
 
 [project.optional-dependencies]
