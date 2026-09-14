@@ -12,6 +12,7 @@ from .config.settings import settings
 from .di.discovery import DiscoveryRuntime, build_discovery_runtime
 from .domain.ports.source_adapter import SourceAdapter
 from .infrastructure.persistence import SQLiteDiscoveryRepository
+from .skills import SkillsExtension
 from .utils.stars_client import StarsClient
 
 
@@ -57,6 +58,7 @@ mcp = MCPServer(
         "Use stable caller-controlled client IDs for idempotent upserts. "
         "Contribution deletion is not available through the API."
     ),
+    extensions=[SkillsExtension()],
 )
 stars_client: StarsClient | None = None
 discovery_repository: SQLiteDiscoveryRepository | None = None
