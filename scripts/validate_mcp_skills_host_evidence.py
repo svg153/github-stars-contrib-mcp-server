@@ -155,8 +155,7 @@ def validate_payload(payload: Any) -> list[str]:
         for requirement, observed in requirements.items():
             if observed is not True:
                 errors.append(
-                    "$.evidence.level5_proven: missing prerequisite "
-                    f"{requirement}"
+                    f"$.evidence.level5_proven: missing prerequisite {requirement}"
                 )
     elif strongest_level == 5:
         errors.append(
