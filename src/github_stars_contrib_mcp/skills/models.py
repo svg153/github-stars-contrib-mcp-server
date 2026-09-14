@@ -32,4 +32,6 @@ class SkillEntry:
 
     def resource(self, uri: str) -> SkillResource | None:
         """Return the manifest resource matching *uri*, if present."""
-        return next((resource for resource in self.resources if resource.uri == uri), None)
+        return next(
+            (resource for resource in self.resources if resource.uri == uri), None
+        )
