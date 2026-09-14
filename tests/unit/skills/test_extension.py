@@ -39,7 +39,9 @@ def _server(*, page_size: int = 50) -> MCPServer:
 
 
 @pytest.mark.asyncio
-async def test_server_discover_advertises_resources_and_official_skills_extension() -> None:
+async def test_server_discover_advertises_resources_and_official_skills_extension() -> (
+    None
+):
     async with Client(_server(), raise_exceptions=True) as client:
         discovered = client.session.discover_result
         assert discovered is not None
@@ -78,7 +80,9 @@ async def test_skills_list_is_complete_cacheable_and_paginated() -> None:
             assert entry.uri == f"skill://{entry.frontmatter['name']}/SKILL.md"
             assert entry.resources
             assert any(resource.uri == entry.uri for resource in entry.resources)
-            assert all(resource.digest.startswith("sha256:") for resource in entry.resources)
+            assert all(
+                resource.digest.startswith("sha256:") for resource in entry.resources
+            )
             assert all(resource.size > 0 for resource in entry.resources)
 
 
