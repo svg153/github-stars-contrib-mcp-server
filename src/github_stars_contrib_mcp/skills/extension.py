@@ -6,7 +6,7 @@ bytes, validation, and manifests remain owned by :mod:`.catalog`.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from typing import Any, Literal
 
 import mcp.types as types
@@ -177,7 +177,7 @@ class SkillsExtension(Extension):
             ],
         )
 
-    def _resource_reader(self, resource: SkillResource):
+    def _resource_reader(self, resource: SkillResource) -> Callable[[], str | bytes]:
         def read() -> str | bytes:
             data = self.catalog.read(resource.uri)
             if _is_text_resource(resource.mime_type):
