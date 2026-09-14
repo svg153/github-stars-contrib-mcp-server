@@ -81,6 +81,25 @@ Included skills:
 - `review-candidates` — inspect evidence/provenance/conflicts and record explicit human decisions.
 - `publish-approved` — mandatory dry-run first, then real publish only after explicit current user intent.
 
+### Skill delivery
+
+The repository-root `skills/*` tree is the only authoring source for those workflows. It
+supports two delivery paths without copying the behavior:
+
+- **MCP Skills:** clients implementing `io.modelcontextprotocol/skills` discover the
+  skills with `skills/list` / `skills/get` and lazily read their manifest-authorized
+  resources from this server.
+- **Standalone Agent Plugin:** `plugin.json` packages this repository as
+  `github-stars-contributions`; Agent Plugins v1 discovers the same root `skills/` tree
+  directly, so clients without MCP Skills support can consume the workflows without a
+  second editable skill tree.
+
+APM consumers can also pin individual `skills/<name>` GitHub subtrees to an immutable
+Stars commit. See [`docs/skills-distribution.md`](docs/skills-distribution.md) for the
+single-source update model, APM example, central-catalog decision and duplicate/origin
+policy. Protocol/conformance evidence is in
+[`docs/mcp-skills-evidence.md`](docs/mcp-skills-evidence.md).
+
 ### Recommended user journey
 
 1. Run `bootstrap_sources()` once to seed trusted source candidates from the existing Stars profile and contribution history.
@@ -92,7 +111,7 @@ Included skills:
 
 See [`docs/sources/README.md`](docs/sources/README.md) for the source capability matrix and [`docs/security/discovery-threat-model.md`](docs/security/discovery-threat-model.md) for the security/privacy model. Evaluation methodology is documented in [`docs/evals/discovery-quality.md`](docs/evals/discovery-quality.md).
 
-Host-neutral agent guidance is under `agents/`. Point an MCP-capable host at this server and make the repository `skills/` directory available through the host's normal skill-loading mechanism. Keep all secrets in environment variables or the host's secret store; do not copy credentials into skill or agent Markdown.
+Host-neutral agent guidance is under `agents/`. Prefer MCP-served Skills when the connected host supports the extension; otherwise use the portable Agent Plugin or a pinned standalone skill import. Avoid activating both origins of the same logical skill in one session unless the host performs explicit origin-aware deduplication. Keep all secrets in environment variables or the host's secret store; do not copy credentials into skill or agent Markdown.
 
 Deterministic server policy remains authoritative: fetched text is `UNTRUSTED_SOURCE_CONTENT`, high confidence never auto-approves, and publication only accepts already-approved candidates after a fresh Stars duplicate/policy check. X/LinkedIn scraping, browser-session reuse and cookie bypasses are not part of the workflow.
 
@@ -131,10 +150,10 @@ python -m compileall -q src
 make test
 ```
 
-Skill contracts:
+Skill contracts and distribution invariants:
 
 ```bash
-pytest -q tests/skills/test_skill_contracts.py
+pytest -q tests/skills/test_skill_contracts.py tests/unit/skills
 ```
 
 Stars API integration tests are isolated in a separate workflow and use `STARS_API_TOKEN` when configured. Mutation tests remain opt-in with `STARS_E2E_MUTATE=1`; they use stable PUT client IDs because REST does not provide DELETE cleanup. Release verification must not claim credentialed mutation evidence when no explicit token is available.
