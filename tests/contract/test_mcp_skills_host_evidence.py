@@ -7,7 +7,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 VALIDATOR = ROOT / "scripts" / "validate_mcp_skills_host_evidence.py"
-TEMPLATE = ROOT / "evidence" / "mcp-skills" / "TEMPLATE.json"
+EVIDENCE_DIR = ROOT / "evidence" / "mcp-skills"
+TEMPLATE = EVIDENCE_DIR / "TEMPLATE.json"
 
 
 def _run(path: Path) -> subprocess.CompletedProcess[str]:
@@ -24,10 +25,13 @@ def _payload() -> dict[str, object]:
     return json.loads(TEMPLATE.read_text(encoding="utf-8"))
 
 
-def test_template_is_valid_lower_level_evidence() -> None:
-    result = _run(TEMPLATE)
+def test_all_committed_host_evidence_is_valid() -> None:
+    paths = sorted(EVIDENCE_DIR.glob("*.json"))
+    assert paths
 
-    assert result.returncode == 0, result.stderr
+    for path in paths:
+        result = _run(path)
+        assert result.returncode == 0, f"{path}: {result.stderr}"
 
 
 def test_level5_claim_requires_activation_prerequisites(tmp_path: Path) -> None:
