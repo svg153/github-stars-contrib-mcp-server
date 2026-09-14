@@ -51,7 +51,9 @@ def test_standalone_distribution_does_not_duplicate_skill_authoring_tree() -> No
     )
 
     assert all(not path.exists() for path in forbidden_runtime_copies)
-    assert sorted(path.name for path in (ROOT / "skills").iterdir() if path.is_dir()) == [
+    assert sorted(
+        path.name for path in (ROOT / "skills").iterdir() if path.is_dir()
+    ) == [
         "discover-my-contributions",
         "publish-approved",
         "review-candidates",
