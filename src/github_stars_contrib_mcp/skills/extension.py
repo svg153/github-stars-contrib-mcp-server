@@ -116,13 +116,18 @@ class SkillsExtension(Extension):
         bindings: list[ResourceBinding] = []
         for skill in self.catalog.list():
             for resource in skill.resources:
+                is_manifest = resource.relative_path == "SKILL.md"
                 bindings.append(
                     ResourceBinding(
                         resource=FunctionResource.from_function(
                             self._resource_reader(resource),
                             uri=resource.uri,
-                            name=resource.relative_path,
-                            description=f"Agent Skill resource for {skill.name}",
+                            name=skill.name if is_manifest else resource.relative_path,
+                            description=(
+                                skill.description
+                                if is_manifest
+                                else f"Agent Skill resource for {skill.name}"
+                            ),
                             mime_type=resource.mime_type,
                         )
                     )
