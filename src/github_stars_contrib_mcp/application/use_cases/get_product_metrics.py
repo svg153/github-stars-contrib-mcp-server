@@ -160,9 +160,7 @@ class GetProductMetrics:
         unavailable_sources = sum(
             1 for item in source_runs if item.capability == "unavailable"
         )
-        limited_sources = sum(
-            1 for item in source_runs if item.capability == "limited"
-        )
+        limited_sources = sum(1 for item in source_runs if item.capability == "limited")
 
         total_run_candidates = sum(run.candidates_seen for run in runs)
         total_source_candidates = sum(item.candidate_count for item in source_runs)
