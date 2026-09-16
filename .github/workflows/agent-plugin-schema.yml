@@ -1,0 +1,54 @@
+name: Agent Plugin Schema
+
+on:
+  pull_request:
+    paths:
+      - "plugin.json"
+      - "mcp.json"
+      - "skills/**"
+      - "tests/unit/skills/**"
+      - "docs/agent-plugin-mcp-packaging.md"
+      - ".github/workflows/agent-plugin-schema.yml"
+  push:
+    branches: [main]
+    paths:
+      - "plugin.json"
+      - "mcp.json"
+      - "skills/**"
+      - "tests/unit/skills/**"
+      - "docs/agent-plugin-mcp-packaging.md"
+      - ".github/workflows/agent-plugin-schema.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install schema validator
+        run: python -m pip install --disable-pip-version-check check-jsonschema==0.38.0
+
+      - name: Validate Agent Plugins manifest
+        run: >-
+          check-jsonschema
+          --schemafile https://agent-plugins.org/schemas/1.0.0/plugin.schema.json
+          plugin.json
+
+      - name: Validate portable MCP config when present
+        shell: bash
+        run: |
+          if [[ -f mcp.json ]]; then
+            check-jsonschema \
+              --schemafile https://agent-plugins.org/schemas/1.0.0/mcp.schema.json \
+              mcp.json
+          else
+            echo "No root mcp.json yet; #60 intentionally keeps MCP packaging gated on credential-safe bootstrap."
+          fi
