@@ -129,9 +129,10 @@ def test_product_metrics_are_deterministic_and_explicit() -> None:
     assert report["source_executions"]["failure_rate"]["value"] == 0.5
     assert report["source_executions"]["rate_limit_rate"]["value"] == 0.5
     assert report["candidates"]["per_run"]["value"] == 2.0
-    assert report["unavailable"]["missing_contribution_audit_yield"][
-        "status"
-    ] == "unavailable"
+    assert (
+        report["unavailable"]["missing_contribution_audit_yield"]["status"]
+        == "unavailable"
+    )
 
 
 def test_empty_snapshot_never_fabricates_quality_conclusions() -> None:

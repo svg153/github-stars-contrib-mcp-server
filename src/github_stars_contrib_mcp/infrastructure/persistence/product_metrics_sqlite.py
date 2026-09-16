@@ -189,7 +189,9 @@ class SQLiteProductMetricsQuery:
                         adapter=_dimension(payload.get("adapter")),
                         capability=_dimension(payload.get("capability")),
                         status=_dimension(payload.get("status")),
-                        error_kind=_dimension(payload.get("error_kind"), fallback="none"),
+                        error_kind=_dimension(
+                            payload.get("error_kind"), fallback="none"
+                        ),
                         candidate_count=max(0, int(payload.get("candidates", 0) or 0)),
                     )
                 )
