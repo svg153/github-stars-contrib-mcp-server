@@ -94,6 +94,13 @@ supports two delivery paths without copying the behavior:
   directly, so clients without MCP Skills support can consume the workflows without a
   second editable skill tree.
 
+Agent Plugins 1.0 also supports packaging an MCP server through root `mcp.json`, but this
+repository intentionally does **not** ship that file yet. The published specification
+allows clients to omit/sanitize ambient subprocess environment variables, so inheriting
+`STARS_API_TOKEN` would not be a portable credential strategy. See
+[`docs/agent-plugin-mcp-packaging.md`](docs/agent-plugin-mcp-packaging.md) and #60 for the
+credential-safe bootstrap gate before plugin-bundled MCP registration is enabled.
+
 APM consumers can also pin individual `skills/<name>` GitHub subtrees to an immutable
 Stars commit. See [`docs/skills-distribution.md`](docs/skills-distribution.md) for the
 single-source update model, APM example, central-catalog decision and duplicate/origin

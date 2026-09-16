@@ -6,6 +6,7 @@ ways for different client capabilities.
 
 Parent initiative: #48
 Standalone-distribution issue: #52
+Agent Plugin MCP packaging follow-up: #60
 
 ## Decision
 
@@ -24,6 +25,31 @@ The supported distribution model is:
 `plugin.json` is package metadata only. Agent Plugins v1 discovers skills from the fixed
 repository-root `skills/` directory, so the plugin does not require generated copies of
 `SKILL.md` in `.agents/`, `.claude/`, `.github/`, or other host-specific directories.
+
+## Agent Plugin MCP server packaging
+
+Agent Plugins 1.0 also defines portable MCP server registration via root `mcp.json`.
+Compatible hosts such as VS Code can load plugin-provided Skills and plugin-provided MCP
+servers as separate portable component types.
+
+That does **not** make `mcp.json` equivalent to MCP Skills:
+
+- root `skills/*` is package/install-time Agent Skill discovery;
+- root `mcp.json` registers an MCP server process/endpoint with the host;
+- `io.modelcontextprotocol/skills` is runtime discovery/delivery of Skills from a
+  connected MCP server.
+
+The repository intentionally does not ship root `mcp.json` yet. The Stars server requires
+`STARS_API_TOKEN` for authenticated Stars operations, while Agent Plugins 1.0 permits a
+client to omit or sanitize ambient subprocess environment variables and forbids treating
+visible `env`/header package data as a secret mechanism. Depending on an inherited
+`STARS_API_TOKEN` would therefore be a host-specific accident rather than a portable
+credential contract.
+
+The launcher/auth decision and exit gate are documented in
+[`agent-plugin-mcp-packaging.md`](agent-plugin-mcp-packaging.md). Until that gate is met,
+the current Agent Plugin remains intentionally Skills-only while the MCP server remains
+available through its normal explicit configuration/distribution paths.
 
 ## Why the central `svg153/skills` catalog is not mirrored yet
 
