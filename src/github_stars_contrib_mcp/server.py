@@ -26,6 +26,7 @@ from .tools import (  # noqa: F401,E402
     get_user_data,
     list_contributions,
     metrics,
+    product_metrics,
     publish_candidates,
     search_contributions,
     update_contributions,
