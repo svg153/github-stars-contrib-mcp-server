@@ -75,8 +75,8 @@ def test_future_portable_mcp_metadata_is_version_aligned_and_secret_free() -> No
     assert isinstance(mcp["mcpServers"], dict)
 
     findings = _secret_findings(mcp)
-    assert not findings, "portable plugin metadata must not contain secrets: " + "; ".join(
-        findings
+    assert not findings, (
+        "portable plugin metadata must not contain secrets: " + "; ".join(findings)
     )
 
     for name, server in mcp["mcpServers"].items():
