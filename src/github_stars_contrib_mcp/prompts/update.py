@@ -142,7 +142,7 @@ def contribution_update_impl(
     return "\n".join(lines)
 
 
-@mcp.prompt()
+@mcp.prompt(title="Update a contribution")
 def contribution_update(  # noqa: A002 - `type` is the documented MCP argument name
     client_id: str,
     title: str | None = None,

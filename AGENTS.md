@@ -32,6 +32,7 @@ Five prompts validate arguments and return the tool call to perform: `contributi
 - A rejected argument returns text starting with `[ERROR] <prompt name>` followed by JSON (`prompt`, `field_errors`, optional `suggestions`, optional `hint`). Branch on `field_errors`; do not parse the prose.
 - `contribution_update` is a read-modify-write. Read the current contributions with `list_contributions`, take each item's `id` as the REST `clientId`, merge the requested changes and send the complete payload.
 - The SDK 2.x `completion/complete` handler completes `type` (all `ContributionType` values) and `group_by` (`month`, `type`, `year`) by prefix.
+- Only `contribution_update.client_id` is declared required. The SDK rejects a missing required argument with `-32602` before the handler runs, so that prompt's own `client_id` error text is reachable in-process only; every other argument is optional by design, and the prompt reports what is missing instead of failing.
 
 ## Links and platform normalization
 

@@ -38,7 +38,7 @@ def contributions_summary_impl(page: int = 1) -> str:
     )
 
 
-@mcp.prompt()
+@mcp.prompt(title="Summarize my contributions")
 def contributions_summary(page: int = 1) -> str:
     """Plan a paginated read of the authenticated contributions profile."""
     return contributions_summary_impl(page=page)

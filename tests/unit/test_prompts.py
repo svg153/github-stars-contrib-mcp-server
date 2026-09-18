@@ -27,6 +27,22 @@ def test_prompts_are_registered():
     } <= names
 
 
+def test_prompts_expose_title_and_description():
+    """Hosts render `title` in command menus, so it must not fall back to the name."""
+    by_name = {prompt.name: prompt for prompt in asyncio.run(mcp.list_prompts())}
+    for name in (
+        "contribution_create",
+        "contribution_update",
+        "contributions_summary",
+        "contributions_search",
+        "contributions_stats",
+    ):
+        prompt = by_name[name]
+        assert prompt.description, f"{name} has no description"
+        assert prompt.title, f"{name} has no human-readable title"
+        assert prompt.title != name, f"{name} title should not repeat the identifier"
+
+
 class TestContributionCreate:
     def test_complete_draft_lists_no_missing_fields(self):
         result = prompts.contribution_create(
