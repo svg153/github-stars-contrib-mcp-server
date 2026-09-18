@@ -138,14 +138,10 @@ class AuditCoverageAnalyzer:
                 )
             )
 
-        counts = Counter(
-            source.coverage_state for source in source_coverages
-        )
+        counts = Counter(source.coverage_state for source in source_coverages)
         configured_total = len(source_coverages)
         complete = counts[AuditSourceCoverageState.COMPLETE]
-        configured_ratio = (
-            complete / configured_total if configured_total else None
-        )
+        configured_ratio = complete / configured_total if configured_total else None
 
         configured_requested_types = len(requested_types.intersection(scanned_types))
         requested_type_ratio = (
@@ -169,9 +165,7 @@ class AuditCoverageAnalyzer:
                 failed=type_counts[AuditSourceCoverageState.FAILED],
             )
 
-        explicit_scope = bool(
-            report.request.source_ids or report.request.source_types
-        )
+        explicit_scope = bool(report.request.source_ids or report.request.source_types)
         summary = AuditCoverageSummary(
             status=_aggregate_status(
                 configured_total=configured_total,
