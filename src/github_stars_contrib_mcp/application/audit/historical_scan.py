@@ -156,9 +156,8 @@ class HistoricalAuditScanner:
                         continue
                     if not self._matches_request(request, item.published_at):
                         continue
-                    if (
+                    if request.contribution_types and item.type_hint not in set(
                         request.contribution_types
-                        and item.type_hint not in set(request.contribution_types)
                     ):
                         continue
 
