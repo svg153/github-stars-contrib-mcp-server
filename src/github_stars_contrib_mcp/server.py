@@ -7,6 +7,8 @@ import sys
 
 import structlog
 
+# Importing the prompts package registers prompts and the completion handler.
+from . import prompts  # noqa: F401,E402
 from .config.settings import settings
 from .shared import mcp
 

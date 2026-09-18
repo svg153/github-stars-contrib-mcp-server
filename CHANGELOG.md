@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased — MCP prompts and argument completion
+
+### Added
+
+- Five MCP prompts that validate a draft and return the matching REST tool call: `contribution_create`, `contribution_update`, `contributions_summary`, `contributions_search` and `contributions_stats`.
+- Stable structured prompt errors: an `[ERROR] <prompt name>` first line followed by a JSON body with `field_errors`, optional `suggestions` and an optional `hint`, so agents can branch on fields instead of parsing prose.
+- Native `completion/complete` support that autocompletes the `type` and `group_by` prompt arguments by prefix through the MCP 2 SDK.
+
+### Documentation
+
+- Documented the prompt contract and completion behaviour in `README.md` and `AGENTS.md`.
+
 ## Unreleased — autonomous contribution discovery milestone
 
 The internal GSD roadmap for this work is named **v0.3.0 autonomous contribution discovery**. The package had already advanced to `0.3.1` for Stars API/auth hardening, so this milestone does not downgrade or rewrite the published package version.

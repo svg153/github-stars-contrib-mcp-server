@@ -58,6 +58,22 @@ The old GraphQL `update_contribution(server_id, partial_data)` contract is inten
 
 Choose stable IDs such as `talk:commit-conf-2026` or `post:my-article-slug` for repeatable idempotent writes.
 
+## Prompts and argument completion
+
+Prompts are MCP `prompts/*` entries that validate a draft and return the tool call to perform. Validation happens before rendering, so a bad argument returns a structured error instead of a misleading plan.
+
+| Prompt | Validated arguments | Guides |
+| --- | --- | --- |
+| `contribution_create` | `url`, `type`, `date` formats; reports missing required fields | one REST POST via `create_contribution`, or `upsert_contribution` for idempotent writes |
+| `contribution_update` | `client_id`, at least one change, `type`, `date` | full-payload `PUT` upsert via `upsert_contribution` |
+| `contributions_summary` | `page >= 1` | paginated `list_contributions` read |
+| `contributions_search` | `username`, `type`, ISO dates and range order | filtered `search_contributions` call |
+| `contributions_stats` | `username`, `group_by` | `get_contributions_stats` aggregation |
+
+A rejected argument returns a first line of `[ERROR] <prompt name>` followed by a JSON object with `prompt`, `field_errors`, an optional `suggestions` map (the valid `ContributionType` or `group_by` values) and an optional `hint`.
+
+The server also registers a `completion/complete` handler, so clients autocomplete the `type` and `group_by` arguments by prefix.
+
 ## Autonomous discovery and review
 
 The autonomous-discovery milestone adds a deterministic discovery/review pipeline behind MCP tools. The reusable orchestration layer lives in `skills/` and `agents/`; it does not duplicate provider or publication logic.
