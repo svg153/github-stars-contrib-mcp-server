@@ -67,7 +67,7 @@ class AuditRequest(BaseModel):
         return tuple(sorted(set(values), key=lambda value: value.value))
 
     @model_validator(mode="after")
-    def validate_window(self) -> "AuditRequest":
+    def validate_window(self) -> AuditRequest:
         if self.start >= self.end:
             raise ValueError("audit start must be before end")
         return self
