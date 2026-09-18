@@ -108,7 +108,7 @@ def contributions_search_impl(
     )
 
 
-@mcp.prompt()
+@mcp.prompt(title="Search my contributions")
 def contributions_search(  # noqa: A002 - `type` is the documented MCP argument name
     username: str | None = None,
     type: str | None = None,

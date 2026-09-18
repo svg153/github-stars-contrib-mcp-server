@@ -104,7 +104,7 @@ def contribution_create_impl(
     return "\n".join(lines)
 
 
-@mcp.prompt()
+@mcp.prompt(title="Create a contribution")
 def contribution_create(  # noqa: A002 - `type` is the documented MCP argument name
     title: str | None = None,
     url: str | None = None,

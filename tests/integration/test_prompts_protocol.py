@@ -36,7 +36,11 @@ async def test_list_prompts_exposes_contribution_workflows(mcp_server: str):
         async with ClientSession(read, write) as session:
             await session.initialize()
             prompts = await session.list_prompts()
-            assert EXPECTED_PROMPTS <= {prompt.name for prompt in prompts.prompts}
+            by_name = {prompt.name: prompt for prompt in prompts.prompts}
+            assert EXPECTED_PROMPTS <= set(by_name)
+            # Hosts render `title` in command menus; it must survive the wire.
+            for name in EXPECTED_PROMPTS:
+                assert by_name[name].title, f"{name} lost its title over the wire"
 
 
 @pytest.mark.asyncio

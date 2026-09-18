@@ -71,7 +71,7 @@ def contributions_stats_impl(
     )
 
 
-@mcp.prompt()
+@mcp.prompt(title="Contribution statistics")
 def contributions_stats(
     username: str | None = None,
     group_by: str | None = None,
