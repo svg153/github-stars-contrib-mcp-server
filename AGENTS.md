@@ -24,6 +24,15 @@ upsert_contribution(client_id="post:example", data={title, url, type, date, desc
 -> {"success": true, "data": {...}, "error": null}
 ```
 
+## Prompts
+
+Five prompts validate arguments and return the tool call to perform: `contribution_create`, `contribution_update`, `contributions_summary`, `contributions_search`, `contributions_stats`.
+
+- Prefer a prompt over hand-building a payload: it maps the draft onto the correct REST operation and reports missing fields.
+- A rejected argument returns text starting with `[ERROR] <prompt name>` followed by JSON (`prompt`, `field_errors`, optional `suggestions`, optional `hint`). Branch on `field_errors`; do not parse the prose.
+- `contribution_update` is a read-modify-write. Merge the requested changes onto the current contribution and send the complete payload.
+- The SDK 2.x `completion/complete` handler completes `type` (all `ContributionType` values) and `group_by` (`month`, `type`, `year`) by prefix.
+
 ## Links and platform normalization
 
 Valid platforms: `TWITTER`, `MEDIUM`, `LINKEDIN`, `README`, `STACK_OVERFLOW`, `DEV_TO`, `MASTODON`, `OTHER`. Normalize compatibility aliases before calling GraphQL: `GITHUB -> README`, `WEBSITE -> OTHER`.
