@@ -30,7 +30,7 @@ Five prompts validate arguments and return the tool call to perform: `contributi
 
 - Prefer a prompt over hand-building a payload: it maps the draft onto the correct REST operation and reports missing fields.
 - A rejected argument returns text starting with `[ERROR] <prompt name>` followed by JSON (`prompt`, `field_errors`, optional `suggestions`, optional `hint`). Branch on `field_errors`; do not parse the prose.
-- `contribution_update` is a read-modify-write. Merge the requested changes onto the current contribution and send the complete payload.
+- `contribution_update` is a read-modify-write. Read the current contributions with `list_contributions`, take each item's `id` as the REST `clientId`, merge the requested changes and send the complete payload.
 - The SDK 2.x `completion/complete` handler completes `type` (all `ContributionType` values) and `group_by` (`month`, `type`, `year`) by prefix.
 
 ## Links and platform normalization

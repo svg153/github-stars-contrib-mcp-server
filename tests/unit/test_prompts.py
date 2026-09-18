@@ -66,7 +66,12 @@ class TestContributionUpdate:
     def test_requires_client_id(self):
         payload = _error_payload(prompts.contribution_update(None, title="New"))
         assert payload["field_errors"]["client_id"] == "required"
-        assert "client ID" in payload["hint"]
+        assert "list_contributions" in payload["hint"]
+
+    def test_explains_how_to_discover_the_client_id(self):
+        result = prompts.contribution_update("post:1", title="Renamed")
+        assert "list_contributions" in result
+        assert "clientId" in result
 
     def test_requires_at_least_one_change(self):
         payload = _error_payload(prompts.contribution_update("post:1"))

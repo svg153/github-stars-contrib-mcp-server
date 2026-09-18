@@ -62,8 +62,9 @@ def contribution_update_impl(
             "contribution_update",
             {"client_id": "required"},
             hint=(
-                "Pass the stable REST client ID previously chosen by the caller. "
-                "Legacy server-generated contribution IDs are not client IDs."
+                "Call `list_contributions` first and use the contribution's `id`, "
+                "which is the REST `clientId` accepted by the upsert endpoint. A "
+                "legacy GraphQL server ID is not a REST client ID."
             ),
         )
 
@@ -127,6 +128,8 @@ def contribution_update_impl(
     lines += [
         "",
         "Next steps:",
+        "- Call `list_contributions` to read the current contributions. Each item "
+        "carries the `id` that the upsert endpoint uses as its `clientId`.",
         "- The REST profile is an idempotent `PUT /{clientId}` upsert that needs "
         "the complete contribution, so read the current values first.",
         "- Merge the requested changes on top of the current values, keeping any "
