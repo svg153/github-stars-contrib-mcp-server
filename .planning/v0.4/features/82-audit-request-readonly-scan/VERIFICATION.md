@@ -1,8 +1,8 @@
 # #82 — Bounded audit requests and read-only historical scans — Verification
 
-**Parent epic:** #64  
-**PR:** #86  
-**Verified implementation head:** `ffde779db047efe9602fa0d99da517f9ef1330af`  
+**Parent epic:** #64
+**PR:** #86
+**Verified implementation head:** `ffde779db047efe9602fa0d99da517f9ef1330af`
 **GitHub Actions:** tests run #129 — success
 
 ## Acceptance evidence
