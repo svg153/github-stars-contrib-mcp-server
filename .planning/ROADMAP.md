@@ -240,7 +240,8 @@ These remain intentionally separate from the product roadmap:
 
 - #57 — upstream MCP Skills findings/maintainer follow-up;
 - #58 — real-client interoperability and host-activation evidence;
-- #60 — portable Agent Plugins `mcp.json` packaging and credential-safe bootstrap.
+- #60 — portable Agent Plugins `mcp.json` packaging and credential-safe bootstrap;
+- #96 — MCP prompts surface placement decision and host-activation evidence. The capability itself is already merged (PR #88, PR #95); this track only decides whether it becomes an explicit v0.4 operator-efficiency slice or stays an adjacent, documented capability.
 
 Their results may change implementation choices in #71/#72, but they are not silently absorbed into the v0.4 initiative.
 
