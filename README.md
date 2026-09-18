@@ -74,6 +74,8 @@ A rejected argument returns a first line of `[ERROR] <prompt name>` followed by 
 
 The server also registers a `completion/complete` handler, so clients autocomplete the `type` and `group_by` arguments by prefix.
 
+Prompts are a core, non-deprecated MCP capability, but whether a given host surfaces them as user-invokable commands is host behaviour and is **not** claimed here. Roadmap placement and host-activation evidence are tracked in [#96](https://github.com/svg153/github-stars-contrib-mcp-server/issues/96).
+
 ## Autonomous discovery and review
 
 The autonomous-discovery milestone adds a deterministic discovery/review pipeline behind MCP tools. The reusable orchestration layer lives in `skills/` and `agents/`; it does not duplicate provider or publication logic.
